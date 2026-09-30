@@ -1,0 +1,123 @@
+<div align="center">
+
+# DDLC DokifileModTemplate
+
+**Un template de mods para Doki Doki Literature Club, hecho por Studio Dokifiles.**
+
+Basado en el [DDLC Mod Template 2.0](https://github.com/Bronya-Rand/DDLCModTemplate2.0) de Azariel "Bronya Rand" Del Carmen (bronya_rand).
+
+`Ren'Py 8.5.3` · `Python 3.12` · `Windows / macOS / Linux / Android`
+
+</div>
+
+---
+
+> [!IMPORTANT]
+> Este es un **proyecto de fans no oficial**. No está afiliado a Team Salvato ni a bronya_rand.
+> Doki Doki Literature Club es propiedad de **Team Salvato**. Requiere tener el juego original instalado.
+> Ver las [IP Guidelines](https://teamsalvato.com/ip-guidelines).
+
+## Overview
+
+DDLC DokifileModTemplate es una base lista para crear mods de DDLC con el look y
+los sistemas del template original, pero con todo **organizado, configurable y
+documentado** para el flujo de trabajo de Studio Dokifiles.
+
+Incluye la interfaz de DDLC, el sistema de sprites estilo Bronya, transiciones,
+efectos, menús configurables y un conjunto de ajustes para el jugador — todo con
+valores por defecto sensatos que el modder puede cambiar sin tocar el motor.
+
+- **Para quién:** quienes quieran empezar un mod con una base sólida y consistente.
+- **Qué trae:** sprites, fondos, audio, transforms, transiciones, efectos, menús y onboarding.
+- **Qué NO trae todavía:** una historia escrita (cada mod pone la suya en `script.rpy`).
+
+## Requisitos
+
+- **[Ren'Py 8.5.x](https://www.renpy.org/latest.html)** (probado en 8.5.3).
+- **[Doki Doki Literature Club](https://ddlc.moe/)** (PC), para los assets oficiales.
+
+> [!WARNING]
+> No pongas la carpeta de Ren'Py ni del proyecto en servicios de nube
+> (Google Drive, OneDrive, etc.): causa problemas al testear el mod.
+
+## Instalación
+
+1. Instalá **Ren'Py 8.5.x**.
+2. Copiá esta carpeta dentro de `renpy-8.5.x-sdk/Proyectos/` (o donde tengas tus proyectos).
+3. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **DDLC DokifileModTemplate**.
+4. **Launch Project** para probarlo.
+
+> El template trae los assets de DDLC ya incluidos. En un futuro commit se
+> quitarán y se documentará cómo colocarlos manualmente desde tu copia de DDLC
+> (`audio.rpa`, `fonts.rpa`, `images.rpa`).
+
+Para escribir tu historia, editá `game/script.rpy`. Guía completa en [`docs/`](docs/).
+
+## Estructura
+
+```
+game/
+├── script.rpy            ← tu historia empieza acá (label start)
+├── screens.rpy           ← pantallas base (diálogo, guardado, ajustes...)
+├── gui.rpy               ← colores, fuentes y medidas de la interfaz
+├── options.rpy           ← nombre, versión, configuración de build
+├── definitions/
+│   ├── definitions.rpy   ← fondos (bg), personajes y variables
+│   ├── sprites.rpy       ← todos los sprites de las dokis (im.Composite)
+│   ├── transforms.rpy    ← posiciones, animaciones y transiciones
+│   ├── music.rpy         ← música y efectos de sonido
+│   ├── effects.rpy       ← efectos visuales especiales
+│   ├── menu_screens.rpy  ← menús configurables
+│   ├── cgs.rpy           ← tus CGs (imágenes de evento)
+│   ├── persistent.rpy    ← variables que se guardan entre partidas
+│   └── splash.rpy        ← splash, aviso legal y anti-cheat
+├── core/                 ← el motor del template (no tocar)
+├── mod_assets/           ← TUS imágenes, música y sfx
+│   ├── images/bg/        ← fondos de escenario
+│   ├── images/characters/← sprites de las dokis
+│   ├── images/cg/        ← CGs
+│   └── audio/{music,sfx}/← audio
+├── chrs/                 ← archivos .chr (easter egg)
+└── tl/                   ← traducciones (ej: tl/spanish)
+
+docs/                     ← documentación para modders
+```
+
+## Features
+
+- **Sprites estilo Bronya** (`im.Composite`): ~100 poses por personaje con
+  notación compacta, ej. `show sayori 2b at t41`.
+- **Transforms de posición:** `t11`–`t44`, focus `f*`, entradas laterales `l*`/`r*`,
+  animaciones `hop`/`dip`, salidas `lhide`/`rhide`.
+- **Transiciones:** `dissolve`, `dissolve_cg`, `close_eyes`, `open_eyes`,
+  `wipeleft_scene`, `wiperight_scene`, `trueblack` y más.
+- **Audio:** temas `t1`–`t10` (y variantes) + efectos de sonido.
+- **Efectos:** `invert`, `tear`, `dizzy`, glitch de texto.
+- **Menús configurables:** principal, de pausa y quick menu; sprites, logo,
+  partículas y animación hover editables desde `definitions/menu_screens.rpy`.
+- **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
+  animaciones del menú y partículas, cambiar su nombre y borrar todos los datos.
+- **Splash + anti-cheat:** aviso legal al primer arranque, autoload y chequeo de partidas.
+- **Easter egg `.chr`:** sistema de archivos de personajes que se restauran según el playthrough.
+- **Onboarding:** documentación en [`docs/`](docs/) para modders.
+
+## Documentación
+
+- [`docs/IP-GUIDELINES.md`](docs/IP-GUIDELINES.md) — resumen de las IP Guidelines de Team Salvato.
+- `game/README.md` — mapa de las carpetas del proyecto.
+
+> Se planea ampliar `docs/` con guías detalladas para modders (empezar, personajes,
+> escena, audio, menús, efectos, historia) en el futuro.
+
+## Créditos y licencia
+
+- **DDLC Mod Template:** Azariel "Bronya Rand" Del Carmen
+  ([bronya_rand](https://github.com/Bronya-Rand/DDLCModTemplate2.0)). Crédito obligatorio:
+  *"This mod was made possible by bronya_rand's DDLC Mod Template 2.0"*.
+- **Doki Doki Literature Club:** propiedad de **Team Salvato**
+  ([IP Guidelines](https://teamsalvato.com/ip-guidelines)).
+- **Autor de este template:** Studio Dokifiles.
+
+El código propio de Studio Dokifiles se distribuye bajo licencia **MIT**
+(ver [`LICENSE`](LICENSE)). El código y los assets heredados pertenecen a sus
+autores originales (bronya_rand / Team Salvato).

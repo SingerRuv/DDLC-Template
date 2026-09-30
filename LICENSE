@@ -1,0 +1,39 @@
+MIT License
+
+Copyright (c) 2026 Studio Dokifiles
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---------------------------------------------------------------------------
+TERCEROS / THIRD-PARTY NOTICES
+
+La licencia MIT de arriba aplica al código propio de Studio Dokifiles.
+El proyecto deriva del "DDLC Mod Template" de Azariel "Bronya Rand" Del
+Carmen (bronya_rand), y contiene material de Doki Doki Literature Club.
+
+  - DDLC Mod Template: Copyright (c) 2019-2025 Azariel "Bronya Rand" Del
+    Carmen (bronya_rand). Todos los derechos reservados.
+    https://github.com/Bronya-Rand/DDLCModTemplate2.0
+
+  - Doki Doki Literature Club y sus assets: propiedad de Team Salvato.
+    Copyright (c) 2017 Team Salvato. Todos los derechos reservados.
+    https://teamsalvato.com/ip-guidelines
+
+Este es un proyecto de fans no oficial, no afiliado a Team Salvato ni a
+bronya_rand. Ver docs/IP-GUIDELINES.md.
