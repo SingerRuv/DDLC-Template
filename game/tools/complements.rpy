@@ -16,12 +16,12 @@ init python:
     import builtins as _pl_builtins
 
     _PL_PLUGINS_DIR = "tools/plugins/"
-    _PL_PLUGINS_LOG = "poselab.plugins"
+    _PL_PLUGINS_LOG = "tools.plugins"
 
     def pl_plugins():
         """Descubre las herramientas en tools/plugins/ y devuelve una lista de
         dicts ordenada por titulo. Cada item:
-            {id, titulo, descripcion, autor, version, capturas, screen, carpeta}
+            {titulo, descripcion, autor, version, capturas, screen}
 
         Un plugin sin tool.json valido, sin screen 'screen', o con JSON roto
         se salta con un aviso en el log (el hub nunca falla por un plugin mal
@@ -37,8 +37,7 @@ init python:
                 with renpy.file(f) as fh:
                     datos = _pl_json.loads(fh.read().decode("utf-8"))
             except Exception as e:
-                renpy.log("%s: tool.json ilegible en %s: %s"
-                          % (_PL_PLUGINS_LOG, f, e))
+                renpy.log("%s: tool.json ilegible en %s: %s" % (_PL_PLUGINS_LOG, f, e))
                 continue
             # Ojo: en el store de Ren'Py `dict` es RevertableDict; usamos el
             # builtin para que json.loads (dict normal) pase la validacion.
@@ -46,8 +45,7 @@ init python:
                 continue
             screen = datos.get("screen", "")
             if not screen or not renpy.has_screen(screen):
-                renpy.log("%s: plugin '%s' sin screen valido (%r)"
-                          % (_PL_PLUGINS_LOG, carpeta, screen))
+                renpy.log("%s: plugin '%s' sin screen valido (%r)" % (_PL_PLUGINS_LOG, carpeta, screen))
                 continue
 
             capturas = []
@@ -57,14 +55,12 @@ init python:
                     capturas.append(ruta)
 
             encontrados[carpeta] = {
-                "id": datos.get("id") or carpeta,
                 "titulo": datos.get("titulo") or carpeta,
                 "descripcion": datos.get("descripcion", ""),
                 "autor": datos.get("autor", ""),
                 "version": datos.get("version", ""),
                 "capturas": capturas,
                 "screen": screen,
-                "carpeta": carpeta,
             }
         return sorted(encontrados.values(), key=lambda d: d["titulo"].lower())
 

@@ -33,8 +33,7 @@ menú y la interfaz del mod template original.
 Notas:
 - El `screens.rpy` se adaptó para template genérico: se limpió la lógica
   específica de DDLC (playthrough, autoload, extras, etc.) pero se mantuvieron
-  las características del mod original: modo uncensored, nombre del jugador y
-  Discord RPC (opcional).
+  las características del mod original: modo uncensored y nombre del jugador.
 
 Para personalizar colores de la interfaz, edita `gui.rpy` (variables
 `gui.accent_color`, `gui.hover_color`, etc.).

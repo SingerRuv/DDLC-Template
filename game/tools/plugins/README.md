@@ -22,7 +22,6 @@ game/tools/plugins/
 
 ```json
 {
-  "id": "mi_herramienta",
   "titulo": "Mi Herramienta",
   "descripcion": "Qué hace, en una línea.",
   "autor": "Tu nombre",
@@ -34,7 +33,6 @@ game/tools/plugins/
 
 | Campo         | Obligatorio | Descripción                                                        |
 |---------------|-------------|--------------------------------------------------------------------|
-| `id`          | No          | Identificador. Por defecto, el nombre de la carpeta.               |
 | `titulo`      | No*         | Nombre visible en el hub. Por defecto, el nombre de la carpeta.     |
 | `descripcion` | No          | Texto del panel derecho.                                           |
 | `autor`       | No          | Se muestra junto a la versión.                                     |

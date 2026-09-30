@@ -1,10 +1,11 @@
 ﻿## pose_lab.rpy
 ## Herramienta in-game para armar poses (complemento del template).
 ##
-## Es dev-only: el botón aparece en los menús solo si config.developer = True.
-## Se puede borrar el archivo completo (y el botón de menu_screens.rpy) sin
-## afectar al juego. No incluye assets de DDLC: lee los del propio template
-## vía renpy.list_files() / renpy.list_images(), que soportan carpetas y .rpa.
+## Es dev-only: se abre desde el hub "Herramientas" del menú principal, que
+## solo aparece si config.developer = True. Se puede borrar la carpeta del
+## plugin sin afectar al juego. No incluye assets de DDLC: lee los del propio
+## template vía renpy.list_files() / renpy.list_images(), que soportan
+## carpetas y .rpa.
 ##
 ## Genera dos salidas:
 ##   - show <tag> <pose> at <transform> zorder 2     (para tu guion)

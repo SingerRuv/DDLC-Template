@@ -420,10 +420,6 @@ screen load():
 
     use file_slots(_("Load"))
 
-init python:
-    def FileActionMod(name, page=None, **kwargs):
-        return FileAction(name)
-
 
 screen file_slots(title):
 
@@ -464,7 +460,7 @@ screen file_slots(title):
                     $ slot = i + 1
 
                     button:
-                        action FileActionMod(slot)
+                        action FileAction(slot)
 
                         has vbox
 
@@ -1059,8 +1055,6 @@ style history_window is empty
 
 style history_name is gui_label
 style history_name_text is gui_label_text
-style history_text is gui_text
-
 style history_text is gui_text
 
 style history_label is gui_label

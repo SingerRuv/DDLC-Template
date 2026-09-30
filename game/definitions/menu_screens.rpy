@@ -35,8 +35,7 @@ define gui.game_content_right_margin = 20 # margen derecho del contenido
 
 # --- Menú principal: fondo, logo y efectos -----------------------------------
 
-# Fondo del menú principal (tag de imagen definido en splash.rpy o ruta directa).
-define gui.main_menu_bg = "menu_bg"
+# El fondo del menú principal usa gui.main_menu_background (gui.rpy).
 
 # Logo del menú principal.
 define gui.main_menu_logo = "menu_logo"
@@ -137,22 +136,6 @@ screen main_navigation():
 
             textbutton _("Settings") action [ShowMenu("preferences"), SensitiveIf(renpy.get_screen("preferences") == None)] at nav_button_anim
 
-            # Hub de herramientas dev (tools/complements.rpy). Solo aparece
-            # si config.developer = True; se oculta solo al publicar el juego.
-            if config.developer:
-                textbutton _("Herramientas") action Show("complements") at nav_button_anim
-
-            if enable_language_button and enable_languages and translations:
-                # Botón Language: puede ser textbutton (por defecto) o
-                # imagebutton (descomenta el bloque imagebutton de abajo).
-                textbutton _("Language") action Show("choose_language") at nav_button_anim
-
-                #imagebutton:
-                #    idle "gui/buttons/btn_example_idle.png"
-                #    hover "gui/buttons/btn_example_hover.png"
-                #    xalign 0.5
-                #    action Show("choose_language")
-
             if renpy.variant("pc"):
                 textbutton _("Quit") action Quit(confirm=True) at nav_button_anim
 
@@ -203,8 +186,8 @@ screen main_menu():
 
     style_prefix "main_menu"
 
-    # Fondo del menú (configurable con gui.main_menu_bg).
-    add gui.main_menu_bg
+    # Fondo del menú (configurable con gui.main_menu_background).
+    add gui.main_menu_background
 
     # Sprites de personaje (configurables con menu_sprites).
     # Cada entrada: (tag, x, y, zoom, z_anim) → posición + animación fly-in.
@@ -237,6 +220,29 @@ screen main_menu():
 
             text "[config.version]":
                 style "main_menu_version"
+
+    # Botones fuera de la columna de navegación.
+    # (Sin nav_button_anim: su deslizamiento a la derecha desbordaría el borde.)
+
+    # Herramientas (dev): esquina superior derecha.
+    if config.developer:
+        hbox:
+            xalign 1.0 yalign 0.0
+            xoffset -20 yoffset 20
+            textbutton _("Herramientas"):
+                style "main_navigation_button"
+                text_style "main_navigation_button_text"
+                action Show("complements")
+
+    # Idioma: esquina inferior derecha, justo encima del nombre del juego.
+    if enable_language_button and enable_languages and translations:
+        hbox:
+            xalign 1.0 yalign 1.0
+            xoffset -20 yoffset -85
+            textbutton _("Language"):
+                style "main_navigation_button"
+                text_style "main_navigation_button_text"
+                action Show("choose_language")
 
     key "K_ESCAPE" action Quit(confirm=False)
 

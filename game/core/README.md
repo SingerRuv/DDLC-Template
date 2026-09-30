@@ -9,4 +9,4 @@
 
 ## Archivos
 - **[0imports.rpy](./0imports.rpy)**: Este archivo importa ciertos módulos Python tras el bootstrap pero antes del inicio del juego.
-- **[functions.rpy](./functions.rpy)**: Contiene funciones de ayuda usadas en todo el juego (archivos de personajes `.chr`, detección de streaming, etc.).
+- **[functions.rpy](./functions.rpy)**: Contiene funciones de ayuda usadas en todo el juego (borrado de guardados, detección de streaming).
