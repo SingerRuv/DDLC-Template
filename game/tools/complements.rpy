@@ -13,6 +13,7 @@
 
 init python:
     import json as _pl_json
+    import builtins as _pl_builtins
 
     _PL_PLUGINS_DIR = "tools/plugins/"
     _PL_PLUGINS_LOG = "poselab.plugins"
@@ -39,7 +40,9 @@ init python:
                 renpy.log("%s: tool.json ilegible en %s: %s"
                           % (_PL_PLUGINS_LOG, f, e))
                 continue
-            if not isinstance(datos, dict):
+            # Ojo: en el store de Ren'Py `dict` es RevertableDict; usamos el
+            # builtin para que json.loads (dict normal) pase la validacion.
+            if not isinstance(datos, _pl_builtins.dict):
                 continue
             screen = datos.get("screen", "")
             if not screen or not renpy.has_screen(screen):

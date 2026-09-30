@@ -56,10 +56,11 @@ init python:
         chars = set()
         for f in renpy.list_files():
             partes = f.split("/")
-            if (len(partes) == 3 and partes[0] == "images"
-                    and partes[2].lower().endswith(".png")
-                    and partes[1] not in ("bg", "menu")):
-                chars.add(partes[1])
+            if len(partes) != 3 or partes[0] != "images":
+                continue
+            if partes[1] in ("bg", "menu") or not partes[2].lower().endswith(".png"):
+                continue
+            chars.add(partes[1])
         orden = ("sayori", "natsuki", "yuri", "monika")
         lower = {c.lower(): c for c in chars}
         vanilla = [lower[d] for d in orden if d in lower]
@@ -75,19 +76,18 @@ init python:
         fondos = []
         for f in renpy.list_files():
             partes = f.split("/")
-            if (len(partes) == 3 and partes[0] == "images" and partes[1] == "bg"
-                    and partes[2].lower().endswith(".png")):
+            if len(partes) != 3 or partes[0] != "images" or partes[1] != "bg":
+                continue
+            if partes[2].lower().endswith(".png"):
                 fondos.append(partes[2][:-4])
         _PL_CACHE[key] = sorted(fondos)
         return _PL_CACHE[key]
 
     def pl_brazos(carpeta):
-        return sorted(n for n in _pl_listar(carpeta)
-                      if _pl_re.fullmatch(r"\d+b?[lr]", n))
+        return sorted(n for n in _pl_listar(carpeta) if _pl_re.fullmatch(r"\d+b?[lr]", n))
 
     def pl_caras(carpeta):
-        return sorted(n for n in _pl_listar(carpeta)
-                      if _pl_re.fullmatch(r"[a-z]", n))
+        return sorted(n for n in _pl_listar(carpeta) if _pl_re.fullmatch(r"[a-z]", n))
 
     def pl_poses5(carpeta):
         """Codigos de pose completa (5a, 5b, ...) registrados como imagen.
@@ -155,8 +155,7 @@ init python:
             return ""
         tag = pl_tag(carpeta)
         code = pl_pose(izq, der) + cara
-        capas = ", ".join('(0, 0), "images/%s/%s.png"' % (carpeta, p)
-                          for p in (izq, der, cara))
+        capas = ", ".join('(0, 0), "images/%s/%s.png"' % (carpeta, p) for p in (izq, der, cara))
         return "image %s %s = im.Composite((960, 960), %s)" % (tag, code, capas)
 
     def pl_preview(carpeta, cuerpo, izq, der, cara, trans, fondo):
@@ -382,15 +381,13 @@ screen pose_lab():
                     text "Arma una pose y copia el codigo para tu guion." style "pl_hint"
 
                     use pl_menu("Personaje", pl_doki or "—", "doki", [
-                        (d, pl_choose_doki(d), d == pl_doki)
-                        for d in pl_personajes()
+                        (d, pl_choose_doki(d), d == pl_doki) for d in pl_personajes()
                     ])
 
                     use pl_menu("Pose completa (5)", pl_cuerpo or "— usar brazos + cara", "cuerpo", [
                         ("— usar brazos + cara", pl_choose("cuerpo", ""), pl_cuerpo == "")
                     ] + [
-                        (c, pl_choose("cuerpo", c), c == pl_cuerpo)
-                        for c in poses5
+                        (c, pl_choose("cuerpo", c), c == pl_cuerpo) for c in poses5
                     ])
 
                     if pl_cuerpo == "":
