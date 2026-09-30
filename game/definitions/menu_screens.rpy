@@ -137,6 +137,11 @@ screen main_navigation():
 
             textbutton _("Settings") action [ShowMenu("preferences"), SensitiveIf(renpy.get_screen("preferences") == None)] at nav_button_anim
 
+            # Hub de herramientas dev (tools/complements.rpy). Solo aparece
+            # si config.developer = True; se oculta solo al publicar el juego.
+            if config.developer:
+                textbutton _("Herramientas") action Show("complements") at nav_button_anim
+
             if enable_language_button and enable_languages and translations:
                 # Botón Language: puede ser textbutton (por defecto) o
                 # imagebutton (descomenta el bloque imagebutton de abajo).
