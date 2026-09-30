@@ -330,9 +330,9 @@ screen pose_lab():
     modal True
     zorder 200
 
-    # La musica suena al mostrarse la herramienta (no al pulsar el boton)
-    # y se restaura al cerrarla.
-    on "show" action Function(pl_music_on)
+    # Al mostrarse: inicializa la seleccion (primera vez) y pone la musica
+    # propia de la herramienta. Al cerrarla, restaura la del menu.
+    on "show" action [Function(pl_ensure_init), Function(pl_music_on)]
     on "hide" action Function(pl_music_off)
 
     $ pl_doki = pl_state["doki"]
