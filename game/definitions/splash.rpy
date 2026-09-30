@@ -9,7 +9,7 @@ image splash_warning = ParameterizedText(style="splash_text", xalign=0.5, yalign
 # ---- Imagenes del menu principal -----------------------------------------------------
 
 image menu_logo:
-    "mod_assets/DDLCModTemplateLogo.png"
+    "gui/DDLCModTemplateLogo.png"
     subpixel True
     xcenter 240
     ycenter 120
@@ -107,14 +107,14 @@ transform menu_art_move(z, x, z2):
 
 # ---- Fondos del splash ---------------------------------------------------
 
-image tos = "mod_assets/images/bg/base_game/warning.png"
-image tos2 = "mod_assets/images/bg/base_game/warning2.png"
+image tos = "gui/base_game/warning.png"
+image tos2 = "gui/base_game/warning2.png"
 
 image intro:
     truecenter
     "white"
     0.5
-    "mod_assets/images/bg/base_game/splash.png" with Dissolve(0.5, alpha=True)
+    "gui/base_game/splash.png" with Dissolve(0.5, alpha=True)
     2.5
     "white" with Dissolve(0.5, alpha=True)
     0.5
@@ -168,7 +168,6 @@ label splashscreen:
                     renpy.utter_restart()
             "No, continue where I left off.":
                 python:
-                    restore_characters()
                     persistent.first_run = True
 
     if not persistent.first_run:
@@ -203,9 +202,6 @@ label splashscreen:
             call screen dialog("A streaming/recording program has been detected. Let's Play Mode has been enabled to protect your privacy.",
                 [Hide("dialog"), Return()])
         scene white
-
-    # Inicializa los archivos de personajes en el primer arranque.
-    $ initialize_characters_folder()
 
     # Carga el label de autoload si se definio uno.
     if persistent.autoload:

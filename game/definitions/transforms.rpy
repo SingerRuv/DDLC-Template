@@ -220,20 +220,20 @@ define trueblack = MultipleTransition([
     Solid("#000")
     ])
 
-define wipeleft = ImageDissolve("mod_assets/images/menu/wipeleft.png", 0.5, ramplen=64)
+define wipeleft = ImageDissolve("images/menu/wipeleft.png", 0.5, ramplen=64)
 
 define wipeleft_scene = MultipleTransition([
-    False, ImageDissolve("mod_assets/images/menu/wipeleft.png", 0.5, ramplen=64),
+    False, ImageDissolve("images/menu/wipeleft.png", 0.5, ramplen=64),
     Solid("#000"), Pause(0.25),
-    Solid("#000"), ImageDissolve("mod_assets/images/menu/wipeleft.png", 0.5, ramplen=64),
+    Solid("#000"), ImageDissolve("images/menu/wipeleft.png", 0.5, ramplen=64),
     True])
 
-define wiperight = ImageDissolve("mod_assets/images/menu/wipeleft.png", 0.5, ramplen=64, reverse=True)
+define wiperight = ImageDissolve("images/menu/wipeleft.png", 0.5, ramplen=64, reverse=True)
 
 define wiperight_scene = MultipleTransition([
-    False, ImageDissolve("mod_assets/images/menu/wipeleft.png", 0.5, ramplen=64, reverse=True),
+    False, ImageDissolve("images/menu/wipeleft.png", 0.5, ramplen=64, reverse=True),
     Solid("#000"), Pause(0.25),
-    Solid("#000"), ImageDissolve("mod_assets/images/menu/wipeleft.png", 0.5, ramplen=64, reverse=True),
+    Solid("#000"), ImageDissolve("images/menu/wipeleft.png", 0.5, ramplen=64, reverse=True),
     True])
 
 define tpause = Pause(0.25)

@@ -2,7 +2,8 @@
 
 ### <u>gui</u>
 
-Esta carpeta contiene las imágenes de la interfaz (botones, textbox, ventanas, menú, etc.) del template original de DDLC.
+Esta carpeta contiene las imágenes de la interfaz (botones, textbox, ventanas, menú, etc.),
+las fuentes, el logo del template y los assets base (splash/avisos).
 
 ### <u>core</u>
 
@@ -12,13 +13,16 @@ Esta carpeta contiene los archivos necesarios para que el template funcione. (Im
 
 Esta carpeta contiene los archivos de definición de imágenes, sprites, música, etc. (CGs, Definiciones, Efectos, Splash, Transforms)
 
-### <u>mod_assets</u>
+### <u>images</u>
 
-Esta carpeta almacena todas tus imágenes, música/sfx y más relacionadas con tu juego. (Incluye el logo y la música del menú del template original.)
+Assets del juego: sprites de las dokis (`images/<doki>/`), fondos (`images/bg/`), CGs
+(`images/cg/`) y transiciones (`images/menu/`). **No se incluyen:** provienen de los
+archivos `.rpa` de tu copia de DDLC (ver el README raíz y `docs/IP-GUIDELINES.md`).
 
-### <u>chrs</u>
+### <u>bgm</u> y <u>sfx</u>
 
-Esta carpeta contiene los archivos de personajes (`.chr`) — easter egg del template original. El sistema `restore_characters()` los copia a la carpeta `characters/` según el playthrough.
+Música (`bgm/`) y efectos de sonido (`sfx/`). **No se incluyen:** provienen de
+`audio.rpa` de tu copia de DDLC.
 
 ### gui.rpy y screens.rpy — INCLUIDOS (look del template original)
 
@@ -31,7 +35,6 @@ Notas:
   específica de DDLC (playthrough, autoload, extras, etc.) pero se mantuvieron
   las características del mod original: modo uncensored, nombre del jugador y
   Discord RPC (opcional).
-- La música del menú (audio/1.ogg, audio/m1.ogg) proviene del template original.
 
 Para personalizar colores de la interfaz, edita `gui.rpy` (variables
 `gui.accent_color`, `gui.hover_color`, etc.).

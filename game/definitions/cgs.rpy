@@ -1,8 +1,8 @@
 # cgs.rpy
 # Este archivo define las CGs (imágenes de evento/arte completo a pantalla
-# completa) de tu juego. Las imágenes viven en 'mod_assets/images/cg/'.
+# completa) de tu juego. Las imágenes viven en 'images/cg/'.
 # Ejemplo:
-#     image cg yuri_chocolate = "mod_assets/images/cg/yuri_chocolate.png"
+#     image cg yuri_chocolate = "images/cg/yuri_chocolate.png"
 #
 # Las CGs se muestran en la historia con:
 #     scene cg yuri_chocolate with dissolve_cg

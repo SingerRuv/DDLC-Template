@@ -3,67 +3,7 @@
 # La mayoria son utilidades Python que envuelven la funcionalidad de Ren'Py en una API mas simple.
 
 init python:
-    import os
     import subprocess
-    import platform
-
-    # ----- Archivos de personajes (.chr) --------------------------------------------
-
-    def get_characters_folder():
-        """
-        Devuelve la ruta a la carpeta de personajes.
-        """
-        return os.path.join(config.basedir, "characters").replace("\\", "/")
-
-    def restore_character(characters):
-        """
-        Restaura los personajes indicados en la carpeta 'characters'
-        y elimina cualquier archivo de personaje que no este en la lista.
-        """
-        characters_folder = get_characters_folder()
-        if not os.path.exists(characters_folder):
-            os.makedirs(characters_folder)
-        for existing_file in list(os.listdir(characters_folder)):
-            if existing_file.endswith(".chr"):
-                character_name = os.path.splitext(existing_file)[0]
-                if character_name not in characters:
-                    try:
-                        os.remove(os.path.join(characters_folder, existing_file))
-                    except OSError:
-                        pass
-        for character in characters:
-            character_file_path = os.path.join(characters_folder, character + ".chr")
-            if not os.path.exists(character_file_path):
-                src_path = os.path.join("chrs", character + ".chr").replace("\\", "/")
-                try:
-                    with renpy.open_file(src_path) as src_file:
-                        data = src_file.read()
-                    with open(character_file_path, "wb") as char_file:
-                        char_file.write(data)
-                except Exception:
-                    pass
-
-    def restore_characters():
-        """
-        Restaura todos los personajes segun el playthrough actual.
-        """
-        if persistent.playthrough == 0:
-            restore_character(["monika", "natsuki", "sayori", "yuri"])
-        elif persistent.playthrough in (1, 2):
-            restore_character(["monika", "natsuki", "yuri"])
-        elif persistent.playthrough == 3:
-            restore_character(["monika"])
-        else:
-            restore_character(["natsuki", "sayori", "yuri"])
-
-    def initialize_characters_folder():
-        """
-        Inicializa la carpeta de personajes creandola si no existe.
-        """
-        characters_folder = get_characters_folder()
-        if not os.path.exists(characters_folder):
-            os.makedirs(characters_folder)
-        restore_characters()
 
     def delete_all_saves():
         """

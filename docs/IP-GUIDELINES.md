@@ -20,6 +20,8 @@ Resumen de lo que aplica a quien use este template:
   **https://ddlc.moe**.
 - **Assets oficiales:** no se pueden empaquetar assets oficiales de DDLC
   (arte, música). Deben provenir de la instalación local de DDLC del jugador.
+  **Por eso este template no los incluye:** aportá `audio.rpa`, `fonts.rpa` e
+  `images.rpa` desde tu propia copia de DDLC a la carpeta `game/` (ver abajo).
 - **Gratis, siempre:** los fangames/mods se distribuyen gratis; no se venden ni
   se monetizan.
 - **Donaciones:** se aceptan, pero **fuera del juego** (solo en la página que lo
@@ -44,3 +46,22 @@ https://github.com/Bronya-Rand/DDLCModTemplate2.0
 
 Este template (MiTemplate / DDLC DokifileModTemplate) mantiene esa atribución en
 el splash de arranque y en los créditos.
+
+## Cómo aportar los assets oficiales
+
+Este template **no incluye** los assets de DDLC (cumple las IP Guidelines). Para
+que el juego funcione, copiá estos archivos de tu instalación de DDLC a la
+carpeta `game/`:
+
+```
+audio.rpa
+fonts.rpa
+images.rpa
+```
+
+- `images.rpa` → provee `images/<doki>/…` (sprites), `images/bg/…` (fondos), etc.
+- `audio.rpa` → provee `bgm/…` (música) y `sfx/…` (efectos).
+- `fonts.rpa` → provee `gui/font/…` (fuentes).
+
+Los `.rpa` están excluidos del control de versiones (`.gitignore`) para no
+redistribuirlos. Cada modder/jugador debe colocarlos por su cuenta.

@@ -19,19 +19,19 @@ image end:
     truecenter
     "gui/end.png"
 
-image bg club_day = "mod_assets/images/bg/club.png"
+image bg club_day = "images/bg/club.png"
 
-## Fondos de escenario (los PNGs viven en mod_assets/images/bg/)
+## Fondos de escenario (los PNGs viven en images/bg/)
 
-image bg bedroom = "mod_assets/images/bg/bedroom.png"
-image bg corridor = "mod_assets/images/bg/corridor.png"
-image bg class = "mod_assets/images/bg/class.png"
-image bg closet = "mod_assets/images/bg/closet.png"
-image bg house = "mod_assets/images/bg/house.png"
-image bg kitchen = "mod_assets/images/bg/kitchen.png"
-image bg residential = "mod_assets/images/bg/residential.png"
-image bg sayori_bedroom = "mod_assets/images/bg/sayori_bedroom.png"
-image bg club_skill = "mod_assets/images/bg/club-skill.png"
+image bg bedroom = "images/bg/bedroom.png"
+image bg corridor = "images/bg/corridor.png"
+image bg class = "images/bg/class.png"
+image bg closet = "images/bg/closet.png"
+image bg house = "images/bg/house.png"
+image bg kitchen = "images/bg/kitchen.png"
+image bg residential = "images/bg/residential.png"
+image bg sayori_bedroom = "images/bg/sayori_bedroom.png"
+image bg club_skill = "images/bg/club-skill.png"
 
 ## Variables de personajes
 # Los sprites de cada personaje se declaran en 'definitions/sprites.rpy' con

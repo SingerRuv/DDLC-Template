@@ -131,14 +131,12 @@ init python:
     # Estas variables declaran los archivos que se crearan para tu juego empaquetado.
     # Para anadir otro archivo, crea una variable build.archive como en este ejemplo:
     build.archive("scripts", 'all')
-    build.archive("mod_assets", 'all')
 
     #############################################################
     # Estas variables clasifican archivos para el empaquetado.
     # Asegurate de anadir 'all' a tu build.classify si planeas
     # compilar tu juego en Android, como en este ejemplo.
     #   Ejemplo: build.classify("game/**.pdf", "scripts all")
-    build.classify("game/mod_assets/**", "mod_assets all")
     build.classify("game/presplash.png", "scripts all")
     build.classify("game/**.rpyc", "scripts all")
     build.classify("game/README.md", None)

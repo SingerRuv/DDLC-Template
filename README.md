@@ -28,8 +28,26 @@ efectos, menús configurables y un conjunto de ajustes para el jugador — todo 
 valores por defecto sensatos que el modder puede cambiar sin tocar el motor.
 
 - **Para quién:** quienes quieran empezar un mod con una base sólida y consistente.
-- **Qué trae:** sprites, fondos, audio, transforms, transiciones, efectos, menús y onboarding.
-- **Qué NO trae todavía:** una historia escrita (cada mod pone la suya en `script.rpy`).
+- **Qué trae:** interfaz, sprites, transforms, transiciones, efectos, menús y onboarding.
+- **Qué NO trae:** los assets oficiales de DDLC (ver abajo) ni una historia escrita
+  (cada mod pone la suya en `script.rpy`).
+
+## Assets oficiales (IMPORTANTE)
+
+Por las **[IP Guidelines de Team Salvato](https://teamsalvato.com/ip-guidelines)**,
+este template **no incluye** los assets oficiales de Doki Doki Literature Club
+(arte, música, fuentes). Debés aportarlos desde **tu propia copia de DDLC**.
+
+Copiá estos archivos de tu instalación de DDLC a la carpeta `game/` del proyecto:
+
+```
+audio.rpa
+fonts.rpa
+images.rpa
+```
+
+Con eso, Ren'Py resolverá las rutas `images/…`, `bgm/…`, `sfx/…` y `gui/font/…`.
+Sin ellos, el juego arranca pero **no se verán sprites, fondos ni sonará la música**.
 
 ## Requisitos
 
@@ -44,14 +62,12 @@ valores por defecto sensatos que el modder puede cambiar sin tocar el motor.
 
 1. Instalá **Ren'Py 8.5.x**.
 2. Copiá esta carpeta dentro de `renpy-8.5.x-sdk/Proyectos/` (o donde tengas tus proyectos).
-3. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **DDLC DokifileModTemplate**.
-4. **Launch Project** para probarlo.
+3. **Aportá los assets** de tu copia de DDLC (`audio.rpa`, `fonts.rpa`, `images.rpa`)
+   a la carpeta `game/` (ver sección "Assets oficiales").
+4. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **DDLC DokifileModTemplate**.
+5. **Launch Project** para probarlo.
 
-> El template trae los assets de DDLC ya incluidos. En un futuro commit se
-> quitarán y se documentará cómo colocarlos manualmente desde tu copia de DDLC
-> (`audio.rpa`, `fonts.rpa`, `images.rpa`).
-
-Para escribir tu historia, editá `game/script.rpy`. Guía completa en [`docs/`](docs/).
+Para escribir tu historia, editá `game/script.rpy`.
 
 ## Estructura
 
@@ -72,16 +88,16 @@ game/
 │   ├── persistent.rpy    ← variables que se guardan entre partidas
 │   └── splash.rpy        ← splash, aviso legal y anti-cheat
 ├── core/                 ← el motor del template (no tocar)
-├── mod_assets/           ← TUS imágenes, música y sfx
-│   ├── images/bg/        ← fondos de escenario
-│   ├── images/characters/← sprites de las dokis
-│   ├── images/cg/        ← CGs
-│   └── audio/{music,sfx}/← audio
-├── chrs/                 ← archivos .chr (easter egg)
+├── gui/                  ← interfaz, fuentes y logo del template
+├── images/               ← sprites, fondos y CGs (desde images.rpa)
+├── bgm/                  ← música (desde audio.rpa)
+├── sfx/                  ← efectos de sonido (desde audio.rpa)
 └── tl/                   ← traducciones (ej: tl/spanish)
 
 docs/                     ← documentación para modders
 ```
+
+> Las carpetas `images/`, `bgm/` y `sfx/` se llenan al colocar los `.rpa` de DDLC.
 
 ## Features
 
@@ -98,7 +114,6 @@ docs/                     ← documentación para modders
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
   animaciones del menú y partículas, cambiar su nombre y borrar todos los datos.
 - **Splash + anti-cheat:** aviso legal al primer arranque, autoload y chequeo de partidas.
-- **Easter egg `.chr`:** sistema de archivos de personajes que se restauran según el playthrough.
 - **Onboarding:** documentación en [`docs/`](docs/) para modders.
 
 ## Documentación

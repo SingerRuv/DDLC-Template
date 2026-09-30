@@ -11,8 +11,8 @@ game/cache/
 game/saves/
 *.save
 
-# --- Carpeta de personajes generada en runtime desde game/chrs/ ---
-/characters/
+# --- Assets oficiales de DDLC (los aporta el modder; NO se versionan) ---
+game/*.rpa
 
 # --- Logs y reportes de errores ---
 log.txt
