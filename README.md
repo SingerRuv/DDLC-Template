@@ -28,9 +28,11 @@ efectos, menús configurables y un conjunto de ajustes para el jugador — todo 
 valores por defecto sensatos que el modder puede cambiar sin tocar el motor.
 
 - **Para quién:** quienes quieran empezar un mod con una base sólida y consistente.
-- **Qué trae:** interfaz, sprites, transforms, transiciones, efectos, menús y onboarding.
-- **Qué NO trae:** los assets oficiales de DDLC (ver abajo) ni una historia escrita
-  (cada mod pone la suya en `script.rpy`).
+- **Qué trae:** la interfaz de DDLC, el sistema de sprites (`im.Composite`),
+  transforms, transiciones, efectos, menús configurables y ajustes del jugador.
+- **Qué NO trae:** los **assets oficiales de DDLC** (sprites, fondos, música,
+  fuentes) — se aportan desde tu copia del juego (ver abajo) — ni una historia
+  escrita (cada mod pone la suya en `script.rpy`).
 
 ## Assets oficiales (IMPORTANTE)
 
@@ -114,7 +116,6 @@ docs/                     ← documentación para modders
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
   animaciones del menú y partículas, cambiar su nombre y borrar todos los datos.
 - **Splash + anti-cheat:** aviso legal al primer arranque, autoload y chequeo de partidas.
-- **Onboarding:** documentación en [`docs/`](docs/) para modders.
 
 ## Documentación
 
