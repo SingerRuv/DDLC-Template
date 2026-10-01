@@ -9,7 +9,7 @@ image splash_warning = ParameterizedText(style="splash_text", xalign=0.5, yalign
 # ---- Imagenes del menu principal -----------------------------------------------------
 
 image menu_logo:
-    "gui/DDLCModTemplateLogo.png"
+    "gui/window_icon.png"
     subpixel True
     xcenter 240
     ycenter 120
