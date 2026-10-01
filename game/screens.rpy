@@ -1340,6 +1340,32 @@ style notify_frame:
 style notify_text:
     size gui.notify_text_size
 
+## Aviso de musica del menu de pausa (dev) ######################################
+##
+## Muestra, en modo developer, el nombre de la pista que suena en la pausa.
+## Se incluye desde screen game_menu (menu_screens.rpy), asi que solo aparece
+## al pausar, no en el menu principal.
+
+screen pause_music_notify():
+    if not main_menu and config.developer:
+        frame:
+            style_prefix "notify"
+            xalign 1.0
+            at musica_slide_in
+
+            hbox:
+                spacing 15
+
+                text "🎵":
+                    size 35
+                    yalign 0.5
+                    outlines []
+
+                vbox:
+                    yalign 0.5
+                    text "Ahora suena:" size 16 color "#FFFFFF"
+                    text "[musica_nombre()]" size 22 color "#FFFA8E" bold True
+
 ## Pantalla NVL ##################################################################
 ##
 ## Esta pantalla se usa para el dialogo y menus en modo NVL.

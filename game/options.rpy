@@ -31,6 +31,10 @@ define config.has_voice = False
 # menu principal.
 define config.main_menu_music = audio.t1
 
+# Musica que suena en el menu de pausa. Cambia audio.t9 por la pista que
+# quieras de music.rpy. Para desactivarla, pon None.
+define config.game_menu_music = audio.t9
+
 # Estas variables controlan los efectos de transicion al entrar y salir
 # de un menu.
 #   config.enter_transition controla el efecto al entrar al menu del juego.

@@ -59,3 +59,29 @@ define audio.slap = "sfx/slap.ogg"
 define audio.smack = "sfx/smack.ogg"
 define audio.stab = "sfx/stab.ogg"
 define audio.crack = "sfx/crack.ogg"
+
+# Nombres amigables por archivo (para el aviso de musica de pausa en dev).
+# Agrega una linea por pista; si falta, se usa el nombre del archivo.
+define audio_names = {
+    "bgm/1.ogg": "Main Theme",
+    "bgm/2.ogg": "Ohayou Sayori!",
+    "bgm/3.ogg": "Main Theme (In-Game)",
+    "bgm/4.ogg": "Dreams of Love and Literature",
+    "bgm/5.ogg": "Okay Everyone!",
+    "bgm/6.ogg": "Play With Me",
+    "bgm/7.ogg": "Poem Panic",
+    "bgm/8.ogg": "Daijoubu!",
+    "bgm/9.ogg": "My Feelings",
+    "bgm/10.ogg": "My Confession",
+}
+
+init python:
+    import re as _mus_re
+
+    def musica_nombre():
+        """Nombre amigable de la pista que suena ('' si no hay ninguna)."""
+        jugando = renpy.music.get_playing("music")
+        if not jugando:
+            return ""
+        ruta = _mus_re.sub(r"^<[^>]*>", "", jugando)  # quita el spec <loop ..>
+        return audio_names.get(ruta, ruta.rsplit("/", 1)[-1].rsplit(".", 1)[0])

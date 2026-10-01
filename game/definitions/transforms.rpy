@@ -237,3 +237,11 @@ define wiperight_scene = MultipleTransition([
     True])
 
 define tpause = Pause(0.25)
+
+# Aviso de musica de pausa (dev): entra desde la derecha, se queda y se va.
+transform musica_slide_in:
+    alpha 0.0
+    xoffset 300
+    easein 0.5 alpha 1.0 xoffset -20
+    pause 3.0
+    easeout 0.5 alpha 0.0 xoffset 300

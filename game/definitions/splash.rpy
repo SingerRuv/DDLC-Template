@@ -278,5 +278,12 @@ label before_main_menu:
     $ config.main_menu_music = audio.t1
     return
 
+# Se ejecuta al entrar al menu de pausa, antes de que el motor reproduzca
+# config.game_menu_music. Desactiva la musica de pausa fuera de modo dev.
+label enter_game_menu:
+    if not config.developer:
+        $ config.game_menu_music = None
+    return
+
 label quit:
     return

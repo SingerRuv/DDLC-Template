@@ -307,6 +307,9 @@ screen game_menu(title, scroll=None):
 
     use game_navigation
 
+    # Aviso de musica de pausa (solo dev). Ver screens.rpy.
+    use pause_music_notify
+
     textbutton _("Return"):
         style "return_button"
 
