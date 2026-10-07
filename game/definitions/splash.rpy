@@ -132,7 +132,7 @@ image warning:
 init python:
     # El mensaje de splash por defecto que se muestra al arrancar el juego.
     splash_message_default = (
-        "This game is an unofficial fan game, created by Dokifiles."
+        "This game is an unofficial fan game, created by Broken Dreams Studio."
     )
 
     # Conjunto de mensajes de splash. Se elige uno al azar por arranque.
@@ -186,7 +186,7 @@ label splashscreen:
         "Este es un juego de fans no oficial, no afiliado a Team Salvato ni al autor del DDLC Mod Template, Azariel Del Carmen (bronya_rand)."
         "Está diseñado para jugarse después de haber completado la historia original, y contiene spoilers de la historia original."
         "Se requieren los archivos del juego original para jugar. Doki Doki Literature Club es de Team Salvato y puede descargarse en {a=https://ddlc.moe}https://ddlc.moe{/a}."
-        "Hecho por Studio Dokifiles, basado en el DDLC Mod Template de Azariel Del Carmen (bronya_rand)."
+        "Hecho por Broken Dreams Studio, basado en el DDLC Mod Template de Azariel Del Carmen (bronya_rand)."
 
         menu:
             "By playing this game you agree that you have completed the original story and accept any spoilers contained within."

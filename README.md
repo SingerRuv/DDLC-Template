@@ -2,7 +2,7 @@
 
 # DDLC DokifileModTemplate
 
-**Un template de mods para Doki Doki Literature Club, hecho por Studio Dokifiles.**
+**Un template de mods para Doki Doki Literature Club, hecho por Broken Dreams Studio.**
 
 Basado en el [DDLC Mod Template 2.0](https://github.com/Bronya-Rand/DDLCModTemplate2.0) de Azariel "Bronya Rand" Del Carmen (bronya_rand).
 
@@ -21,7 +21,7 @@ Basado en el [DDLC Mod Template 2.0](https://github.com/Bronya-Rand/DDLCModTempl
 
 DDLC DokifileModTemplate es una base lista para crear mods de DDLC con el look y
 los sistemas del template original, pero con todo **organizado, configurable y
-documentado** para el flujo de trabajo de Studio Dokifiles.
+documentado** para el flujo de trabajo de Broken Dreams Studio.
 
 Incluye la interfaz de DDLC, el sistema de sprites estilo Bronya, transiciones,
 efectos, menús configurables y un conjunto de ajustes para el jugador — todo con
@@ -135,8 +135,8 @@ docs/                     ← documentación para modders
   *"This mod was made possible by bronya_rand's DDLC Mod Template 2.0"*.
 - **Doki Doki Literature Club:** propiedad de **Team Salvato**
   ([IP Guidelines](https://teamsalvato.com/ip-guidelines)).
-- **Autor de este template:** Studio Dokifiles.
+- **Autor de este template:** Broken Dreams Studio.
 
-El código propio de Studio Dokifiles se distribuye bajo licencia **MIT**
+El código propio de Broken Dreams Studio se distribuye bajo licencia **MIT**
 (ver [`LICENSE`](LICENSE)). El código y los assets heredados pertenecen a sus
 autores originales (bronya_rand / Team Salvato).
