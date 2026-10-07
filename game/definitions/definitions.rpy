@@ -22,6 +22,9 @@ image end:
 image bg club_day = "images/bg/club.png"
 
 ## Fondos de escenario (los PNGs viven en images/bg/)
+# Para fondos/CG/audio propios, poné los archivos en 'game/mod_assets/' y
+# definílos aquí apuntando a esa ruta, p. ej.:
+#   image bg mi_cuarto = "mod_assets/images/bg/mi_cuarto.png"
 
 image bg bedroom = "images/bg/bedroom.png"
 image bg corridor = "images/bg/corridor.png"
