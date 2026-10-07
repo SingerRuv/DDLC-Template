@@ -1,13 +1,13 @@
 # Notas de la versión — listas para pegar en GitHub Releases
 
 > Título sugerido del Release:
-> `DDLC DokifileModTemplate 1.0.0 — Primera versión estable`
+> `DDLC BrokenDreamsModTemplate 1.0.0 — Primera versión estable`
 >
 > Tag: `1.0.0`
 
 ---
 
-## DDLC DokifileModTemplate 1.0.0
+## DDLC BrokenDreamsModTemplate 1.0.0
 
 Plantilla para crear mods de DDLC (Ren'Py 8), con el look del DDLC Mod Template
 y sistemas listos para usar.
@@ -30,5 +30,5 @@ y sistemas listos para usar.
 > de Team Salvato). Se aportan desde tu propia copia del juego.
 
 ### Descarga
-Bajá el ZIP adjunto `DDLCDokifileModTemplate-1.0.0.zip` y extraelo dentro de tu
+Bajá el ZIP adjunto `DDLCBrokenDreamsModTemplate-1.0.0.zip` y extraelo dentro de tu
 carpeta `renpy-8.x.x-sdk/proyectos/`.

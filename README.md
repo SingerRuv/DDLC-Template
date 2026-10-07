@@ -1,6 +1,6 @@
 <div align="center">
 
-# DDLC DokifileModTemplate
+# DDLC BrokenDreamsModTemplate
 
 **Un template de mods para Doki Doki Literature Club, hecho por Broken Dreams Studio.**
 
@@ -19,7 +19,7 @@ Basado en el [DDLC Mod Template 2.0](https://github.com/Bronya-Rand/DDLCModTempl
 
 ## Overview
 
-DDLC DokifileModTemplate es una base lista para crear mods de DDLC con el look y
+DDLC BrokenDreamsModTemplate es una base lista para crear mods de DDLC con el look y
 los sistemas del template original, pero con todo **organizado, configurable y
 documentado** para el flujo de trabajo de Broken Dreams Studio.
 
@@ -67,7 +67,7 @@ verán sprites, fondos, interfaz ni sonará la música**.
 2. Copiá esta carpeta dentro de `renpy-8.5.x-sdk/Proyectos/` (o donde tengas tus proyectos).
 3. **Aportá los assets** de tu copia de DDLC (`audio.rpa`, `fonts.rpa`, `images.rpa`)
    a la carpeta `game/` (ver sección "Assets oficiales").
-4. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **DDLC DokifileModTemplate**.
+4. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **DDLC BrokenDreamsModTemplate**.
 5. **Launch Project** para probarlo.
 
 Para escribir tu historia, editá `game/script.rpy`.

@@ -1,6 +1,6 @@
 # Changelog
 
-Todas las versiones notables de **DDLC DokifileModTemplate**.
+Todas las versiones notables de **DDLC BrokenDreamsModTemplate**.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/)
 y el versionado [SemVer](https://semver.org/lang/es/).
 

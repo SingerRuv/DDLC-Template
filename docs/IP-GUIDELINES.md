@@ -44,7 +44,7 @@ This mod was made possible by bronya_rand's DDLC Mod Template 2.0:
 https://github.com/Bronya-Rand/DDLCModTemplate2.0
 ```
 
-Este template (MiTemplate / DDLC DokifileModTemplate) mantiene esa atribución en
+Este template (MiTemplate / DDLC BrokenDreamsModTemplate) mantiene esa atribución en
 el splash de arranque y en los créditos.
 
 ## Cómo aportar los assets oficiales
