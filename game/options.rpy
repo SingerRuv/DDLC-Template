@@ -2,7 +2,7 @@
 # Este archivo personaliza que es tu juego y como arranca y se compila!
 
 # Esto controla como se llama tu juego.
-define config.name = "DDLC DokifileModTemplate"
+define config.name = "DDLC BrokenDreamsModTemplate"
 
 # Esto controla si quieres que el nombre del juego se vea en el menu principal.
 # Si el nombre es largo, se sugiere desactivarlo.
@@ -16,7 +16,7 @@ define config.version = "0.0.0"
 # Nota:
 #   El nombre de build es solo ASCII, sin numeros, espacios ni punto y coma.
 #   Ejemplo: Mi Nuevo Juego -> MiNuevoJuego
-define build.name = "DDLCDokifileModTemplate"
+define build.name = "DDLCBrokenDreamsModTemplate"
 
 # Esto configura si tu juego tiene efectos de sonido.
 define config.has_sound = True
@@ -74,7 +74,7 @@ default preferences.sfx_volume = 0.75
 #   Windows: %AppData%/RenPy/
 #   macOS: $HOME/Library/RenPy/ (desoculta la carpeta Library)
 #   Linux: $HOME/.renpy/
-define config.save_directory = "DDLCDokifileModTemplate"
+define config.save_directory = "DDLCBrokenDreamsModTemplate"
 
 # Esto controla el icono de la ventana de tu juego.
 define config.window_icon = "gui/window_icon.png"
@@ -129,7 +129,7 @@ init python:
 
 init python:
     # Estas variables declaran los paquetes para compilar tu juego.
-    build.package("DDLCDokifileModTemplate", 'zip', 'windows linux mac renpy mod',
+    build.package("DDLCBrokenDreamsModTemplate", 'zip', 'windows linux mac renpy mod',
         description="Ren'Py 8 Game")
 
     # Estas variables declaran los archivos que se crearan para tu juego empaquetado.
