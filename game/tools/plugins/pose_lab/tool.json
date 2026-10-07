@@ -1,7 +1,7 @@
 {
   "titulo": "PoseLab",
   "descripcion": "Arma poses leyendo las definiciones de sprites del proyecto (uniforme, casual, cuerpo completo) y genera el codigo show listo para tu guion.",
-  "autor": "DDLC DokifileModTemplate",
+  "autor": "DDLC BrokenDreamsModTemplate",
   "version": "1.0",
   "screen": "pose_lab",
   "capturas": []
