@@ -1,0 +1,26 @@
+name: Publicar template
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build ZIP
+        run: |
+          TAG="${{ github.event.release.tag_name || github.ref_name }}"
+          VER="${TAG#v}"
+          mkdir -p ZIPs
+          git archive --format=zip -o "ZIPs/DDLCDokifileModTemplate-${VER}.zip" HEAD
+
+      - name: Upload
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ZIPs/*.zip

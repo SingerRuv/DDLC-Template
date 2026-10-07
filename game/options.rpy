@@ -9,7 +9,7 @@ define config.name = "DDLC DokifileModTemplate"
 define gui.show_name = True
 
 # Esto controla el numero de version de tu juego.
-define config.version = "0.0.0"
+define config.version = "1.0.0"
 
 # Esto controla el nombre del build al empaquetar tu juego
 # en el Launcher de Ren'Py.
