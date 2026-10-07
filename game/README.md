@@ -24,11 +24,24 @@ archivos `.rpa` de tu copia de DDLC (ver el README raíz y `docs/IP-GUIDELINES.m
 Música (`bgm/`) y efectos de sonido (`sfx/`). **No se incluyen:** provienen de
 `audio.rpa` de tu copia de DDLC.
 
-### gui.rpy y screens.rpy — INCLUIDOS (look del template original)
+### <u>mod_assets</u>
 
-`gui.rpy`, `screens.rpy` y la carpeta `gui/` (con las imágenes de la interfaz del
-template original de DDLC, extraídas de sus archivos RPA) replican el look del
-menú y la interfaz del mod template original.
+Carpeta para **tus assets propios** (los oficiales de DDLC salen de los `.rpa`).
+Contiene `images/bg`, `images/cg`, `images/<personaje>` y `audio/bgm`, `audio/sfx`.
+Se referencian con la ruta completa `"mod_assets/..."`. Ver `mod_assets/README.md`
+y `mod_assets/ejemplo.rpy`.
+
+### gui.rpy y screens.rpy — el look del template
+
+`gui.rpy`, `screens.rpy` y la carpeta `gui/` definen el look del menú y la
+interfaz. Los assets `gui/…` (menú, botones, marcos, fuentes, sonidos de la
+interfaz) **no se versionan:** se resuelven del `.rpa` del jugador
+(`images.rpa`, `fonts.rpa`, `audio.rpa`). Solo quedan versionados los assets
+propios del template (`gui/buttons/btn_example_*`).
+
+Para reemplazar cualquier asset de la interfaz por uno propio, poné el archivo
+en `mod_assets/` con la **misma ruta** (`gui/…`): los archivos sueltos tienen
+prioridad sobre el `.rpa`.
 
 Notas:
 - El `screens.rpy` se adaptó para template genérico: se limpió la lógica

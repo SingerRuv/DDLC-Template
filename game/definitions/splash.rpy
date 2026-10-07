@@ -49,7 +49,7 @@ image menu_particles:
     xpos 224
     ypos 104
     ParticleBurst("gui/menu_particle.png", explodeTime=0, numParticles=40,
-                  particleTime=2.0, particleXSpeed=3, particleYSpeed=3).sm
+        particleTime=2.0, particleXSpeed=3, particleYSpeed=3).sm
     particle_fadeout
 
 transform particle_fadeout:
@@ -107,14 +107,14 @@ transform menu_art_move(z, x, z2):
 
 # ---- Fondos del splash ---------------------------------------------------
 
-image tos = "gui/base_game/warning.png"
-image tos2 = "gui/base_game/warning2.png"
+image tos = "images/bg/warning.png"
+image tos2 = "images/bg/warning2.png"
 
 image intro:
     truecenter
     "white"
     0.5
-    "gui/base_game/splash.png" with Dissolve(0.5, alpha=True)
+    "images/bg/splash.png" with Dissolve(0.5, alpha=True)
     2.5
     "white" with Dissolve(0.5, alpha=True)
     0.5

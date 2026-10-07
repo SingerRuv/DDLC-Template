@@ -32,6 +32,8 @@ Desktop.ini
 .DS_Store
 *.sublime-workspace
 *.sublime-project
+# La config de editor vive solo en la raíz; ignora duplicados dentro de game/.
+game/.vscode/
 
 # --- Empaquetado ---
 /dist/

@@ -1,6 +1,6 @@
 {
   "titulo": "PoseLab",
-  "descripcion": "Arma poses de los personajes y genera el codigo show/image listo para pegar en tu guion y en definitions/sprites.rpy.",
+  "descripcion": "Arma poses leyendo las definiciones de sprites del proyecto (uniforme, casual, cuerpo completo) y genera el codigo show listo para tu guion.",
   "autor": "DDLC DokifileModTemplate",
   "version": "1.0",
   "screen": "pose_lab",

@@ -31,8 +31,8 @@ valores por defecto sensatos que el modder puede cambiar sin tocar el motor.
 - **Qué trae:** la interfaz de DDLC, el sistema de sprites (`im.Composite`),
   transforms, transiciones, efectos, menús configurables y ajustes del jugador.
 - **Qué NO trae:** los **assets oficiales de DDLC** (sprites, fondos, música,
-  fuentes) — se aportan desde tu copia del juego (ver abajo) — ni una historia
-  escrita (cada mod pone la suya en `script.rpy`).
+  fuentes **y la interfaz `gui/…`**) — se aportan desde tu copia del juego (ver
+  abajo) — ni una historia escrita (cada mod pone la suya en `script.rpy`).
 
 ## Assets oficiales (IMPORTANTE)
 
@@ -48,8 +48,9 @@ fonts.rpa
 images.rpa
 ```
 
-Con eso, Ren'Py resolverá las rutas `images/…`, `bgm/…`, `sfx/…` y `gui/font/…`.
-Sin ellos, el juego arranca pero **no se verán sprites, fondos ni sonará la música**.
+Con eso, Ren'Py resolverá las rutas `images/…`, `bgm/…`, `sfx/…` y **`gui/…`**
+(interfaz, menú, botones y fuentes). Sin ellos, el juego arranca pero **no se
+verán sprites, fondos, interfaz ni sonará la música**.
 
 ## Requisitos
 
@@ -94,12 +95,14 @@ game/
 ├── images/               ← sprites, fondos y CGs (desde images.rpa)
 ├── bgm/                  ← música (desde audio.rpa)
 ├── sfx/                  ← efectos de sonido (desde audio.rpa)
+├── mod_assets/           ← tus assets propios (fondos, CGs, audio, sprites)
 └── tl/                   ← traducciones (ej: tl/spanish)
 
 docs/                     ← documentación para modders
 ```
 
 > Las carpetas `images/`, `bgm/` y `sfx/` se llenan al colocar los `.rpa` de DDLC.
+> Tus propios assets van en `mod_assets/` (ver `game/mod_assets/README.md`).
 
 ## Features
 

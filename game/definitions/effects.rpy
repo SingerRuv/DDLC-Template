@@ -109,15 +109,17 @@ init python:
             self.stars.append((s, ySpeed, xSpeed, pTime))
 
         def update(self, st):
-            if self.explodeTime > 0:
-                if st < self.explodeTime:
-                    return 0
-                if not self.timePassed:
-                    self.timePassed = st
-            for s, ySpeed, xSpeed, pTime in self.stars:
-                s.x += xSpeed
-                s.y += ySpeed
-                ySpeed += self.gravity / 60.0
+            # Posición absoluta calculada desde `st` (no acumulada), con gravedad
+            # para formar el arco, y vida `particleTime` (destroy + pop al expirar).
+            sindex = 0
+            for s, ySpeed, xSpeed, particleTime in self.stars:
+                if st < particleTime:
+                    s.x = xSpeed * 120 * (st + 0.20)
+                    s.y = ySpeed * 120 * (st + 0.20) + (self.gravity * st * st)
+                else:
+                    s.destroy()
+                    self.stars.pop(sindex)
+                sindex += 1
             return 0
 
     class Piece(python_object):

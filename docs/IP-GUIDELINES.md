@@ -59,9 +59,16 @@ fonts.rpa
 images.rpa
 ```
 
-- `images.rpa` → provee `images/<doki>/…` (sprites), `images/bg/…` (fondos), etc.
-- `audio.rpa` → provee `bgm/…` (música) y `sfx/…` (efectos).
+- `images.rpa` → provee `images/<doki>/…` (sprites), `images/bg/…` (fondos,
+  splash y avisos) e **`gui/…`** (interfaz: menú, botones, marcos, iconos).
+- `audio.rpa` → provee `bgm/…` (música), `sfx/…` (efectos) y `gui/sfx/…`
+  (sonidos de la interfaz).
 - `fonts.rpa` → provee `gui/font/…` (fuentes).
+
+> El template **no versiona** ninguno de esos assets: se resuelven del `.rpa` del
+> jugador usando la misma ruta `gui/…`. Para personalizar la interfaz, reemplazá
+> los archivos en `mod_assets/` con la misma ruta (los sueltos tienen prioridad
+> sobre el `.rpa`).
 
 Los `.rpa` están excluidos del control de versiones (`.gitignore`) para no
 redistribuirlos. Cada modder/jugador debe colocarlos por su cuenta.
