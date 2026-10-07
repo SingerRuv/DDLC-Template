@@ -21,10 +21,12 @@ label start:
     # Para añadir un personaje, usa el siguiente ejemplo:
     #   $ mi_personaje = "Mi Nombre".
     # ¡No olvides añadir el personaje en 'definitions.rpy'!
-    $ s_name = "Sayori"
-    $ m_name = "Monika"
-    $ n_name = "Natsuki"
-    $ y_name = "Yuri"
+    # Empiezan ocultos; revelalos en tu historia donde corresponda
+    # (p. ej. $ s_name = "Sayori").
+    $ s_name = "???"
+    $ m_name = "Chica 3"
+    $ n_name = "Chica 2"
+    $ y_name = "Chica 1"
 
     # Esta variable controla si el menú rápido del cuadro de texto está activado.
     $ quick_menu = True
