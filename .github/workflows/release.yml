@@ -18,7 +18,9 @@ jobs:
           TAG="${{ github.event.release.tag_name || github.ref_name }}"
           VER="${TAG#v}"
           mkdir -p ZIPs
-          git archive --format=zip -o "ZIPs/DDLCBrokenDreamsModTemplate-${VER}.zip" HEAD
+          git archive --format=zip \
+            --prefix="DDLCBrokenDreamsModTemplate-${VER}/" \
+            -o "ZIPs/DDLCBrokenDreamsModTemplate-${VER}.zip" HEAD
 
       - name: Upload
         uses: softprops/action-gh-release@v3

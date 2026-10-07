@@ -1,0 +1,8 @@
+# Archivos de repositorio que NO van en el ZIP de distribucion.
+# `git archive` (usado por el workflow de GitHub Releases) los excluye.
+.github/       export-ignore
+.gitattributes export-ignore
+.gitignore     export-ignore
+.vscode/       export-ignore
+CHANGELOG.md   export-ignore
+RELEASE.md     export-ignore
