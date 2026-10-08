@@ -28,8 +28,9 @@ Música (`bgm/`) y efectos de sonido (`sfx/`). **No se incluyen:** provienen de
 
 Carpeta para **tus assets propios** (los oficiales de DDLC salen de los `.rpa`).
 Contiene `images/bg`, `images/cg`, `images/<personaje>` y `audio/bgm`, `audio/sfx`.
-Se referencian con la ruta completa `"mod_assets/..."`. Ver `mod_assets/README.md`
-y `mod_assets/ejemplo.rpy`.
+Se referencian con la ruta completa `"mod_assets/..."` o con nombre corto
+(`"images/bg/mi_cuarto.png"`), porque `mod_assets` se agrega al searchpath en
+`core/0imports.rpy`. Ver `mod_assets/README.md`.
 
 ### gui.rpy y screens.rpy — el look del template
 
@@ -41,7 +42,8 @@ propios del template (`gui/buttons/btn_example_*`).
 
 Para reemplazar cualquier asset de la interfaz por uno propio, poné el archivo
 en `mod_assets/` con la **misma ruta** (`gui/…`): los archivos sueltos tienen
-prioridad sobre el `.rpa`.
+prioridad sobre el `.rpa`. La prioridad de resolución es: archivo suelto en
+`game/` > archivo suelto en `mod_assets/` > `.rpa`.
 
 Notas:
 - El `screens.rpy` se adaptó para template genérico: se limpió la lógica

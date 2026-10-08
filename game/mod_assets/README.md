@@ -1,8 +1,10 @@
 # `mod_assets/` — carpeta de assets propios
 
 Aquí van **solo los archivos** (PNG, OGG…) de tus assets propios, no los de DDLC.
-Es una carpeta de orden: el motor de Ren'Py resuelve cualquier archivo relativo a
-`game/`, así que un asset aquí se referencia con la ruta completa `"mod_assets/..."`.
+Es una carpeta de orden: `mod_assets` se agrega al searchpath de Ren'Py (en
+`core/0imports.rpy`), así que un asset aquí se puede referenciar con la ruta
+completa `"mod_assets/..."` **o** con nombre corto (`"images/bg/mi_cuarto.png"`),
+igual que los de DDLC.
 
 > **Importante:** aquí **solo se guardan archivos**. Las *definiciones*
 > (`image`, `define audio`, `im.Composite`, etc.) van en
@@ -53,3 +55,7 @@ image mi_pj 1a = im.Composite((960, 960), (0, 0), "mod_assets/images/mi_pj/1l.pn
 > Nota: los assets **oficiales de DDLC** vienen de los `.rpa` y se referencian
 > como `"images/..."`, `"bgm/..."`, `"sfx/..."` (sin `mod_assets/`). No los
 > mezcles con los tuyos.
+>
+> Prioridad de resolución: archivo suelto en `game/` > archivo suelto en
+> `mod_assets/` > `.rpa`. Por eso podés pisar un asset del `.rpa` (o de DDLC)
+> poniendo tu archivo en `mod_assets/` con la misma ruta.
