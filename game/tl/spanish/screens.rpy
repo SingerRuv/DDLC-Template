@@ -179,47 +179,47 @@ translate spanish strings:
 
     # game/screens.rpy:729
     old "Display"
-    new "Display"
+    new "Pantalla"
 
     # game/screens.rpy:737
     old "Rollback Side"
-    new "Rollback Side"
+    new "Lado de Retroceso"
 
     # game/screens.rpy:744
     old "Skip"
-    new "Skip"
+    new "Saltar"
 
     # game/screens.rpy:746
     old "After Choices"
-    new "After Choices"
+    new "Tras Elecciones"
 
     # game/screens.rpy:758
     old "Text Speed"
-    new "Text Speed"
+    new "Velocidad de Texto"
 
     # game/screens.rpy:768
     old "Auto-Forward Time"
-    new "Auto-Forward Time"
+    new "Tiempo de Avance Automático"
 
     # game/screens.rpy:780
     old "Music Volume"
-    new "Music Volume"
+    new "Volumen de Música"
 
     # game/screens.rpy:792
     old "Sound Volume"
-    new "Sound Volume"
+    new "Volumen de Sonido"
 
     # game/screens.rpy:806
     old "Voice Volume"
-    new "Voice Volume"
+    new "Volumen de Voz"
 
     # game/screens.rpy:821
     old "Mute All"
-    new "Mute All"
+    new "Silenciar Todo"
 
     # game/screens.rpy:1740
     old "Return to Main Menu"
-    new "Return to Main Menu"
+    new "Volver al Menú Principal"
 
 # TODO: Translation updated at 2026-09-29
 
