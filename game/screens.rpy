@@ -893,14 +893,17 @@ screen preferences():
         vbox:
             xoffset 50
 
-            hbox:
-                style_prefix "navigation"
-                xoffset 150
-                spacing 5
-                textbutton _("DDLC Settings") action [SetScreenVariable("ddlc_settings", True), SensitiveIf(not ddlc_settings)]
-                textbutton _("Template Settings") action [SetScreenVariable("ddlc_settings", False), SensitiveIf(ddlc_settings)]
-            
-            null height 10
+            # Las pestañas (DDLC / Template Settings) son solo para el modder:
+            # al publicar (config.developer = False) queda únicamente la de DDLC.
+            if config.developer:
+                hbox:
+                    style_prefix "navigation"
+                    xoffset 150
+                    spacing 5
+                    textbutton _("DDLC Settings") action [SetScreenVariable("ddlc_settings", True), SensitiveIf(not ddlc_settings)]
+                    textbutton _("Template Settings") action [SetScreenVariable("ddlc_settings", False), SensitiveIf(ddlc_settings)]
+
+                null height 10
 
             if ddlc_settings:
                 use ddlc_preferences
