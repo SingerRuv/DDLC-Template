@@ -363,7 +363,7 @@ translate spanish strings:
 
     # 00library.rpy:150
     old "bar"
-    new "bar"
+    new "barra"
 
     # 00library.rpy:151
     old "selected"
@@ -431,11 +431,11 @@ translate spanish strings:
 
     # 00preferences.rpy:256
     old "joystick"
-    new "joystick"
+    new "mando"
 
     # 00preferences.rpy:256
     old "joystick..."
-    new "joystick..."
+    new "mando..."
 
     # 00preferences.rpy:263
     old "skip"
@@ -615,11 +615,11 @@ translate spanish strings:
 
     # _developer\developer.rpym:63
     old "Image Attributes"
-    new "Image Attributes"
+    new "Atributos de imagen"
 
     # _developer\developer.rpym:90
     old "[name] [attributes] (hidden)"
-    new "[name] [attributes] (hidden)"
+    new "[name] [attributes] (oculto)"
 
     # _developer\developer.rpym:94
     old "[name] [attributes]"
@@ -631,11 +631,11 @@ translate spanish strings:
 
     # _developer\developer.rpym:154
     old "Hide deleted"
-    new "Hide deleted"
+    new "Ocultar eliminados"
 
     # _developer\developer.rpym:154
     old "Show deleted"
-    new "Show deleted"
+    new "Mostrar eliminados"
 
     # _developer\developer.rpym:278
     old "Return to the developer menu"
@@ -1230,15 +1230,15 @@ translate spanish strings:
 
     # renpy/common/000statements.rpy:28
     old "Click to play the video."
-    new "Click to play the video."
+    new "Haz clic para reproducir el vídeo."
 
     # renpy/common/00accessibility.rpy:137
     old "Self-voicing support is limited when using a touch screen."
-    new "Self-voicing support is limited when using a touch screen."
+    new "El soporte de voz automática es limitado cuando se utiliza una pantalla táctil."
 
     # renpy/common/00accessibility.rpy:180
     old "Mono Audio"
-    new "Mono Audio"
+    new "Audio Mono"
 
     # renpy/common/00accessibility.rpy:246
     old "Kerning"
@@ -1246,269 +1246,269 @@ translate spanish strings:
 
     # renpy/common/00accessibility.rpy:267
     old "Accessibility Menu. Use up and down arrows to navigate, and enter to activate buttons and bars."
-    new "Accessibility Menu. Use up and down arrows to navigate, and enter to activate buttons and bars."
+    new "Menú de accesibilidad. Utilice las flechas arriba y abajo para navegar y la tecla Entrar para activar botones y barras."
 
     # renpy/common/00accessibility.rpy:288
     old "Self-Voicing and Audio"
-    new "Self-Voicing and Audio"
+    new "Voz Automática y Audio"
 
     # renpy/common/00accessibility.rpy:292
     old "Text"
-    new "Text"
+    new "Texto"
 
     # renpy/common/00accessibility.rpy:296
     old "Return"
-    new "Return"
+    new "Volver"
 
     # renpy/common/00action_file.rpy:675
     old "Page {}"
-    new "Page {}"
+    new "Página {}"
 
     # renpy/common/00action_file.rpy:675
     old "Automatic saves"
-    new "Automatic saves"
+    new "Guardados automáticos"
 
     # renpy/common/00action_file.rpy:675
     old "Quick saves"
-    new "Quick saves"
+    new "Guardados rápidos"
 
     # renpy/common/00action_other.rpy:786
     old "Open [text] directory."
-    new "Open [text] directory."
+    new "Abrir la carpeta [text]."
 
     # renpy/common/00director.rpy:1753
     old "Click to toggle attribute, right click to toggle negative attribute."
-    new "Click to toggle attribute, right click to toggle negative attribute."
+    new "Clic para cambiar el atributo, clic derecho para cambiar el atributo a negativo."
 
     # renpy/common/00director.rpy:1776
     old "Click to set transform, right click to add to transform list."
-    new "Click to set transform, right click to add to transform list."
+    new "Clic para establecer la transformación, clic derecho para añadir a la lista de transformaciones."
 
     # renpy/common/00director.rpy:1777
     old "Customize director.transforms to add more transforms."
-    new "Customize director.transforms to add more transforms."
+    new "Modifica director.transforms para añadir más transformaciones."
 
     # renpy/common/00director.rpy:1800
     old "Click to set, right click to add to behind list."
-    new "Click to set, right click to add to behind list."
+    new "Clic para fijar, clic derecho para añadir a la lista de detrás."
 
     # renpy/common/00director.rpy:1822
     old "Click to set."
-    new "Click to set."
+    new "Haz clic para ajustar."
 
     # renpy/common/00director.rpy:1823
     old "Customize director.transitions to add more transitions."
-    new "Customize director.transitions to add more transitions."
+    new "Modifica director.transitions para añadir más transiciones."
 
     # renpy/common/00director.rpy:1846
     old "Customize director.audio_channels to add more channels."
-    new "Customize director.audio_channels to add more channels."
+    new "Modifica director.audio_channels para añadir más canales."
 
     # renpy/common/00gui.rpy:459
     old "This save was created on a different device. Maliciously constructed save files can harm your computer. Do you trust this save's creator and everyone who could have changed the file?"
-    new "This save was created on a different device. Maliciously constructed save files can harm your computer. Do you trust this save's creator and everyone who could have changed the file?"
+    new "Este archivo se creó en otro dispositivo. Los archivos de guardado creados maliciosamente pueden dañar tu computadora. ¿Confías en quien creó este archivo y en todos los que podrían haberlo modificado?"
 
     # renpy/common/00gui.rpy:460
     old "Do you trust the device the save was created on? You should only choose yes if you are the device's sole user."
-    new "Do you trust the device the save was created on? You should only choose yes if you are the device's sole user."
+    new "¿Confías en el dispositivo en el que se creó el archivo de guardado? Solo debes elegir sí si eres el único usuario del dispositivo."
 
     # renpy/common/00preferences.rpy:445
     old "self voicing enable"
-    new "self voicing enable"
+    new "voz automática activada"
 
     # renpy/common/00preferences.rpy:447
     old "self voicing disable"
-    new "self voicing disable"
+    new "voz automática desactivada"
 
     # renpy/common/00preferences.rpy:462
     old "clipboard voicing enable"
-    new "clipboard voicing enable"
+    new "voz del portapapeles activada"
 
     # renpy/common/00preferences.rpy:464
     old "clipboard voicing disable"
-    new "clipboard voicing disable"
+    new "voz del portapapeles desactivada"
 
     # renpy/common/00preferences.rpy:471
     old "debug voicing enable"
-    new "debug voicing enable"
+    new "depuración de voz activada"
 
     # renpy/common/00preferences.rpy:473
     old "debug voicing disable"
-    new "debug voicing disable"
+    new "depuración de voz desactivada"
 
     # renpy/common/00preferences.rpy:551
     old "audio when minimized"
-    new "audio when minimized"
+    new "audio al minimizar"
 
     # renpy/common/00preferences.rpy:560
     old "audio when unfocused"
-    new "audio when unfocused"
+    new "audio sin foco"
 
     # renpy/common/00preferences.rpy:569
     old "web cache preload"
-    new "web cache preload"
+    new "precarga de la caché web"
 
     # renpy/common/00preferences.rpy:584
     old "voice after game menu"
-    new "voice after game menu"
+    new "voz tras el menú del juego"
 
     # renpy/common/00preferences.rpy:593
     old "restore window position"
-    new "restore window position"
+    new "restaurar la posición de la ventana"
 
     # renpy/common/00preferences.rpy:602
     old "mono audio"
-    new "mono audio"
+    new "audio mono"
 
     # renpy/common/00preferences.rpy:611
     old "font kerning"
-    new "font kerning"
+    new "interletrado de fuente"
 
     # renpy/common/00preferences.rpy:619
     old "reset"
-    new "reset"
+    new "restablecer"
 
     # renpy/common/00preferences.rpy:632
     old "main volume"
-    new "main volume"
+    new "volumen principal"
 
     # renpy/common/00preferences.rpy:636
     old "mute main"
-    new "mute main"
+    new "silenciar volumen principal"
 
     # renpy/common/00speechbubble.rpy:420
     old "Speech Bubble Editor"
-    new "Speech Bubble Editor"
+    new "Editor de globos de diálogo"
 
     # renpy/common/00speechbubble.rpy:425
     old "(hide)"
-    new "(hide)"
+    new "(ocultar)"
 
     # renpy/common/00speechbubble.rpy:436
     old "(clear retained bubbles)"
-    new "(clear retained bubbles)"
+    new "(borrar burbujas retenidas)"
 
     # renpy/common/00sync.rpy:70
     old "Sync downloaded."
-    new "Sync downloaded."
+    new "Sincronización descargada."
 
     # renpy/common/00sync.rpy:184
     old "Could not connect to the Ren'Py Sync server."
-    new "Could not connect to the Ren'Py Sync server."
+    new "No se pudo conectar al servidor de Ren'Py Sync."
 
     # renpy/common/00sync.rpy:186
     old "The Ren'Py Sync server timed out."
-    new "The Ren'Py Sync server timed out."
+    new "Se agotó el tiempo de espera del servidor de Ren'Py Sync."
 
     # renpy/common/00sync.rpy:188
     old "An unknown error occurred while connecting to the Ren'Py Sync server."
-    new "An unknown error occurred while connecting to the Ren'Py Sync server."
+    new "Se produjo un error desconocido al conectarse al servidor de Ren'Py Sync."
 
     # renpy/common/00sync.rpy:204
     old "The Ren'Py Sync server does not have a copy of this sync. The sync ID may be invalid, or it may have timed out."
-    new "The Ren'Py Sync server does not have a copy of this sync. The sync ID may be invalid, or it may have timed out."
+    new "El servidor de Ren'Py Sync no tiene una copia de esta sincronización. Es posible que el ID de sincronización no sea válido, o que se haya agotado el tiempo de espera."
 
     # renpy/common/00sync.rpy:305
     old "Please enter the sync ID you generated.\nNever enter a sync ID you didn't create yourself."
-    new "Please enter the sync ID you generated.\nNever enter a sync ID you didn't create yourself."
+    new "Introduce el ID de sincronización que generaste.\nNunca introduzcas un ID de sincronización que no hayas creado tú."
 
     # renpy/common/00sync.rpy:324
     old "The sync ID is not in the correct format."
-    new "The sync ID is not in the correct format."
+    new "El ID de sincronización no tiene el formato correcto."
 
     # renpy/common/00sync.rpy:344
     old "The sync could not be decrypted."
-    new "The sync could not be decrypted."
+    new "No se pudo descifrar la sincronización."
 
     # renpy/common/00sync.rpy:367
     old "The sync belongs to a different game."
-    new "The sync belongs to a different game."
+    new "La sincronización pertenece a un juego diferente."
 
     # renpy/common/00sync.rpy:372
     old "The sync contains a file with an invalid name."
-    new "The sync contains a file with an invalid name."
+    new "La sincronización contiene un archivo con un nombre no válido."
 
     # renpy/common/00sync.rpy:425
     old "This will upload your saves to the {a=https://sync.renpy.org}Ren'Py Sync Server{/a}.\nDo you want to continue?"
-    new "This will upload your saves to the {a=https://sync.renpy.org}Ren'Py Sync Server{/a}.\nDo you want to continue?"
+    new "Esto subirá tus partidas guardadas al {a=https://sync.renpy.org}servidor de Ren'Py Sync{/a}.\n¿Quieres continuar?"
 
     # renpy/common/00sync.rpy:457
     old "Enter Sync ID"
-    new "Enter Sync ID"
+    new "Introducir ID de sincronización"
 
     # renpy/common/00sync.rpy:468
     old "This will contact the {a=https://sync.renpy.org}Ren'Py Sync Server{/a}."
-    new "This will contact the {a=https://sync.renpy.org}Ren'Py Sync Server{/a}."
+    new "Esto contactará con el {a=https://sync.renpy.org}servidor de Ren'Py Sync{/a}."
 
     # renpy/common/00sync.rpy:498
     old "Sync Success"
-    new "Sync Success"
+    new "Sincronización exitosa"
 
     # renpy/common/00sync.rpy:501
     old "The Sync ID is:"
-    new "The Sync ID is:"
+    new "El ID de sincronización es:"
 
     # renpy/common/00sync.rpy:507
     old "You can use this ID to download your save on another device.\nThis sync will expire in an hour.\nRen'Py Sync is supported by {a=https://www.renpy.org/sponsors.html}Ren'Py's Sponsors{/a}."
-    new "You can use this ID to download your save on another device.\nThis sync will expire in an hour.\nRen'Py Sync is supported by {a=https://www.renpy.org/sponsors.html}Ren'Py's Sponsors{/a}."
+    new "Puedes usar este ID para descargar tu partida en otro dispositivo.\nEsta sincronización caducará en una hora.\nRen'Py Sync cuenta con el apoyo de {a=https://www.renpy.org/sponsors.html}los patrocinadores de Ren'Py{/a}."
 
     # renpy/common/00sync.rpy:536
     old "Sync Error"
-    new "Sync Error"
+    new "Error de sincronización"
 
     # renpy/common/00translation.rpy:63
     old "Translation identifier: [identifier]"
-    new "Translation identifier: [identifier]"
+    new "Identificador de traducción: [identifier]"
 
     # renpy/common/00translation.rpy:84
     old " translates [tl.filename]:[tl.linenumber]"
-    new " translates [tl.filename]:[tl.linenumber]"
+    new " traduce [tl.filename]:[tl.linenumber]"
 
     # renpy/common/00translation.rpy:101
     old "\n{color=#fff}Copied to clipboard.{/color}"
-    new "\n{color=#fff}Copied to clipboard.{/color}"
+    new "\n{color=#fff}Copiado al portapapeles.{/color}"
 
     # renpy/common/00updater.rpy:415
     old "No update methods found."
-    new "No update methods found."
+    new "No se encontraron métodos de actualización."
 
     # renpy/common/00updater.rpy:462
     old "Could not download file list: "
-    new "Could not download file list: "
+    new "No se pudo descargar la lista de archivos: "
 
     # renpy/common/00updater.rpy:465
     old "File list digest does not match."
-    new "File list digest does not match."
+    new "El resumen de la lista de archivos no coincide."
 
     # renpy/common/00updater.rpy:1986
     old "Preparing to download the game data."
-    new "Preparing to download the game data."
+    new "Preparando la descarga de los datos del juego."
 
     # renpy/common/00updater.rpy:1988
     old "Downloading the game data."
-    new "Downloading the game data."
+    new "Descargando los datos del juego."
 
     # renpy/common/00updater.rpy:1990
     old "The game data has been downloaded."
-    new "The game data has been downloaded."
+    new "Los datos del juego se han descargado."
 
     # renpy/common/00updater.rpy:1992
     old "An error occurred when trying to download game data:"
-    new "An error occurred when trying to download game data:"
+    new "Se produjo un error al intentar descargar los datos del juego:"
 
     # renpy/common/00updater.rpy:1997
     old "This game cannot be run until the game data has been downloaded."
-    new "This game cannot be run until the game data has been downloaded."
+    new "Este juego no puede ejecutarse hasta que se hayan descargado los datos del juego."
 
     # renpy/common/00updater.rpy:2004
     old "Retry"
-    new "Retry"
+    new "Reintentar"
 
     # renpy/common/00gltest.rpy:110
     old "Gamepad"
-    new "Gamepad"
+    new "Mando"
 
     # renpy/common/00gltest.rpy:126
     old "Calibrate"
-    new "Calibrate"
+    new "Calibrar"
 
