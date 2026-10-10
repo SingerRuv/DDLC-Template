@@ -196,7 +196,7 @@ define gui.choice_button_text_idle_color = "#000"
 define gui.choice_button_text_hover_color = "#fa9"
 
 ## Botones de ranura de archivo
-# Esto controla los botones de ranura en el menu de guardar/cargar. 
+# Esto controla los botones de ranura en el menu de guardar/cargar.
 
 define gui.slot_button_width = 276
 define gui.slot_button_height = 206
@@ -390,7 +390,7 @@ init python:
         gui.navigation_spacing = 6
         gui.pref_button_spacing = 10
 
-        ## Historial 
+        ## Historial
         gui.history_height = None
         gui.history_text_width = 740
 

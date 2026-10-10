@@ -1,8 +1,9 @@
 # ¡Este archivo define cosas importantes para tu juego!
 
 # Esta variable declara si se activan las Herramientas de Desarrollador de Ren'Py.
-# Ponlo en False cuando quieras publicar tu juego.
-define config.developer = True
+# Con "auto", Ren'Py la activa al lanzar desde el launcher y la desactiva
+# sola en el build publicado. (Para forzarla, usa True/False.)
+define config.developer = "auto"
 
 # Si se permiten cuadrículas incompletas en el juego.
 define config.allow_underfull_grids = True

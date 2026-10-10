@@ -136,6 +136,8 @@ init python:
     )
 
     # Conjunto de mensajes de splash. Se elige uno al azar por arranque.
+    # Los textos se traducen en el momento de mostrarlos (con `_()` en el label),
+    # para que reflejen el idioma elegido aun si se cambia durante el splash.
     splash_messages = [
         "Just Monika.",
         "Remember to save regularly!",
@@ -212,7 +214,7 @@ label splashscreen:
 
     # Intro del logo.
     show white
-    $ splash_message = splash_message_default
+    $ splash_message = _(renpy.random.choice(splash_messages) if splash_messages else splash_message_default)
     $ config.main_menu_music = audio.t1
     $ renpy.music.play(config.main_menu_music)
     show intro with Dissolve(0.5, alpha=True)

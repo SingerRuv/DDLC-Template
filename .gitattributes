@@ -1,3 +1,8 @@
+# Normalizacion de finales de linea.
+# Ren'Py no exige un EOL concreto; usamos LF de forma consistente para evitar
+# warnings de git en Windows y mantener el repo limpio.
+* text=auto eol=lf
+
 # Archivos de repositorio que NO van en el ZIP de distribucion.
 # `git archive` (usado por el workflow de GitHub Releases) los excluye.
 .github/       export-ignore
