@@ -1,9 +1,9 @@
 ﻿## pose_lab.rpy
 ## PoseLab: arma poses de los personajes leyendo las definiciones REALES de
-## im.Composite de todos los .rpy del proyecto. No hay reglas fijas de nombres:
+## Composite de todos los .rpy del proyecto. No hay reglas fijas de nombres:
 ## lo que existe en sprites.rpy (o en cualquier .rpy) es lo que se puede armar.
 ## Esto funciona con los personajes del template y con personajes propios:
-## basta con que definan `image <tag> <pose> = im.Composite(...)`.
+## basta con que definan `image <tag> <pose> = Composite(...)`.
 ##
 ## Es dev-only: se abre desde el hub "Herramientas" del menú principal.
 ## Salida: solo la línea `show <tag> <pose> at <transform> zorder 2`.
@@ -68,7 +68,7 @@ init python:
                 m = _PL_LINEA_RE.match(linea)
                 if not m:
                     continue
-                # sirve tanto para im.Composite(...) como para = "ruta.png"
+                # sirve tanto para Composite(...) como para = "ruta.png"
                 rutas = _pl_re.findall(r'"([^"]+\.png)"', m.group(3))
                 if not rutas:
                     continue
@@ -115,7 +115,7 @@ init python:
 
     # ======================================================================
     # Personajes custom: carpetas con PNGs sueltos (brazos + caras) que no
-    # tienen definiciones im.Composite. Siguen el patrón DDLC (960x960, (0,0)).
+    # tienen definiciones Composite. Siguen el patrón DDLC (960x960, (0,0)).
     # ======================================================================
 
     _PL_EXCLUIR = {"bg", "menu", "gui", "tl", "tools", "cache", "saves"}
@@ -261,7 +261,7 @@ init python:
             for ref in _pl_indice_archivos(tag).values():
                 if ref["nombre"] == nombre:
                     i, d, c = ref["izq"], ref["der"], ref["cara"]
-                    return im.Composite(
+                    return Composite(
                         (960, 960), (0, 0), "%s/%s.png" % (carpeta, i),
                         (0, 0), "%s/%s.png" % (carpeta, d),
                         (0, 0), "%s/%s.png" % (carpeta, c))
@@ -286,7 +286,7 @@ init python:
         return "show %s %s at %s zorder 2" % (pl_tag(tag), nombre, trans)
 
     def pl_definicion(tag, nombre):
-        """Línea `image ... = im.Composite(...)` para un custom suelto.
+        """Línea `image ... = Composite(...)` para un custom suelto.
 
         Devuelve '' si el personaje es definido o el nombre no es una pose
         normal (p. ej. cuerpo completo)."""
@@ -298,7 +298,7 @@ init python:
                     % (pl_tag(tag), nombre, carpeta, nombre[1:]))
         for ref in _pl_indice_archivos(tag).values():
             if ref["nombre"] == nombre:
-                return ('image %s %s = im.Composite((960, 960), '
+                return ('image %s %s = Composite((960, 960), '
                         '(0, 0), "%s/%s.png", (0, 0), "%s/%s.png", '
                         '(0, 0), "%s/%s.png")'
                         % (pl_tag(tag), nombre, carpeta, ref["izq"],
@@ -315,7 +315,7 @@ init python:
         for clave in sorted(idx):
             ref = idx[clave]
             lineas.append(
-                'image %s %s = im.Composite((960, 960), '
+                'image %s %s = Composite((960, 960), '
                 '(0, 0), "%s/%s.png", (0, 0), "%s/%s.png", (0, 0), "%s/%s.png")'
                 % (pl_tag(tag), ref["nombre"], carpeta, ref["izq"],
                    carpeta, ref["der"], carpeta, ref["cara"]))

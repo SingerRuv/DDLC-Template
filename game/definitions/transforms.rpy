@@ -1,6 +1,6 @@
 # transforms.rpy
 # Transforms de personajes y animaciones. Adaptado del Mod Template original
-# (Azariel Del Carmen / bronya_rand) y reescrito para usar im.Composite.
+# (Azariel Del Carmen / bronya_rand) y reescrito para usar Composite.
 
 # ----------------------------------------------------------------------------
 # Transforms base parametrizados (Bronya)
