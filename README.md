@@ -125,9 +125,6 @@ docs/                     ← documentación para modders
 - [`docs/IP-GUIDELINES.md`](docs/IP-GUIDELINES.md) — resumen de las IP Guidelines de Team Salvato.
 - `game/README.md` — mapa de las carpetas del proyecto.
 
-> Se planea ampliar `docs/` con guías detalladas para modders (empezar, personajes,
-> escena, audio, menús, efectos, historia) en el futuro.
-
 ## Créditos y licencia
 
 - **DDLC Mod Template:** Azariel "Bronya Rand" Del Carmen

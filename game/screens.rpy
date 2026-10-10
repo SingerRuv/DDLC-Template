@@ -912,11 +912,6 @@ screen preferences():
             else:
                 use template_preferences
 
-    text "v[config.version]":
-                xalign 1.0 yalign 1.0
-                xoffset -10 yoffset -10
-                style "main_menu_version"
-
 style pref_label is gui_label
 style pref_label_text is gui_label_text
 style pref_vbox is vbox
