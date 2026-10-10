@@ -22,6 +22,52 @@ translate spanish strings:
     old "I agree."
     new "Acepto."
 
+    # game/definitions/splash.rpy:202
+    old "A streaming/recording program has been detected. Let's Play Mode has been enabled to protect your privacy."
+    new "Se ha detectado un programa de streaming/grabación. Se ha activado el Modo Let's Play para proteger tu privacidad."
+
+    # game/definitions/splash.rpy:253
+    old "Hint: You can use the \"Skip\" button to\nfast-forward through text you've already read."
+    new "Consejo: puedes usar el botón \"Skip\" para\navanzar rápido el texto que ya has leído."
+
+    # game/definitions/splash.rpy:135
+    old "This game is an unofficial fan game, created by Broken Dreams Studio."
+    new "Este juego es un juego de fans no oficial, creado por Broken Dreams Studio."
+
+    # game/definitions/splash.rpy:140-150 (mensajes de splash)
+    old "Just Monika."
+    new "Just Monika."
+
+    old "Remember to save regularly!"
+    new "¡Recuerda guardar con frecuencia!"
+
+    old "Don't forget to drink water~"
+    new "¡No te olvides de beber agua~"
+
+    old "Press ESC for the menu."
+    new "Pulsa ESC para abrir el menú."
+
+    old "You can use the Skip button to fast-forward."
+    new "Puedes usar el botón Skip para avanzar rápido."
+
+    old "Made with Ren'Py 8."
+    new "Hecho con Ren'Py 8."
+
+    old "Doki Doki Literature Club is by Team Salvato."
+    new "Doki Doki Literature Club es de Team Salvato."
+
+    old "Hxppy thxughts!"
+    new "¡Hxppy thxughts!"
+
+    old ":)"
+    new ":)"
+
+    old "Every day is a gift."
+    new "Cada día es un regalo."
+
+    old "Press F to pay respects."
+    new "Pulsa F para mostrar respeto."
+
 # game/definitions/splash.rpy:165
 translate spanish splashscreen_f490803a:
 

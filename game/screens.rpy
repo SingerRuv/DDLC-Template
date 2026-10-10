@@ -9,6 +9,8 @@ init offset = -1
 
 # Gracias RenpyTom! Tomado del Launcher de Ren'Py
 init python:
+    import math
+
     def scan_translations():
 
         languages = renpy.known_languages()
@@ -279,7 +281,7 @@ style input:
 ## Nuevo desde 3.0.0
 ##    - Ahora puedes pasar argumentos a las opciones del menu para colorear
 ##      el menu a tu gusto. Añade (kwargs=[color hex o nombre de estilo]) al
-##      nombre de la opcion y obtendras botones distintos! 
+##      nombre de la opcion y obtendras botones distintos!
 ##
 ##      Examples: "Option 1 (kwargs=#00fbff)" | "Option 2 (kwargs=#00fbff, #6cffff)"
 ##
@@ -291,26 +293,26 @@ screen choice(items):
     vbox:
 
         for i in items:
-            
+
             if "kwargs=" in i.caption:
 
                 $ kwarg = i.caption.split("(kwargs=")[-1].replace(")", "")
                 $ caption = i.caption.replace(" (kwargs=" + kwarg + ")", "")
 
                 if "#" in kwarg:
-                    
+
                     $ kwarg = kwarg.replace(", ", ",").split(",")
-                    
+
                     if len(kwarg) == 1:
                         $ kwarg.append('#ffe6f4')
-                    
+
                     $ arg1 = kwarg[0]
                     $ arg2 = kwarg[-1]
-                    
+
                     textbutton caption:
-                        idle_background Frame(im.MatrixColor(im.MatrixColor("gui/button/choice_idle_background.png", im.matrix.desaturate() * im.matrix.contrast(1.29) * im.matrix.colorize("#00f", "#fff") * im.matrix.saturation(120)), 
+                        idle_background Frame(im.MatrixColor(im.MatrixColor("gui/button/choice_idle_background.png", im.matrix.desaturate() * im.matrix.contrast(1.29) * im.matrix.colorize("#00f", "#fff") * im.matrix.saturation(120)),
                             im.matrix.desaturate() * im.matrix.colorize(arg1, arg2)), gui.choice_button_borders)
-                        hover_background Frame(im.MatrixColor(im.MatrixColor("gui/button/choice_hover_background.png", im.matrix.desaturate() * im.matrix.contrast(1.29) * im.matrix.colorize("#00f", "#fff") * im.matrix.saturation(120)), 
+                        hover_background Frame(im.MatrixColor(im.MatrixColor("gui/button/choice_hover_background.png", im.matrix.desaturate() * im.matrix.contrast(1.29) * im.matrix.colorize("#00f", "#fff") * im.matrix.saturation(120)),
                             im.matrix.desaturate() * im.matrix.colorize(arg1, "#fff")), gui.choice_button_borders)
                         action i.action
 
@@ -567,7 +569,7 @@ style viewframe_text is confirm_prompt_text:
 ## Las resoluciones en ventana permiten escalar el juego a distintas resoluciones.
 ## Descomenta los # de abajo para activarlo.
 # screen confirm_res(old_res):
-    
+
 #     ## Asegura que otras pantallas no reciban input mientras esta se muestra.
 #     modal True
 
@@ -608,7 +610,7 @@ style viewframe_text is confirm_prompt_text:
 #                 # else:
 #                 textbutton _("Yes") action Hide("confirm_res")
 #                 textbutton _("No") action [Function(renpy.set_physical_size, old_res), Hide("confirm_res")]
-    
+
 #     timer 5.0 action [Function(renpy.set_physical_size, old_res), Hide("confirm_res")]
 
 # init python:
@@ -684,7 +686,7 @@ screen ddlc_preferences():
             textbutton _("Unseen Text") action Preference("skip", "toggle")
             textbutton _("After Choices") action Preference("after choices", "toggle")
             # textbutton _("Transitions") action InvertSelected(Preference("transitions", "toggle"))
-    
+
     null height (4 * gui.pref_spacing)
 
     hbox:
@@ -692,10 +694,10 @@ screen ddlc_preferences():
         box_wrap True
 
         vbox:
-            
+
             hbox:
                 label _("Text Speed")
-                
+
                 null width 5
 
                 text str(preferences.text_cps) style "value_text"
@@ -705,21 +707,21 @@ screen ddlc_preferences():
 
             hbox:
                 label _("Auto-Forward Time")
-                
+
                 null width 5
-                
+
                 text str(round(preferences.afm_time)) style "value_text"
 
             bar value Preference("auto-forward time")
 
         vbox:
-            
+
             if config.has_music:
                 hbox:
                     label _("Music Volume")
-                    
+
                     null width 5
-                
+
                     text str(round(preferences.get_mixer("music") * 100)) style "value_text"
 
                 hbox:
@@ -729,9 +731,9 @@ screen ddlc_preferences():
 
                 hbox:
                     label _("Sound Volume")
-                    
+
                     null width 5
-                
+
                     text str(round(preferences.get_mixer("sfx") * 100)) style "value_text"
 
                 hbox:
@@ -743,9 +745,9 @@ screen ddlc_preferences():
             if config.has_voice:
                 hbox:
                     label _("Voice Volume")
-                    
+
                     null width 5
-                
+
                     text str(round(preferences.get_mixer("voice") * 100)) style "value_text"
 
                 hbox:
@@ -769,9 +771,9 @@ screen template_preferences():
             vbox:
                 style_prefix "check"
                 label _("Game Modes")
-                textbutton _("Uncensored Mode") action If(persistent.uncensored_mode, 
-                    ToggleField(persistent, "uncensored_mode"), 
-                    Show("confirm", message="Are you sure you want to turn on Uncensored Mode?\nDoing so will enable more adult/sensitive\ncontent in your playthrough.\n\nThis setting will be dependent on the modder if\nthey programmed these checks in their story.", 
+                textbutton _("Uncensored Mode") action If(persistent.uncensored_mode,
+                    ToggleField(persistent, "uncensored_mode"),
+                    Show("confirm", message="Are you sure you want to turn on Uncensored Mode?\nDoing so will enable more adult/sensitive\ncontent in your playthrough.\n\nThis setting will be dependent on the modder if\nthey programmed these checks in their story.",
                         yes_action=[Hide("confirm"), ToggleField(persistent, "uncensored_mode")],
                         no_action=Hide("confirm")
                     ))
@@ -787,17 +789,17 @@ screen template_preferences():
         vbox:
             style_prefix "name"
             label _("Player Name")
-            
+
             null height 3
-            
+
             if player == "":
                 text _("No Name Set") xalign 0.5
             else:
                 text "[player]" xalign 0.5
-            
+
             textbutton _("Change Name") action Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName, launchGame=False)):
                 text_style "navigation_button_text"
-        
+
         python:
             has_discord_module = True
             try:
@@ -816,7 +818,7 @@ screen template_preferences():
                         connect_status = _("Disabled")
                     if RPC.rpc_connected:
                         connect_status = _("Connected")
-                
+
                 null height 3
 
                 text "[connect_status]" xalign 0.5
@@ -826,7 +828,7 @@ screen template_preferences():
                     if persistent.enable_discord:
                         enable_text = _("Disable")
 
-                textbutton enable_text action [ToggleField(persistent, "enable_discord"), 
+                textbutton enable_text action [ToggleField(persistent, "enable_discord"),
                     If(persistent.enable_discord, Function(RPC.disconnect), Function(RPC.connect))]:
                     text_style "navigation_button_text"
                 if persistent.enable_discord and not RPC.rpc_connected:
@@ -909,7 +911,7 @@ screen preferences():
                 use ddlc_preferences
             else:
                 use template_preferences
-                            
+
     text "v[config.version]":
                 xalign 1.0 yalign 1.0
                 xoffset -10 yoffset -10
@@ -1018,18 +1020,18 @@ style value_text:
 
 screen history():
     tag menu
-    
+
     ## Evita predecir esta pantalla, ya que puede ser muy grande.
     predict False
 
     use game_menu(_("History"), scroll=("vpgrid" if gui.history_height else "viewport")):
-        
+
         style_prefix "history"
-       
+
         for h in _history_list:
-            
+
             window:
-                
+
                 ## Esto organiza todo correctamente si history_height es None.
                 has fixed:
                     yfit True
@@ -1039,7 +1041,7 @@ screen history():
                     label h.who:
                         style "history_name"
                         substitute False
-                        
+
                         ## Toma el color del texto who del Character, si
                         ## esta definido.
                         if "color" in h.who_args:
@@ -1528,7 +1530,7 @@ screen choose_language():
                                 unhovered SetScreenVariable("local_lang", chosen_lang)
 
             $ lang_name = renpy.translate_string("{#language name and font}", local_lang)
-            
+
             hbox:
                 xalign 0.5
                 spacing 100
