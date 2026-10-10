@@ -39,7 +39,7 @@ image bg club_skill = "images/bg/club-skill.png"
 
 ## Variables de personajes
 # Los sprites de cada personaje se declaran en 'definitions/sprites.rpy' con
-# 'image' + 'im.Composite' (sistema Bronya). Los DynamicCharacter usan el tag
+# 'image' + 'Composite' (sistema Bronya). Los DynamicCharacter usan el tag
 # del personaje (sayori, monika, natsuki, yuri) para mostrar esos sprites.
 
 define narrator = Character(ctc="ctc", ctc_position="fixed")
