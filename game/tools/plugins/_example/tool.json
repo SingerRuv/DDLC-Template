@@ -4,5 +4,8 @@
   "autor": "Tu nombre",
   "version": "1.0",
   "screen": "example_tool",
+  "categoria": "Ejemplos",
+  "orden": 100,
+  "palabras_clave": ["ejemplo", "plantilla"],
   "capturas": []
 }

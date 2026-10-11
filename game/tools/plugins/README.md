@@ -59,14 +59,14 @@ hub, con el motivo. Nunca se descarta en silencio.
 
 ## Plugin en Python (`.py`)
 
-Además del `.rpy` del screen, un plugin puede incluir lógica en Python. Declarás
+Además del `.rpy` del screen, un plugin puede incluir lógica en Python. Declaras
 el módulo en el manifiesto:
 
 ```json
 { "modulo": "mi_modulo" }
 ```
 
-y ponés `mi_modulo.py` dentro de la carpeta del plugin (la carpeta se agrega al
+y pones `mi_modulo.py` dentro de la carpeta del plugin (la carpeta se agrega al
 import path automáticamente). El hub lo importa y llama, **si existen**, estos
 hooks opcionales:
 
@@ -91,11 +91,13 @@ El módulo puede importar otros `.py` de su propia carpeta (p. ej.
 rompen el hub.
 
 > Nota: dentro de un módulo `.py`, el `open` global está tomado por Ren'Py y
-> acepta un solo argumento. Si necesitás leer/escribir archivos, usá `io.open`.
+> acepta un solo argumento. Si necesitas leer/escribir archivos, usa `io.open`.
 
 ## El screen
 
-En tu `.rpy` define el screen que pusiste en `"screen"`:
+En tu `.rpy` define el screen que pusiste en `"screen"`. Lo más simple es usar
+el shell reutilizable `tool_shell` (definido en `game/tools/complements.rpy`),
+que aporta el fondo del menú, el título, ESC y el botón "Volver" al hub:
 
 ```renpy
 screen mi_herramienta():
@@ -103,25 +105,13 @@ screen mi_herramienta():
     modal True
     zorder 200
 
-    key "K_ESCAPE" action Show("complements")   # volver al hub
-    add gui.main_menu_background                # mismo fondo del menú
-
-    frame:
-        style "complements_detail"
-        xalign 0.5
-        yalign 0.5
-        xsize 640
-
-        vbox:
-            spacing 14
-            text "Mi Herramienta" style "complements_detail_title"
-            text "Contenido..." style "complements_detail_desc"
-            textbutton "Volver":
-                style "complements_open"
-                text_style "main_navigation_button_text"
-                action Show("complements")
-                at nav_button_anim
+    use tool_shell("Mi Herramienta"):
+        text "Contenido..." style "complements_detail_desc"
 ```
+
+> Las propiedades del screen (`tag menu`, `modal True`, `zorder 200`) van en TU
+> screen: no se transfieren al usar `tool_shell`.
+
 
 ### Estilos reutilizables
 
@@ -139,18 +129,23 @@ Y el fondo del juego: `gui.main_menu_background`.
 
 ## Música (opcional)
 
-Si tu herramienta quiere música propia, ponla en `on "show"` y restáurala en
-`on "hide"` del screen:
+Los eventos `on "show"`/`on "hide"` de un screen con `tag menu` no se disparan
+de forma confiable. Si tu herramienta necesita música, manéjala desde el módulo
+`.py` (hooks `open`/`close`):
 
-```renpy
-screen mi_herramienta():
-    on "show" action Play("music", "bgm/2.ogg")
-    on "hide" action Function(renpy.music.play, config.main_menu_music)
+```python
+import renpy
+
+def open(tool):
+    renpy.music.play("bgm/2.ogg")
+
+def close(tool):
+    renpy.music.play(renpy.config.main_menu_music)
 ```
 
 ## Probar
 
-1. Copiá `_example/`, renombrala y editá su `tool.json`.
-2. Arrancá el template y abrí **Herramientas** en el menú principal.
-3. Tu herramienta aparece en la lista; el panel derecho muestra sus datos y
-   capturas.
+1. Copia `_example/`, renómbrala y edita su `tool.json`.
+2. Arranca el template y abre **Herramientas** en el menú principal.
+3. Tu herramienta aparece como una tarjeta en el hub (con búsqueda, categorías
+   y un botón para ocultarla o mostrarla).

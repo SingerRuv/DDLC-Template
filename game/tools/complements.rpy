@@ -178,6 +178,13 @@ init python:
             actual.append(id_)
         persistent.pl_deshabilitadas = actual
 
+    def pl_tool_por_id(id_):
+        """Devuelve el dict de una herramienta por su id (o None)."""
+        for t in pl_plugins()[0]:
+            if t["id"] == id_:
+                return t
+        return None
+
     # ======================================================================
     # Plugins Python (.py): un plugin puede declarar `"modulo": "nombre"` y
     # poner `nombre.py` en su carpeta. El hub agrega la carpeta al import path
@@ -395,6 +402,41 @@ screen pl_card(t):
             textbutton (_("Mostrar") if not habilitada else _("Ocultar")):
                 style "pl_card_toggle"
                 action Function(pl_tool_alternar, t["id"])
+
+
+# Shell reutilizable para herramientas simples: fondo del menú, título, ESC y
+# botón "Volver" al hub, y el frame de tarjeta. Tu screen define tag/modal/zorder
+# (las propiedades de screen NO se transfieren con `use`) y aporta el contenido:
+#
+#   screen mi_herramienta():
+#       tag menu
+#       modal True
+#       zorder 200
+#       use tool_shell("Mi Herramienta"):
+#           text "Contenido..." style "complements_detail_desc"
+screen tool_shell(titulo):
+    key "K_ESCAPE" action Show("complements")
+
+    add gui.main_menu_background
+
+    frame:
+        style "complements_detail"
+        xalign 0.5
+        yalign 0.5
+        xsize 800
+
+        vbox:
+            spacing 14
+
+            text "[titulo]" style "complements_detail_title"
+
+            transclude
+
+            textbutton _("Volver"):
+                style "complements_open"
+                text_style "main_navigation_button_text"
+                action Show("complements")
+                at nav_button_anim
 
 
 style complements_detail is frame:
