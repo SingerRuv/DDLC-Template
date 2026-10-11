@@ -7,6 +7,7 @@
 
 init python:
     import re as _pl_re
+    import os as _pl_os
     import pygame as _pl_pygame
 
     def _pl_cacheado(fn):
@@ -25,22 +26,13 @@ init python:
 
     # ======================================================================
     # Transforms del template ofrecidos para la salida `show ... at <t>`.
-    #   Posición: t11..t44 | Focus: f11..f44 | Entradas: l*/r* (2+ personajes)
+    #   Posición: t11..t44 (definidas en definitions/transforms.rpy)
     # ======================================================================
 
     _PL_POS = ["t11", "t21", "t22", "t31", "t32", "t33", "t41", "t42", "t43", "t44"]
-    _PL_FOCUS = ["f11", "f21", "f22", "f31", "f32", "f33", "f41", "f42", "f43", "f44"]
-    _PL_ENTRADAS = [
-        "l21", "l22", "l31", "l32", "l33", "l41", "l42", "l43", "l44",
-        "r21", "r22", "r31", "r32", "r33", "r41", "r42", "r43", "r44",
-    ]
 
-    def pl_trans_actual(grupo):
-        """Transform actual si pertenece al grupo dado; si no, '—'."""
-        actual = pl_state["trans"]
-        if actual in grupo:
-            return actual
-        return "—"
+    # Capas de la línea `show ... zorder N` (quién queda detrás/delante).
+    _PL_ZORDERS = [0, 1, 2, 3, 4, 5]
 
     # ======================================================================
     # Parser de sprites: lee todos los `image <tag> <nombre> = ...` de los .rpy
@@ -145,8 +137,8 @@ init python:
             por_carpeta.setdefault("/".join(partes[:-1]), []).append(partes[-1][:-4])
         res = {}
         for carpeta, nombres in por_carpeta.items():
-            tiene_brazo = any(_PL_IZQ_RE.fullmatch(n) or _PL_DER_RE.fullmatch(n)
-                              for n in nombres)
+            tiene_brazo = any(_PL_IZQ_RE.fullmatch(n) or _PL_DER_RE.fullmatch(n) 
+            for n in nombres)
             tiene_cara = any(_PL_CARA_RE.fullmatch(n) for n in nombres)
             if tiene_brazo and tiene_cara:
                 res[carpeta.split("/")[-1]] = carpeta
@@ -158,7 +150,7 @@ init python:
         if not carpeta:
             return []
         return sorted(f.split("/")[-1][:-4] for f in renpy.list_files()
-                      if f.startswith(carpeta + "/") and f.lower().endswith(".png"))
+        if f.startswith(carpeta + "/") and f.lower().endswith(".png"))
 
     def pl_tiene_defs(tag):
         return bool(_pl_sprites().get(tag))
@@ -218,7 +210,7 @@ init python:
         if pl_tiene_defs(tag):
             return sorted(n for n in _pl_sprites().get(tag, {}) if n.startswith("5"))
         return sorted("5" + n[1:] for n in _pl_archivos_carpeta(tag)
-                      if _pl_re.fullmatch(r"3\d*[a-z]*", n))
+        if _pl_re.fullmatch(r"3\d*[a-z]*", n))
 
     @_pl_cacheado
     def pl_outfits(tag):
@@ -231,7 +223,7 @@ init python:
     @_pl_cacheado
     def pl_caras(tag, outfit, pose):
         return sorted({c for (o, p, c) in _pl_indice_tag(tag)
-                       if o == outfit and p == pose})
+        if o == outfit and p == pose})
 
     def pl_nombre(tag, outfit, pose, cara):
         """Nombre de la pose (funciona en modo definido y custom)."""
@@ -266,11 +258,11 @@ init python:
     # Salida para el guion.
     # ======================================================================
 
-    def pl_show(tag, nombre, trans):
+    def pl_show(tag, nombre, trans, zorder=2):
         """Línea `show ...` para el guion ('' si no hay pose)."""
         if not nombre:
             return ""
-        return "show %s %s at %s zorder 2" % (pl_tag(tag), nombre, trans)
+        return "show %s %s at %s zorder %d" % (pl_tag(tag), nombre, trans, zorder)
 
     # ======================================================================
     # Estado de la herramienta. Vive en el store (no en variables de screen)
@@ -279,7 +271,9 @@ init python:
 
     pl_state = {
         "doki": "", "cuerpo": "", "outfit": "", "pose": 0,
-        "cara": "", "trans": "t42", "fondo": "", "open": "",
+        "cara": "", "trans": "t11", "zorder": 2, "fondo": "class", "open": "",
+        # "Copiar en…": archivo destino, línea elegida y texto a insertar.
+        "destino_archivo": "", "destino_linea": 0, "destino_texto": "",
     }
     pl_initialized = False
 
@@ -292,7 +286,9 @@ init python:
         fondos = pl_fondos()
         pl_state.update(
             doki=(dokis[0] if dokis else ""), cuerpo="", outfit="", pose=0,
-            cara="", trans="t42", fondo=(fondos[0] if fondos else ""), open="")
+            cara="", trans="t11",
+            fondo=("class" if "class" in fondos else (fondos[0] if fondos else "")),
+            open="")
         pl_initialized = True
 
     def pl_resuelto():
@@ -318,8 +314,32 @@ init python:
             "poses": poses, "pose": pose,
             "caras": caras, "cara": cara,
             "nombre": nombre, "fondo": pl_state["fondo"],
-            "trans": pl_state["trans"],
+            "trans": pl_state["trans"], "zorder": pl_state["zorder"],
         }
+
+    def pl_referencia(doki):
+        """(tag, nombre) del primer personaje distinto a `doki`, con una pose
+        por defecto. Sirve de referencia en el preview para ver el layering del
+        zorder. None si no hay otro personaje."""
+        for d in pl_personajes():
+            if d == doki:
+                continue
+            cuerpos = pl_cuerpos(d)
+            if cuerpos:
+                return d, cuerpos[0]
+            outfits = pl_outfits(d)
+            if not outfits:
+                continue
+            outfit = outfits[0]
+            poses = pl_poses(d, outfit)
+            if not poses:
+                continue
+            pose = poses[0]
+            caras = pl_caras(d, outfit, pose)
+            nombre = pl_nombre(d, outfit, pose, caras[0] if caras else "")
+            if nombre:
+                return d, nombre
+        return None
 
     def pl_choose(name, value):
         return [SetDict(pl_state, name, value), SetDict(pl_state, "open", "")]
@@ -330,7 +350,11 @@ init python:
             ("cara", ""), ("open", ""))]
 
     def pl_choose_cuerpo(value):
-        return [SetDict(pl_state, "cuerpo", value), SetDict(pl_state, "open", "")]
+        # Al elegir cuerpo completo, si el transform no es de posición, resetealo.
+        acciones = [SetDict(pl_state, "cuerpo", value), SetDict(pl_state, "open", "")]
+        if value and pl_state["trans"] not in _PL_POS:
+            acciones.append(SetDict(pl_state, "trans", "t11"))
+        return acciones
 
     def pl_choose_outfit(value):
         return [SetDict(pl_state, "outfit", value), SetDict(pl_state, "pose", 0),
@@ -340,23 +364,212 @@ init python:
         return [SetDict(pl_state, "pose", value), SetDict(pl_state, "cara", ""),
                 SetDict(pl_state, "open", "")]
 
+    def pl_menus(r):
+        """Menús de la ventana de controles: (título, valor, clave, opciones)."""
+        menus = [
+            ("Personaje", pl_label(r["doki"]) or "—", "doki", [
+                (pl_label(d), pl_choose_doki(d), d == r["doki"])
+                for d in pl_personajes()
+            ]),
+        ]
+        # Cuerpo completo (pose 5): sección aparte, opcional.
+        if r["cuerpos"]:
+            menus.append(("Cuerpo completo", r["cuerpo"] or "— normal", "cuerpo", [
+                ("— normal", pl_choose_cuerpo(""), r["cuerpo"] == ""),
+            ] + [
+                (c, pl_choose_cuerpo(c), c == r["cuerpo"]) for c in r["cuerpos"]
+            ]))
+        if not r["cuerpo"]:
+            menus.append(("Outfit", pl_outfit_label(r["outfit"]), "outfit", [
+                (pl_outfit_label(o), pl_choose_outfit(o), o == r["outfit"])
+                for o in r["outfits"]
+            ]))
+            menus.append(("Pose", str(r["pose"]) if r["pose"] else "—", "pose", [
+                (str(p), pl_choose_pose(p), p == r["pose"]) for p in r["poses"]
+            ]))
+            menus.append(("Cara", pl_cara_label(r["cara"]), "cara", [
+                (pl_cara_label(c), pl_choose("cara", c), c == r["cara"])
+                for c in r["caras"]
+            ]))
+        # Posición (solo transforms t11..t44).
+        menus.append(("Posición", pl_state["trans"], "trans", [
+            (t, pl_choose("trans", t), t == pl_state["trans"]) for t in _PL_POS
+        ]))
+        menus.append(("Fondo", r["fondo"] or "—", "fondo", [
+            (f, pl_choose("fondo", f), f == r["fondo"]) for f in pl_fondos()
+        ]))
+        # Capa de la línea show (detrás/delante).
+        menus.append(("Zorder", str(pl_state["zorder"]), "zorder", [
+            (str(z), pl_choose("zorder", z), z == pl_state["zorder"])
+            for z in _PL_ZORDERS
+        ]))
+        return menus
+
+    # ======================================================================
+    # Ventanas flotantes: posición y estado "fijada", persistentes entre
+    # sesiones (global; no depende de los saves). Es dev-only.
+    # ======================================================================
+
+    _PL_VENTANAS = {"controls": (24, 24), "code": (790, 24)}
+
+    def pl_ventana_pos(nombre):
+        # `persistent` devuelve None para atributos no definidos (no AttributeError).
+        pos = getattr(persistent, "pl_pos_" + nombre, None)
+        return pos if pos is not None else _PL_VENTANAS[nombre]
+
+    def pl_ventana_fija(nombre):
+        return bool(getattr(persistent, "pl_fija_" + nombre, None))
+
+    def pl_ventana_mover(nombre, x, y):
+        setattr(persistent, "pl_pos_" + nombre, (int(x), int(y)))
+
+    def pl_ventana_alternar_fija(nombre):
+        setattr(persistent, "pl_fija_" + nombre, not pl_ventana_fija(nombre))
+
+    def pl_drag_mover(nombre):
+        """Callback para `dragged`: guarda dónde quedó la ventana al soltarla."""
+        def cb(drags, drop):
+            if drags:
+                pl_ventana_mover(nombre, drags[0].x, drags[0].y)
+        return cb
+
+    def pl_ventana_reiniciar(nombre):
+        """Devuelve la ventana a su posición por defecto (persistente + snap)."""
+        x, y = _PL_VENTANAS[nombre]
+        setattr(persistent, "pl_pos_" + nombre, (x, y))
+        d = renpy.get_displayable("pose_lab", "pl_drag_" + nombre)
+        if d is not None:
+            d.snap(x, y, delay=0.2)
+
     # ======================================================================
     # Utilidades.
     # ======================================================================
+
+    def pl_toast(mensaje):
+        """Toast propio (animado) de la herramienta. Ver `screen pl_notify`."""
+        renpy.hide_screen("pl_notify")
+        renpy.show_screen("pl_notify", message=mensaje)
 
     def pl_copiar(texto):
         if not texto:
             return
         try:
             _pl_pygame.scrap.put(_pl_pygame.scrap.SCRAP_TEXT, texto.encode("utf-8"))
-            renpy.notify("Copiado al portapapeles")
+            pl_toast("¡Definición copiada!")
+            renpy.restart_interaction()
         except Exception:
-            renpy.notify("No se pudo copiar")
+            pl_toast("No se pudo copiar")
 
-    def pl_music_on():
-        """Música propia de la herramienta (Ohayou Sayori!)."""
-        renpy.music.play(audio.t2)
+    # ======================================================================
+    # "Copiar en…": escribir la definición dentro de un .rpy del guion.
+    #   Un .rpy es destino si tiene el marcador `# poselab` en una línea.
+    #   Solo se escribe en archivos físicos (no dentro de un .rpa).
+    # ======================================================================
 
-    def pl_music_off():
-        """Restaura la música del menú principal al cerrar la herramienta."""
-        renpy.music.play(config.main_menu_music)
+    _PL_MARCADOR_RE = _pl_re.compile(r"^\s*#\s*poselab\b", _pl_re.MULTILINE)
+    _PL_SALTAR = ("tools/", "tl/")
+
+    def _pl_objetivo_abs(rel):
+        """Ruta física de un .rpy del proyecto (relativa a game/)."""
+        return _pl_os.path.join(config.gamedir, rel.replace("/", _pl_os.sep))
+
+    def pl_objetivos():
+        """Rutas (relativas, con '/') de los .rpy ofrecidos como destino.
+
+        Deben contener el marcador `# poselab` y existir como archivo físico:
+        los .rpy empaquetados dentro de un .rpa no se pueden escribir.
+        No se cachea: Ren'Py predice el screen al arrancar (con la lista de
+        archivos todavia incompleta) y ademas el modder puede agregar el
+        marcador a otro .rpy durante la sesion."""
+        res = []
+        for f in renpy.list_files():
+            if not f.endswith(".rpy") or f.startswith(_PL_SALTAR):
+                continue
+            if not _pl_os.path.isfile(_pl_objetivo_abs(f)):
+                continue
+            try:
+                with renpy.file(f) as fh:
+                    texto = fh.read().decode("utf-8")
+            except Exception:
+                continue
+            if _PL_MARCADOR_RE.search(texto):
+                res.append(f)
+        return sorted(res)
+
+    def pl_leer_objetivo(rel):
+        """Líneas del archivo destino (se lee del disco en cada llamada, así el
+        preview refleja lo escrito)."""
+        if not rel:
+            return []
+        try:
+            with open(_pl_objetivo_abs(rel), "r", encoding="utf-8") as fh:
+                return fh.read().split("\n")
+        except Exception:
+            return []
+
+    def pl_insertar(rel, idx, texto, sangria="    "):
+        """Inserta `texto` con sangría de 4 espacios (columna 5) tras la línea
+        `idx` (0-based). Guarda un backup antes de escribir."""
+        ruta = _pl_objetivo_abs(rel)
+        try:
+            with open(ruta, "r", encoding="utf-8") as fh:
+                original = fh.read()
+            nl = "\r\n" if "\r\n" in original else "\n"
+            lineas = original.split(nl)
+            lineas.insert(idx + 1, (sangria + texto) if texto else "")
+            with open(ruta + ".poselab.bak", "w", encoding="utf-8") as fh:
+                fh.write(original)
+            with open(ruta, "w", encoding="utf-8") as fh:
+                fh.write(nl.join(lineas))
+            return True
+        except Exception:
+            return False
+
+    def pl_deshacer(rel):
+        """Restaura el archivo desde su backup (un nivel)."""
+        ruta = _pl_objetivo_abs(rel)
+        bak = ruta + ".poselab.bak"
+        if not _pl_os.path.isfile(bak):
+            return False
+        try:
+            with open(bak, "r", encoding="utf-8") as fh:
+                original = fh.read()
+            with open(ruta, "w", encoding="utf-8") as fh:
+                fh.write(original)
+            return True
+        except Exception:
+            return False
+
+    def pl_abrir_objetivo(rel, linea=0):
+        """Abre el .rpy destino en el editor del sistema (best-effort)."""
+        if rel:
+            renpy.launch_editor([_pl_objetivo_abs(rel)], line=linea + 1)
+
+    def pl_destino_init(texto):
+        """Prepara el estado de "Copiar en…" al abrir el panel."""
+        objs = pl_objetivos()
+        pl_state["destino_archivo"] = objs[0] if objs else ""
+        pl_state["destino_linea"] = 0
+        pl_state["destino_texto"] = texto
+
+    def pl_escribir_destino():
+        rel = pl_state["destino_archivo"]
+        if not rel:
+            return
+        idx = pl_state["destino_linea"]
+        if pl_insertar(rel, idx, pl_state["destino_texto"]):
+            pl_state["destino_linea"] = idx + 1
+            pl_toast("Definición insertada")
+        else:
+            pl_toast("No se pudo escribir")
+        renpy.restart_interaction()
+
+    def pl_deshacer_destino():
+        if pl_deshacer(pl_state["destino_archivo"]):
+            pl_toast("Cambios deshechos")
+        else:
+            pl_toast("No hay nada que deshacer")
+        renpy.restart_interaction()
+
+    def pl_abrir_destino():
+        pl_abrir_objetivo(pl_state["destino_archivo"], pl_state["destino_linea"])

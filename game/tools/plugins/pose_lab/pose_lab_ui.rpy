@@ -24,6 +24,15 @@ style pl_hint is pl_text:
     size 13
     color "#8a8f98"
 
+# Toast propio de la herramienta (notificación animada).
+style pl_toast is frame:
+    background "#2b303ae6"
+    padding (16, 8)
+
+style pl_toast_text is pl_text:
+    size 15
+    color "#73e08d"
+
 style pl_code is text:
     size 15
     color "#e6e6e6"
@@ -36,20 +45,13 @@ style pl_panel is frame:
 style pl_field is button:
     background "#2c313a"
     hover_background "#3a4150"
-    padding (12, 8)
-    xfill True
+    padding (12, 6)
 
 style pl_field_text is pl_text:
     size 15
     color "#ffffff"
     text_align 0.0
     xalign 0.0
-
-style pl_options is vbox:
-    background "#1a1d23"
-    padding (6, 6)
-    spacing 2
-    xfill True
 
 style pl_option is button:
     background None
@@ -60,9 +62,16 @@ style pl_option is button:
     xfill True
 
 style pl_option_text is pl_text:
-    size 14
-    text_align 0.0
-    xalign 0.0
+    size 15
+    text_align 0.5
+    xalign 0.5
+
+# Bandeja de opciones: recuadro de altura fija bajo los campos. Muestra las
+# opciones del campo abierto sin desplazar ni agrandar la ventana.
+style pl_tray is frame:
+    background "#1a1d23"
+    padding (6, 6)
+    xfill True
 
 style pl_button is button:
     background "#3a5d92"
@@ -93,100 +102,179 @@ style pl_window_bar_text is pl_text:
     bold True
     color "#ffffff"
 
+# Botones de la barra de título (fijar / restablecer).
+style pl_pin is button:
+    background "#3a4150"
+    hover_background "#49536a"
+    selected_background "#2f4d7a"
+    selected_hover_background "#3a5d92"
+    padding (10, 4)
+
+style pl_pin_text is pl_text:
+    size 13
+    color "#cfd3da"
+
 # Cuerpo de la ventana.
 style pl_window is frame:
     background "#20232ae6"
     xfill True
 
+# Panel "Copiar en…": elegir archivo destino y punto de inserción.
+style pl_destino_frame is frame:
+    background "#20232af2"
+    padding (16, 14)
 
-# Dropdown limpio y reutilizable: título + botón de campo que despliega opciones.
-screen pl_menu(titulo, actual, clave, opciones):
-    vbox:
-        spacing 4
-        text "[titulo]" style "pl_caption"
-        textbutton "[actual]":
-            style "pl_field"
-            action ToggleDict(pl_state, "open", clave, "")
-        if pl_state["open"] == clave:
-            vbox:
-                style "pl_options"
-                for texto, accion, elegido in opciones:
-                    textbutton "[texto]":
-                        style "pl_option"
-                        selected elegido
-                        action accion
+style pl_destino_title is pl_title:
+    size 20
+
+style pl_archivo is button:
+    background None
+    hover_background "#2c313a"
+    selected_background "#2f4d7a"
+    selected_hover_background "#3a5d92"
+    padding (10, 6)
+    xfill True
+
+style pl_archivo_text is pl_text:
+    size 13
+
+style pl_linea is button:
+    background None
+    hover_background "#2c313a"
+    selected_background "#2f4d7a"
+    selected_hover_background "#3a5d92"
+    padding (2, 1)
+    xfill True
+
+style pl_linea_text is text:
+    size 13
+    color "#cfd3da"
+
+
+# ---------------------------------------------------------------------------
+# Animaciones.
+# ---------------------------------------------------------------------------
+
+# Toast: aparece deslizando desde arriba + fade; se va con fade al ocultarlo.
+transform pl_notify_anim:
+    on show:
+        alpha 0.0
+        yoffset -20
+        linear 0.25 alpha 1.0 yoffset 0
+    on hide:
+        linear 0.30 alpha 0.0
+
+# Toast propio de PoseLab, por encima de las ventanas (zorder > pose_lab).
+# Reemplaza a renpy.notify solo dentro de la herramienta, para poder animarlo.
+screen pl_notify(message):
+    zorder 300
+
+    frame:
+        style "pl_toast"
+        at pl_notify_anim
+        xalign 0.5
+        ypos 16
+
+        text "[message]" style "pl_toast_text"
+
+    timer 2.0 action Hide("pl_notify")
+
+
+# Barra de título reutilizable: título a la izquierda y botones Fijar/Restablecer
+# a la derecha. `nombre` identifica la ventana ("controls" / "code") para el
+# estado persistente (posición y fijado).
+screen pl_barra(titulo, nombre):
+    frame:
+        style "pl_window_bar"
+
+        fixed:
+            xysize (1.0, 26)
+            text "[titulo]" style "pl_window_bar_text" xpos 0 yalign 0.5
+
+            hbox:
+                xalign 1.0
+                yalign 0.5
+                spacing 6
+
+                textbutton ("Fijada" if pl_ventana_fija(nombre) else "Fijar"):
+                    style "pl_pin"
+                    selected pl_ventana_fija(nombre)
+                    action Function(pl_ventana_alternar_fija, nombre)
+
+                textbutton "Restablecer":
+                    style "pl_pin"
+                    action Function(pl_ventana_reiniciar, nombre)
 
 
 # Ventana flotante de controles (se arrastra por la barra de título).
+#
+# Los campos se ubican en una grilla 2 columnas de posición explícita dentro de
+# un `fixed`. El dropdown del campo abierto se dibuja como overlay anclado justo
+# debajo de su campo: flota por encima del resto sin desplazarlo ni agrandar la
+# ventana. El `fixed` reserva de antemano la "zona del dropdown" (DZ) para que
+# este siempre entre dentro de la ventana (sin scroll externo ni recortes).
 screen pl_controls(r):
+    $ menus = pl_menus(r)
+    $ cw = 130            # ancho de columna
+    $ gx = 12             # separación horizontal entre columnas
+    $ pitch = 58         # alto de fila (título + campo + espacio)
+    $ dz = 160            # alto de la zona reservada para el dropdown
+    $ filas = (len(menus) + 1) // 2
+    $ idx = next((j for j, m in enumerate(menus) if m[2] == pl_state["open"]), -1)
+
     frame:
         style "pl_window"
-        xsize 340
+        xsize 300
 
         vbox:
             spacing 0
 
-            frame:
-                style "pl_window_bar"
-                text "PoseLab" style "pl_window_bar_text"
+            use pl_barra("PoseLab", "controls")
 
             frame:
                 background None
-                padding (14, 14)
-                xfill True
+                padding (14, 12)
 
-                viewport:
-                    ysize 620
-                    scrollbars "vertical"
-                    mousewheel True
-                    draggable True
+                fixed:
+                    xysize (2 * cw + gx, 22 + filas * pitch - 8 + dz)
 
-                    vbox:
-                        spacing 10
+                    text "Arma una pose y copia el código." style "pl_hint" xpos 0 ypos 0
 
-                        text "Arma una pose y copia el codigo para tu guion." style "pl_hint"
+                    # Campos (título + botón que abre/cierra su dropdown).
+                    for i, (titulo, actual, clave, opciones) in enumerate(menus):
+                        vbox:
+                            xpos (i % 2) * (cw + gx)
+                            ypos 22 + (i // 2) * pitch
+                            spacing 2
+                            text "[titulo]" style "pl_caption"
+                            textbutton "[actual]":
+                                style "pl_field"
+                                xsize cw
+                                action ToggleDict(pl_state, "open", clave, "")
 
-                        use pl_menu("Personaje", pl_label(r["doki"]) or "—", "doki", [
-                            (pl_label(d), pl_choose_doki(d), d == r["doki"]) for d in pl_personajes()
-                        ])
+                    # Dropdown del campo abierto, encima de los campos siguientes.
+                    if idx >= 0:
+                        frame:
+                            style "pl_tray"
+                            xfill False
+                            xpos (idx % 2) * (cw + gx)
+                            ypos 22 + (idx // 2) * pitch + 50
+                            xsize cw
+                            ysize dz
 
-                        # Cuerpo completo (pose 5): sección aparte, opcional.
-                        if r["cuerpos"]:
-                            use pl_menu("Cuerpo completo", r["cuerpo"] or "— usar pose normal", "cuerpo", [
-                                ("— usar pose normal", pl_choose_cuerpo(""), r["cuerpo"] == "")
-                            ] + [
-                                (c, pl_choose_cuerpo(c), c == r["cuerpo"]) for c in r["cuerpos"]
-                            ])
+                            viewport:
+                                ysize dz - 12
+                                scrollbars "vertical"
+                                mousewheel True
 
-                        if not r["cuerpo"]:
-                            use pl_menu("Outfit", pl_outfit_label(r["outfit"]), "outfit", [
-                                (pl_outfit_label(o), pl_choose_outfit(o), o == r["outfit"]) for o in r["outfits"]
-                            ])
-
-                            use pl_menu("Pose", str(r["pose"]) if r["pose"] else "—", "pose", [
-                                (str(p), pl_choose_pose(p), p == r["pose"]) for p in r["poses"]
-                            ])
-
-                            use pl_menu("Cara", pl_cara_label(r["cara"]), "cara", [
-                                (pl_cara_label(c), pl_choose("cara", c), c == r["cara"]) for c in r["caras"]
-                            ])
-
-                        # Transforms separados por categoría.
-                        use pl_menu("Posición", pl_trans_actual(_PL_POS), "trans", [
-                            (t, pl_choose("trans", t), t == pl_state["trans"]) for t in _PL_POS
-                        ])
-
-                        use pl_menu("Focus", pl_trans_actual(_PL_FOCUS), "trans", [
-                            (t, pl_choose("trans", t), t == pl_state["trans"]) for t in _PL_FOCUS
-                        ])
-
-                        use pl_menu("Entrada lateral", pl_trans_actual(_PL_ENTRADAS), "trans", [
-                            (t, pl_choose("trans", t), t == pl_state["trans"]) for t in _PL_ENTRADAS
-                        ])
-
-                        use pl_menu("Fondo", r["fondo"] or "—", "fondo", [
-                            (f, pl_choose("fondo", f), f == r["fondo"]) for f in pl_fondos()
-                        ])
+                                vbox:
+                                    xfill True
+                                    spacing 2
+                                    for texto, accion, elegido in menus[idx][3]:
+                                        textbutton "[texto]":
+                                            style "pl_option"
+                                            selected elegido
+                                            action accion
 
 
 # Ventana flotante del bloque de código (se arrastra por la barra de título).
@@ -198,9 +286,7 @@ screen pl_code(txt_show):
         vbox:
             spacing 0
 
-            frame:
-                style "pl_window_bar"
-                text "Código" style "pl_window_bar_text"
+            use pl_barra("Código", "code")
 
             frame:
                 background None
@@ -211,9 +297,164 @@ screen pl_code(txt_show):
                     spacing 8
 
                     if txt_show:
-                        text "[txt_show]" style "pl_code" xmaximum 430
-                        textbutton "Copiar":
-                            style "pl_copy"
-                            action Function(pl_copiar, txt_show)
+                        text "[txt_show]" style "pl_code" xmaximum 440
+
+                        hbox:
+                            spacing 10
+                            textbutton "Copiar":
+                                style "pl_copy"
+                                action Function(pl_copiar, txt_show)
+                            textbutton "Copiar en…":
+                                style "pl_copy"
+                                action Show("pl_aviso", texto=txt_show)
                     else:
-                        text "Elegi personaje, outfit, pose y cara." style "pl_hint"
+                        text "Elige personaje, outfit, pose y cara." style "pl_hint"
+
+
+# Aviso previo a "Copiar en…": explica cómo habilitar un .rpy como destino.
+screen pl_aviso(texto):
+    modal True
+    zorder 260
+
+    key "K_ESCAPE" action Hide("pl_aviso")
+
+    frame:
+        style "pl_destino_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 520
+
+        vbox:
+            spacing 12
+
+            text "Copiar en…" style "pl_destino_title"
+            text "Escribe `# poselab` al principio del .rpy donde quieres pegar la definición. Si no lo tiene, ese archivo no aparece en la lista." style "pl_text"
+
+            hbox:
+                spacing 8
+                textbutton "Entendido":
+                    style "pl_button"
+                    action [Hide("pl_aviso"), Show("pl_destino", texto=texto)]
+                textbutton "Cancelar":
+                    style "pl_copy"
+                    action Hide("pl_aviso")
+
+
+# Panel "Copiar en…": escribe la definición dentro de un .rpy del guion.
+# Un archivo aparece en la lista si tiene una línea `# poselab` en cualquier
+# parte (marcador que lo habilita como destino).
+screen pl_destino(texto):
+    modal True
+    zorder 250
+
+    default confirmando = False
+
+    on "show" action Function(pl_destino_init, texto)
+
+    key "K_ESCAPE" action Hide("pl_destino")
+
+    frame:
+        style "pl_destino_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 1000
+        ysize 560
+
+        vbox:
+            spacing 10
+
+            text "Copiar en…" style "pl_destino_title"
+
+            $ objs = pl_objetivos()
+
+            if not objs:
+                text "Agrega una línea `# poselab` a un .rpy para que aparezca aquí." style "pl_hint"
+
+                textbutton "Cerrar":
+                    style "pl_copy"
+                    action Hide("pl_destino")
+            else:
+                $ rel = pl_state["destino_archivo"]
+                $ lineas = pl_leer_objetivo(rel)
+
+                hbox:
+                    spacing 12
+
+                    # Lista de archivos destino (los que tienen el marcador).
+                    frame:
+                        style "pl_tray"
+                        xsize 250
+                        ysize 360
+
+                        viewport:
+                            ysize 348
+                            scrollbars "vertical"
+                            mousewheel True
+
+                            vbox:
+                                xfill True
+                                spacing 2
+                                for o in objs:
+                                    textbutton "[o]":
+                                        style "pl_archivo"
+                                        selected o == rel
+                                        action [SetDict(pl_state, "destino_archivo", o),
+                                                SetDict(pl_state, "destino_linea", 0)]
+
+                    # Preview del archivo: clic en una línea elige dónde insertar.
+                    frame:
+                        style "pl_tray"
+                        xsize 700
+                        ysize 360
+
+                        viewport:
+                            ysize 348
+                            scrollbars "vertical"
+                            mousewheel True
+
+                            vbox:
+                                xfill True
+                                spacing 0
+                                for i, linea in enumerate(lineas):
+                                    $ etiqueta = "%d  %s" % (i + 1, linea)
+                                    textbutton "[etiqueta]":
+                                        style "pl_linea"
+                                        selected i == pl_state["destino_linea"]
+                                        action SetDict(pl_state, "destino_linea", i)
+
+                # Línea que se insertará (solo lectura).
+                hbox:
+                    spacing 8
+                    text "Línea a pegar:" style "pl_caption" yalign 0.5
+                    frame:
+                        style "pl_tray"
+                        xfill True
+                        text "[pl_state['destino_texto']]" style "pl_code"
+
+                # Confirmación y acciones.
+                hbox:
+                    spacing 8
+
+                    if confirmando:
+                        $ aviso = "Se insertará tras la línea %d de %s. Reinicia el juego para recompilar." % (pl_state["destino_linea"] + 1, rel)
+                        text "[aviso]" style "pl_hint" yalign 0.5 xmaximum 520
+
+                        textbutton "Sí, escribir":
+                            style "pl_button"
+                            action [Function(pl_escribir_destino), SetScreenVariable("confirmando", False)]
+                        textbutton "Cancelar":
+                            style "pl_copy"
+                            action SetScreenVariable("confirmando", False)
+                    else:
+                        textbutton "Confirmar":
+                            style "pl_button"
+                            action SetScreenVariable("confirmando", True)
+                        textbutton "Abrir archivo":
+                            style "pl_copy"
+                            action Function(pl_abrir_destino)
+                        textbutton "Deshacer":
+                            style "pl_copy"
+                            action Function(pl_deshacer_destino)
+                        textbutton "Cerrar":
+                            style "pl_copy"
+                            action Hide("pl_destino")

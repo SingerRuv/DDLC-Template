@@ -1,7 +1,8 @@
 ## pose_lab_preview.rpy
 ## PoseLab — Preview: compone el lienzo 1280x720 con el fondo elegido y la
-## pose aplicando su TRANSFORM REAL (animado), para que se vea igual que en
-## el juego.
+## pose aplicando su TRANSFORM REAL vía `at` (screen-language), de modo que
+## se dispare el bloque `on show`/`on replace` del transform y se vea (y
+## anime) igual que en el juego.
 
 init python:
     def _pl_mostrar(tag, nombre):
@@ -23,31 +24,47 @@ init python:
             return None
         return renpy.displayable("%s %s" % (pl_tag(tag), nombre))
 
-    def _pl_pose_transformada(tag, nombre, trans):
-        """La pose con su transform real aplicado (animado). Si el transform
-        no existe, se devuelve la pose sin transformar."""
-        disp = _pl_mostrar(tag, nombre)
-        if disp is None:
-            return None
-        transform = getattr(store, trans, None)
-        if transform is None:
-            return disp
-        try:
-            return transform(child=disp)
-        except Exception:
-            return disp
+    def pl_trans_objeto(trans):
+        """Transform a aplicar en el preview.
 
-    @_pl_cacheado
-    def pl_preview(tag, nombre, trans, fondo):
-        """Lienzo 1280x720: fondo + la pose con su transform real.
+        Los transforms de posición (`t11..t44`) heredan de `tcommon`, cuyo
+        `xcenter`/`zoom` viven dentro de su bloque `on show`. Dentro de un
+        screen ese evento no se dispara (config.containers_pass_transform_events
+        no incluye "show"), así que el sprite quedaría sin posición y a zoom
+        1.0. La variante instantánea `iNN` fija esos mismos valores como
+        propiedades estáticas (misma pose de reposo), por eso se prefiere."""
+        if trans.startswith("t"):
+            inst = getattr(store, "i" + trans[1:], None)
+            if inst is not None:
+                return inst
+        return getattr(store, trans, None)
 
-        Se cachea por (tag, nombre, trans, fondo): así el displayable es estable
-        entre re-renders (no reinicia la animación), y al cambiar de pose/transform
-        se crea uno nuevo (re-anima)."""
-        c = Fixed(xysize=(1280, 720))
-        if fondo:
-            c.add("images/bg/%s.png" % fondo)
-        disp = _pl_pose_transformada(tag, nombre, trans)
-        if disp is not None:
-            c.add(disp)
-        return c
+
+# Preview: fondo + pose, directos en el screen.
+# Un segundo personaje (referencia) se dibuja fijo en zorder 2 para mostrar el
+# layering: el actual queda detrás suyo con zorder < 2 y delante con zorder > 2.
+screen pl_preview(tag, nombre, trans, fondo, zorder):
+    if fondo:
+        add "images/bg/%s.png" % fondo
+
+    $ _disp = _pl_mostrar(tag, nombre)
+    $ _tr = pl_trans_objeto(trans)
+    $ _ref = pl_referencia(tag)
+    $ _refdisp = _pl_mostrar(_ref[0], _ref[1]) if _ref else None
+
+    if _refdisp is not None and zorder < 2:
+        # El actual queda detrás de la referencia (que está en zorder 2).
+        if _disp is not None:
+            if _tr is not None:
+                add _disp at _tr
+            else:
+                add _disp
+        add _refdisp at i22
+    else:
+        if _refdisp is not None:
+            add _refdisp at i22
+        if _disp is not None:
+            if _tr is not None:
+                add _disp at _tr
+            else:
+                add _disp
