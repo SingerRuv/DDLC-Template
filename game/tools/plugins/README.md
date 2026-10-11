@@ -57,6 +57,42 @@ game/tools/plugins/
 se muestra como herramienta pero **sí** aparece en el panel **Diagnóstico** del
 hub, con el motivo. Nunca se descarta en silencio.
 
+## Plugin en Python (`.py`)
+
+Además del `.rpy` del screen, un plugin puede incluir lógica en Python. Declarás
+el módulo en el manifiesto:
+
+```json
+{ "modulo": "mi_modulo" }
+```
+
+y ponés `mi_modulo.py` dentro de la carpeta del plugin (la carpeta se agrega al
+import path automáticamente). El hub lo importa y llama, **si existen**, estos
+hooks opcionales:
+
+```python
+def metadata():
+    """Dict opcional: sobreescribe campos cosméticos del manifiesto
+    (titulo, descripcion, autor, version, categoria, palabras_clave, orden)."""
+    return {"categoria": "Sprites"}
+
+def setup(tool):
+    """Una vez, al init. `tool` es el dict de la herramienta."""
+
+def open(tool):
+    """Al abrir la herramienta (desde el hub)."""
+
+def close(tool):
+    """Al cerrarla (el hub lo detecta)."""
+```
+
+El módulo puede importar otros `.py` de su propia carpeta (p. ej.
+`import mi_helper`). Todos los errores de import/hook van a `log.txt` y **no**
+rompen el hub.
+
+> Nota: dentro de un módulo `.py`, el `open` global está tomado por Ren'Py y
+> acepta un solo argumento. Si necesitás leer/escribir archivos, usá `io.open`.
+
 ## El screen
 
 En tu `.rpy` define el screen que pusiste en `"screen"`:

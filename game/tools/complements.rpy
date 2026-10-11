@@ -124,6 +124,7 @@ init python:
 
             herramientas.append({
                 "id": id_,
+                "dir": carpeta,
                 "titulo": titulo,
                 "descripcion": str(datos.get("descripcion") or ""),
                 "autor": str(datos.get("autor") or ""),
@@ -139,6 +140,8 @@ init python:
                 "min_version": min_version,
             })
 
+        for e in herramientas:
+            _pl_aplicar_metadata(e)
         herramientas.sort(key=lambda d: (d["orden"], d["titulo"].lower()))
         return herramientas, diagnosticos
 
@@ -149,6 +152,100 @@ init python:
     def pl_diagnosticos():
         """Problemas de plugins detectados (fatales y warnings)."""
         return pl_plugins()[1]
+
+    # ======================================================================
+    # Plugins Python (.py): un plugin puede declarar `"modulo": "nombre"` y
+    # poner `nombre.py` en su carpeta. El hub agrega la carpeta al import path
+    # y llama, si existen, los hooks:
+    #   setup(tool)  -> una vez, al init
+    #   open(tool)   -> al abrir la herramienta
+    #   close(tool)  -> al cerrarla (detectado)
+    #   metadata()   -> dict que sobreescribe campos cosmeticos del manifiesto
+    # ======================================================================
+    import importlib as _pl_importlib
+
+    _PL_PLUGIN_MODULOS = {}     # id -> modulo importado (o None)
+    _PL_PLUGIN_SETUP = set()    # ids con setup() ya llamado
+    _PL_TOOL_ABIERTA = None     # herramienta abierta (dict) o None
+
+    def _pl_cargar_modulo(tool):
+        """Importa el .py declarado por el plugin (una vez por id)."""
+        id_ = tool["id"]
+        if id_ in _PL_PLUGIN_MODULOS:
+            return _PL_PLUGIN_MODULOS[id_]
+        mod = None
+        nombre = tool.get("modulo") or ""
+        if nombre:
+            try:
+                renpy.add_python_directory("%s%s/" % (_PL_PLUGINS_DIR, tool["dir"]))
+                mod = _pl_importlib.import_module(nombre)
+            except Exception as e:
+                renpy.log("%s: no se pudo importar '%s' (%s): %s"
+                          % (_PL_PLUGINS_LOG, nombre, id_, e))
+        _PL_PLUGIN_MODULOS[id_] = mod
+        return mod
+
+    def _pl_aplicar_metadata(e):
+        """Aplica metadata() del modulo (sobreescribe campos cosmeticos)."""
+        mod = _PL_PLUGIN_MODULOS.get(e["id"])
+        if mod is None:
+            return
+        try:
+            md = getattr(mod, "metadata", None)
+            md = md() if callable(md) else md
+        except Exception as ex:
+            renpy.log("%s: metadata() de '%s' fallo: %s" % (_PL_PLUGINS_LOG, e["id"], ex))
+            return
+        if isinstance(md, _pl_builtins.dict):
+            for k in ("titulo", "descripcion", "autor", "version",
+                      "categoria", "palabras_clave", "orden"):
+                if k in md:
+                    e[k] = md[k]
+
+    def _pl_llamar(mod, nombre, *args):
+        """Llama un hook opcional del modulo; los errores van al log."""
+        hook = getattr(mod, nombre, None) if mod is not None else None
+        if callable(hook):
+            try:
+                hook(*args)
+            except Exception as e:
+                renpy.log("%s: %s.%s() fallo: %s"
+                          % (_PL_PLUGINS_LOG, getattr(mod, "__name__", "?"), nombre, e))
+
+    def _pl_llamar_cierre():
+        global _PL_TOOL_ABIERTA
+        tool = _PL_TOOL_ABIERTA
+        _PL_TOOL_ABIERTA = None
+        if tool is not None:
+            _pl_llamar(_PL_PLUGIN_MODULOS.get(tool["id"]), "close", tool)
+
+    def _pl_vigilar_cierre():
+        """Periodic: si la herramienta abierta ya no esta, llama close()."""
+        if _PL_TOOL_ABIERTA is not None and not renpy.get_screen(_PL_TOOL_ABIERTA["screen"]):
+            _pl_llamar_cierre()
+
+    def pl_abrir(tool):
+        """Abre una herramienta: cierra la anterior, corre open() y muestra el screen."""
+        global _PL_TOOL_ABIERTA
+        _pl_llamar_cierre()
+        mod = _PL_PLUGIN_MODULOS.get(tool["id"]) or _pl_cargar_modulo(tool)
+        _pl_llamar(mod, "open", tool)
+        _PL_TOOL_ABIERTA = tool
+        renpy.show_screen(tool["screen"], **tool["args"])
+
+
+init 999 python:
+    # Carga los modulos .py de los plugins y llama setup() una vez por cada uno.
+    for _t in pl_plugins()[0]:
+        if _t.get("modulo") and _t["id"] not in _PL_PLUGIN_SETUP:
+            _mod = _pl_cargar_modulo(_t)
+            if _mod is not None:
+                _pl_llamar(_mod, "setup", _t)
+            _PL_PLUGIN_SETUP.add(_t["id"])
+
+    # Vigila el cierre de la herramienta abierta (para el hook close()).
+    if _pl_vigilar_cierre not in config.periodic_callbacks:
+        config.periodic_callbacks.append(_pl_vigilar_cierre)
 
 
 screen complements():
@@ -234,7 +331,7 @@ screen complements():
                 textbutton "Abrir [tool['titulo']]":
                     style "complements_open"
                     text_style "main_navigation_button_text"
-                    action Show(tool["screen"], **tool["args"])
+                    action Function(pl_abrir, tool)
                     at nav_button_anim
             else:
                 text _("No hay herramientas instaladas.") style "complements_detail_desc"
