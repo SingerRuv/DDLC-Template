@@ -175,7 +175,7 @@ screen pl_card(t):
                         text _(pl_corto(t["descripcion"], 100)) style "pl_card_desc" xmaximum 230
                         text _(t["categoria"]) style "pl_card_cat"
 
-                text _("Abrir →") style "pl_card_open" xalign 0.98 yalign 0.5
+                text _("Abrir →") style "pl_card_open" xalign 0.02 yalign 0.98
 
 
 # ---------------------------------------------------------------------------

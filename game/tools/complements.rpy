@@ -48,7 +48,7 @@ screen complements():
             yoffset 24
             spacing 10
 
-            text _("Herramientas") style "complements_title"
+            text _("Herramientas") style "main_navigation_button_text"
 
             vbox:
                 spacing 4
@@ -58,11 +58,6 @@ screen complements():
                         text_style "pl_chip_text"
                         selected (cat == c)
                         action SetScreenVariable("cat", c)
-
-            textbutton _("Back"):
-                style "main_navigation_button"
-                text_style "main_navigation_button_text"
-                action ShowMenu("main_menu")
 
     # ----- Área derecha: buscador + grilla de tarjetas + diagnóstico -----
     vbox:
@@ -105,3 +100,13 @@ screen complements():
             for d in diagnosticos:
                 $ _col = "#cc3333" if d["fatal"] else "#a9791c"
                 text "[d['id']]: [d['motivo']]" style "complements_detail_desc" size 13 color _col
+
+    # Volver al menú principal (esquina inferior derecha).
+    textbutton _("Back"):
+        style "main_navigation_button"
+        text_style "main_navigation_button_text"
+        xalign 1.0
+        yalign 1.0
+        xoffset -30
+        yoffset -18
+        action ShowMenu("main_menu")
