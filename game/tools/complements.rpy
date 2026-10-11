@@ -22,6 +22,7 @@ screen complements():
 
     default busqueda = ""
     default cat = ""
+    default cat_open = False
 
     # Volver al menú principal (el hub se abre desde allí).
     key "K_ESCAPE" action ShowMenu("main_menu")
@@ -48,16 +49,26 @@ screen complements():
             yoffset 24
             spacing 10
 
-            text _("Herramientas") style "main_navigation_button_text"
+            text _("Herramientas") style "pl_hub_title"
 
-            vbox:
-                spacing 4
-                for c in [""] + categorias:
-                    textbutton (_(c) if c else _("Todas")):
-                        style "pl_chip"
-                        text_style "pl_chip_text"
-                        selected (cat == c)
-                        action SetScreenVariable("cat", c)
+            button:
+                style "pl_dropdown"
+                action SetScreenVariable("cat_open", not cat_open)
+                hbox:
+                    spacing 8
+                    text (_(cat) if cat else _("Todas")) style "pl_dropdown_text" yalign 0.5
+                    text "▼" style "pl_dropdown_arrow" yalign 0.5
+
+            if cat_open:
+                vbox:
+                    spacing 2
+                    for c in [""] + categorias:
+                        textbutton (_(c) if c else _("Todas")):
+                            style "pl_dropdown_item"
+                            text_style "pl_dropdown_item_text"
+                            selected (cat == c)
+                            action [SetScreenVariable("cat", c),
+                                    SetScreenVariable("cat_open", False)]
 
     # ----- Área derecha: buscador + grilla de tarjetas + diagnóstico -----
     vbox:

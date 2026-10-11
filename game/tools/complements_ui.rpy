@@ -85,14 +85,38 @@ style pl_search_hint is text:
     size 18
     outlines []
 
-style pl_chip is button:
-    background "#ffffffcc"
-    hover_background "#ffffff"
+style pl_hub_title is text:
+    size 26
+    bold True
+    color "#5a1a3a"
+    outlines []
+
+style pl_dropdown is button:
+    background "#ffffff"
+    hover_background "#ffeef5"
+    padding (12, 6)
+    xsize 220
+
+style pl_dropdown_text is text:
+    size 17
+    color "#7a3355"
+    outlines []
+
+style pl_dropdown_arrow is text:
+    font "DejaVuSans.ttf"
+    size 14
+    color "#7a3355"
+    outlines []
+
+style pl_dropdown_item is button:
+    background "#ffffff"
+    hover_background "#ffeef5"
     selected_background "#f4a6c8"
     selected_hover_background "#ef94bd"
     padding (12, 4)
+    xsize 220
 
-style pl_chip_text is text:
+style pl_dropdown_item_text is text:
     size 15
     color "#7a3355"
     outlines []
