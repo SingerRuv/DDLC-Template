@@ -102,7 +102,7 @@ style pl_card is button:
     background "#d9a9c2"
     hover_background "#c07fa3"
     padding (2, 2)
-    xsize 430
+    xsize 425
     ysize 128
 
 style pl_card_inner is frame:
