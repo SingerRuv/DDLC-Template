@@ -158,12 +158,16 @@ init python:
     # ======================================================================
 
     def pl_coincide(t, texto):
-        """True si la herramienta coincide con el texto de búsqueda."""
+        """True si la herramienta coincide con el texto de búsqueda (busca
+        también en los metadatos traducidos, para el idioma actual)."""
         texto = (texto or "").strip().lower()
         if not texto:
             return True
-        campos = (t["titulo"], t["descripcion"], t["categoria"],
-                  " ".join(t["palabras_clave"]), t["id"])
+        campos = (
+            t["titulo"], _(t["titulo"]),
+            t["descripcion"], _(t["descripcion"]),
+            t["categoria"], _(t["categoria"]),
+            " ".join(t["palabras_clave"]), t["id"])
         return any(texto in str(c).lower() for c in campos)
 
     def pl_tool_habilitada(id_):
@@ -326,7 +330,7 @@ screen complements():
                     length 40
 
             for c in [""] + categorias:
-                textbutton (c or _("Todas")):
+                textbutton (_(c) if c else _("Todas")):
                     style "main_navigation_button"
                     text_style "main_navigation_button_text"
                     selected (cat == c)
@@ -395,9 +399,9 @@ screen pl_card(t):
                     spacing 4
                     if _img:
                         add _img at pl_thumb xalign 0.5
-                    text "[t['titulo']]" style "pl_card_title" xalign 0.5
+                    text _(t["titulo"]) style "pl_card_title" xalign 0.5
 
-            text "[t['descripcion']]" style "pl_card_desc" xmaximum 250
+            text _(t["descripcion"]) style "pl_card_desc" xmaximum 250
 
             textbutton (_("Mostrar") if not habilitada else _("Ocultar")):
                 style "pl_card_toggle"
