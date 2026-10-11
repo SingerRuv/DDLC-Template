@@ -64,7 +64,7 @@ style complements_hint is text:
 
 transform pl_thumb:
     fit "contain"
-    xysize (96, 96)
+    xysize (80, 80)
 
 style pl_search_border is frame:
     background "#d9a9c2"
@@ -102,18 +102,18 @@ style pl_card is button:
     background "#d9a9c2"
     hover_background "#c07fa3"
     padding (2, 2)
-    xsize 440
-    ysize 150
+    xsize 430
+    ysize 128
 
 style pl_card_inner is frame:
     background "#ffffff"
-    padding (16, 12)
+    padding (14, 10)
     xfill True
     yfill True
 
 style pl_card_thumb is frame:
     background "#f3e7ee"
-    xysize (96, 96)
+    xysize (80, 80)
     padding (0, 0)
     xalign 0.0
     yalign 0.5
@@ -160,7 +160,7 @@ screen pl_card(t):
                 yfill True
 
                 hbox:
-                    spacing 14
+                    spacing 12
                     yalign 0.5
 
                     frame:
@@ -172,10 +172,10 @@ screen pl_card(t):
                         spacing 2
                         yalign 0.5
                         text _(t["titulo"]) style "pl_card_title"
-                        text _(pl_corto(t["descripcion"], 100)) style "pl_card_desc" xmaximum 230
+                        text _(pl_corto(t["descripcion"], 90)) style "pl_card_desc" xmaximum 230
                         text _(t["categoria"]) style "pl_card_cat"
 
-                text _("Abrir →") style "pl_card_open" xalign 0.98 yalign 0.02
+                text _("Abrir →") style "pl_card_open" xalign 0.98 yalign 0.98
 
 
 # ---------------------------------------------------------------------------

@@ -86,8 +86,8 @@ screen complements():
         vpgrid:
             cols 2
             spacing 12
-            xsize 892
-            ysize 540
+            xsize 872
+            ysize 580
             scrollbars "vertical"
             mousewheel True
             draggable True
