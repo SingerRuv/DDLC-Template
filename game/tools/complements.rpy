@@ -154,6 +154,31 @@ init python:
         return pl_plugins()[1]
 
     # ======================================================================
+    # Hub: búsqueda, categorías y habilitar/deshabilitar (persistente).
+    # ======================================================================
+
+    def pl_coincide(t, texto):
+        """True si la herramienta coincide con el texto de búsqueda."""
+        texto = (texto or "").strip().lower()
+        if not texto:
+            return True
+        campos = (t["titulo"], t["descripcion"], t["categoria"],
+                  " ".join(t["palabras_clave"]), t["id"])
+        return any(texto in str(c).lower() for c in campos)
+
+    def pl_tool_habilitada(id_):
+        return id_ not in (persistent.pl_deshabilitadas or [])
+
+    def pl_tool_alternar(id_):
+        """Muestra/oculta una herramienta en el hub (persistente)."""
+        actual = list(persistent.pl_deshabilitadas or [])
+        if id_ in actual:
+            actual.remove(id_)
+        else:
+            actual.append(id_)
+        persistent.pl_deshabilitadas = actual
+
+    # ======================================================================
     # Plugins Python (.py): un plugin puede declarar `"modulo": "nombre"` y
     # poner `nombre.py` en su carpeta. El hub agrega la carpeta al import path
     # y llama, si existen, los hooks:
@@ -253,7 +278,9 @@ screen complements():
     modal True
     zorder 200
 
-    default sel = 0
+    default busqueda = ""
+    default cat = ""
+    default ver_ocultas = False
 
     # Volver al menú principal (el hub se abre desde allí).
     key "K_ESCAPE" action ShowMenu("main_menu")
@@ -262,8 +289,15 @@ screen complements():
     add gui.main_menu_background
 
     $ herramientas, diagnosticos = pl_plugins()
+    $ categorias = sorted({t["categoria"] for t in herramientas})
+    $ visibles = [
+        t for t in herramientas
+        if (not cat or t["categoria"] == cat)
+        and (ver_ocultas or pl_tool_habilitada(t["id"]))
+        and pl_coincide(t, busqueda)
+    ]
 
-    # ----- Panel izquierdo: lista de herramientas -----
+    # ----- Panel izquierdo: búsqueda, categorías y opciones -----
     frame:
         style "main_menu_frame"
 
@@ -272,76 +306,95 @@ screen complements():
             xpos gui.navigation_xpos
             xoffset -50
             yalign 0.0
-            yoffset 40
-            spacing gui.navigation_spacing
+            yoffset 24
+            spacing 5
 
             text _("Herramientas") style "complements_title"
 
-            if not herramientas:
-                text _("No hay herramientas instaladas.") style "complements_hint"
+            frame:
+                style "pl_search_frame"
+                input:
+                    value ScreenVariableInputValue("busqueda")
+                    style "pl_search"
+                    length 40
 
-            for i, tool in enumerate(herramientas):
-                textbutton "[tool['titulo']]":
+            for c in [""] + categorias:
+                textbutton (c or _("Todas")):
                     style "main_navigation_button"
                     text_style "main_navigation_button_text"
-                    selected sel == i
-                    action SetScreenVariable("sel", i)
+                    selected (cat == c)
+                    action SetScreenVariable("cat", c)
+
+            textbutton (_("Ocultar las ocultas") if ver_ocultas else _("Mostrar ocultas")):
+                style "main_navigation_button"
+                text_style "main_navigation_button_text"
+                selected ver_ocultas
+                action SetScreenVariable("ver_ocultas", not ver_ocultas)
 
             textbutton _("Back"):
                 style "main_navigation_button"
                 text_style "main_navigation_button_text"
                 action ShowMenu("main_menu")
 
-    # ----- Panel derecho: detalle de la herramienta + diagnóstico -----
+    # ----- Panel derecho: grilla de tarjetas + diagnóstico -----
     frame:
         style "complements_detail"
-        xpos 360
-        ypos 60
-        xsize 880
+        xpos 340
+        ypos 24
+        xsize 900
+        ysize 672
 
         vbox:
-            spacing 12
+            spacing 8
 
-            if herramientas:
-                $ tool = herramientas[min(sel, len(herramientas) - 1)]
+            if not visibles:
+                text _("No hay herramientas que coincidan.") style "complements_detail_desc"
 
-                text "[tool['titulo']]" style "complements_detail_title"
+            vpgrid:
+                cols 3
+                spacing 12
+                xsize 862
+                ysize 540
+                scrollbars "vertical"
+                mousewheel True
+                draggable True
 
-                $ meta = " · ".join(s for s in (
-                    ("v" + tool["version"]) if tool["version"] else "",
-                    tool["autor"],
-                    tool["categoria"] if tool["categoria"] != "General" else "") if s)
-                if meta:
-                    text "[meta]" style "complements_meta"
+                for t in visibles:
+                    use pl_card(t)
 
-                text "[tool['descripcion']]" style "complements_detail_desc"
-
-                text _("Capturas de pantalla") style "complements_section"
-
-                if tool["capturas"]:
-                    hbox:
-                        spacing 12
-                        for cap in tool["capturas"]:
-                            add cap zoom 0.4
-                else:
-                    frame:
-                        style "complements_shot_frame"
-                        text _("Sin capturas todavía.") style "complements_shot_empty"
-
-                textbutton "Abrir [tool['titulo']]":
-                    style "complements_open"
-                    text_style "main_navigation_button_text"
-                    action Function(pl_abrir, tool)
-                    at nav_button_anim
-            else:
-                text _("No hay herramientas instaladas.") style "complements_detail_desc"
-
-            # Diagnóstico: plugins con problemas, nunca se descartan en silencio.
             if diagnosticos:
                 text _("Diagnóstico") style "complements_section"
                 for d in diagnosticos:
                     $ _col = "#cc3333" if d["fatal"] else "#a9791c"
-                    text "[d['id']]: [d['motivo']]" style "complements_detail_desc" size 14 color _col
+                    text "[d['id']]: [d['motivo']]" style "complements_detail_desc" size 13 color _col
+
+
+# Tarjeta de una herramienta en la grilla del hub.
+screen pl_card(t):
+    $ habilitada = pl_tool_habilitada(t["id"])
+    $ _img = t["icono"] or (t["capturas"][0] if t["capturas"] else "")
+
+    frame:
+        style "pl_card"
+
+        vbox:
+            spacing 4
+
+            button:
+                style "pl_card_open"
+                action Function(pl_abrir, t)
+
+                vbox:
+                    spacing 4
+                    if _img:
+                        add _img at pl_thumb xalign 0.5
+                    text "[t['titulo']]" style "pl_card_title" xalign 0.5
+
+            text "[t['descripcion']]" style "pl_card_desc" xmaximum 250
+
+            textbutton (_("Mostrar") if not habilitada else _("Ocultar")):
+                style "pl_card_toggle"
+                action Function(pl_tool_alternar, t["id"])
 
 
 style complements_detail is frame:
@@ -393,4 +446,54 @@ style complements_title is text:
 style complements_hint is text:
     size 14
     color "#888888"
+    outlines []
+
+# --- Hub: búsqueda, tarjetas y grilla ---
+
+transform pl_thumb:
+    fit "contain"
+    xysize (64, 64)
+
+style pl_search_frame is frame:
+    background "#ffffffcc"
+    padding (10, 6)
+    xsize 250
+
+style pl_search is input:
+    color "#333333"
+    size 18
+    outlines []
+
+style pl_card is frame:
+    background "#ffffffdd"
+    padding (14, 10)
+    xsize 280
+    ysize 180
+
+style pl_card_open is button:
+    background None
+    hover_background "#ffccdd66"
+    padding (4, 4)
+    xfill True
+
+style pl_card_title is text:
+    size 20
+    bold True
+    color "#cc6699"
+    outlines []
+
+style pl_card_desc is text:
+    size 13
+    color "#555555"
+    outlines []
+
+style pl_card_toggle is button:
+    background "#e6e6e6"
+    hover_background "#d6d6d6"
+    padding (8, 4)
+    xalign 0.5
+
+style pl_card_toggle_text is text:
+    size 13
+    color "#333333"
     outlines []
