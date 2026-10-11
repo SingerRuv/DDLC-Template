@@ -102,8 +102,8 @@ style pl_card is button:
     background "#d9a9c2"
     hover_background "#c07fa3"
     padding (2, 2)
-    xsize 448
-    ysize 158
+    xsize 440
+    ysize 150
 
 style pl_card_inner is frame:
     background "#ffffff"
@@ -175,7 +175,7 @@ screen pl_card(t):
                         text _(pl_corto(t["descripcion"], 100)) style "pl_card_desc" xmaximum 230
                         text _(t["categoria"]) style "pl_card_cat"
 
-                text _("Abrir →") style "pl_card_open" xalign 0.02 yalign 0.98
+                text _("Abrir →") style "pl_card_open" xalign 0.98 yalign 0.02
 
 
 # ---------------------------------------------------------------------------
