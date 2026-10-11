@@ -110,9 +110,7 @@ init python:
             if min_version:
                 v_req, v_api = _pl_ver(min_version), _pl_ver(tools_api_version)
                 if v_req and v_api and v_req > v_api:
-                    _pl_diag(diagnosticos, id_, f,
-                             "requiere API >= %s (actual %s)" % (min_version, tools_api_version),
-                             fatal=False)
+                    _pl_diag(diagnosticos, id_, f, "requiere API >= %s (actual %s)" % (min_version, tools_api_version), fatal=False)
 
             capturas = []
             for cap in (datos.get("capturas") or []):
@@ -170,24 +168,17 @@ init python:
             " ".join(t["palabras_clave"]), t["id"])
         return any(texto in str(c).lower() for c in campos)
 
-    def pl_tool_habilitada(id_):
-        return id_ not in (persistent.pl_deshabilitadas or [])
-
-    def pl_tool_alternar(id_):
-        """Muestra/oculta una herramienta en el hub (persistente)."""
-        actual = list(persistent.pl_deshabilitadas or [])
-        if id_ in actual:
-            actual.remove(id_)
-        else:
-            actual.append(id_)
-        persistent.pl_deshabilitadas = actual
-
     def pl_tool_por_id(id_):
         """Devuelve el dict de una herramienta por su id (o None)."""
         for t in pl_plugins()[0]:
             if t["id"] == id_:
                 return t
         return None
+
+    def pl_corto(texto, n=110):
+        """Recorta un texto para la tarjeta (con '…')."""
+        texto = texto or ""
+        return texto if len(texto) <= n else texto[:n - 1].rstrip() + "…"
 
     # ======================================================================
     # Plugins Python (.py): un plugin puede declarar `"modulo": "nombre"` y
@@ -216,8 +207,7 @@ init python:
                 renpy.add_python_directory("%s%s/" % (_PL_PLUGINS_DIR, tool["dir"]))
                 mod = _pl_importlib.import_module(nombre)
             except Exception as e:
-                renpy.log("%s: no se pudo importar '%s' (%s): %s"
-                          % (_PL_PLUGINS_LOG, nombre, id_, e))
+                renpy.log("%s: no se pudo importar '%s' (%s): %s" % (_PL_PLUGINS_LOG, nombre, id_, e))
         _PL_PLUGIN_MODULOS[id_] = mod
         return mod
 
@@ -233,8 +223,7 @@ init python:
             renpy.log("%s: metadata() de '%s' fallo: %s" % (_PL_PLUGINS_LOG, e["id"], ex))
             return
         if isinstance(md, _pl_builtins.dict):
-            for k in ("titulo", "descripcion", "autor", "version",
-                      "categoria", "palabras_clave", "orden"):
+            for k in ("titulo", "descripcion", "autor", "version", "categoria", "palabras_clave", "orden"):
                 if k in md:
                     e[k] = md[k]
 
@@ -245,8 +234,7 @@ init python:
             try:
                 hook(*args)
             except Exception as e:
-                renpy.log("%s: %s.%s() fallo: %s"
-                          % (_PL_PLUGINS_LOG, getattr(mod, "__name__", "?"), nombre, e))
+                renpy.log("%s: %s.%s() fallo: %s" % (_PL_PLUGINS_LOG, getattr(mod, "__name__", "?"), nombre, e))
 
     def _pl_llamar_cierre():
         global _PL_TOOL_ABIERTA
@@ -291,7 +279,6 @@ screen complements():
 
     default busqueda = ""
     default cat = ""
-    default ver_ocultas = False
 
     # Volver al menú principal (el hub se abre desde allí).
     key "K_ESCAPE" action ShowMenu("main_menu")
@@ -303,12 +290,10 @@ screen complements():
     $ categorias = sorted({t["categoria"] for t in herramientas})
     $ visibles = [
         t for t in herramientas
-        if (not cat or t["categoria"] == cat)
-        and (ver_ocultas or pl_tool_habilitada(t["id"]))
-        and pl_coincide(t, busqueda)
+        if (not cat or t["categoria"] == cat) and pl_coincide(t, busqueda)
     ]
 
-    # ----- Panel izquierdo: búsqueda, categorías y opciones -----
+    # ----- Panel izquierdo: búsqueda y categorías -----
     frame:
         style "main_menu_frame"
 
@@ -318,94 +303,94 @@ screen complements():
             xoffset -50
             yalign 0.0
             yoffset 24
-            spacing 5
+            spacing 10
 
             text _("Herramientas") style "complements_title"
 
             frame:
                 style "pl_search_frame"
-                input:
-                    value ScreenVariableInputValue("busqueda")
-                    style "pl_search"
-                    length 40
+                fixed:
+                    xfill True
+                    ysize 30
+                    if not busqueda:
+                        text _("Buscar…") style "pl_search_hint" xoffset 4 yalign 0.5
+                    input:
+                        value ScreenVariableInputValue("busqueda")
+                        style "pl_search"
+                        length 40
 
-            for c in [""] + categorias:
-                textbutton (_(c) if c else _("Todas")):
-                    style "main_navigation_button"
-                    text_style "main_navigation_button_text"
-                    selected (cat == c)
-                    action SetScreenVariable("cat", c)
-
-            textbutton (_("Ocultar las ocultas") if ver_ocultas else _("Mostrar ocultas")):
-                style "main_navigation_button"
-                text_style "main_navigation_button_text"
-                selected ver_ocultas
-                action SetScreenVariable("ver_ocultas", not ver_ocultas)
+            vbox:
+                spacing 4
+                for c in [""] + categorias:
+                    textbutton (_(c) if c else _("Todas")):
+                        style "pl_chip"
+                        text_style "pl_chip_text"
+                        selected (cat == c)
+                        action SetScreenVariable("cat", c)
 
             textbutton _("Back"):
                 style "main_navigation_button"
                 text_style "main_navigation_button_text"
                 action ShowMenu("main_menu")
 
-    # ----- Panel derecho: grilla de tarjetas + diagnóstico -----
-    frame:
-        style "complements_detail"
+    # ----- Área derecha: grilla de tarjetas + diagnóstico -----
+    vbox:
         xpos 340
-        ypos 24
+        ypos 30
         xsize 900
-        ysize 672
+        spacing 10
 
-        vbox:
-            spacing 8
+        if not visibles:
+            text _("No hay herramientas que coincidan.") style "complements_detail_desc"
 
-            if not visibles:
-                text _("No hay herramientas que coincidan.") style "complements_detail_desc"
+        vpgrid:
+            cols 2
+            spacing 12
+            xsize 892
+            ysize 560
+            scrollbars "vertical"
+            mousewheel True
+            draggable True
 
-            vpgrid:
-                cols 3
-                spacing 12
-                xsize 862
-                ysize 540
-                scrollbars "vertical"
-                mousewheel True
-                draggable True
+            for t in visibles:
+                use pl_card(t)
 
-                for t in visibles:
-                    use pl_card(t)
-
-            if diagnosticos:
-                text _("Diagnóstico") style "complements_section"
-                for d in diagnosticos:
-                    $ _col = "#cc3333" if d["fatal"] else "#a9791c"
-                    text "[d['id']]: [d['motivo']]" style "complements_detail_desc" size 13 color _col
+        if diagnosticos:
+            text _("Diagnóstico") style "complements_section"
+            for d in diagnosticos:
+                $ _col = "#cc3333" if d["fatal"] else "#a9791c"
+                text "[d['id']]: [d['motivo']]" style "complements_detail_desc" size 13 color _col
 
 
-# Tarjeta de una herramienta en la grilla del hub.
+# Tarjeta de una herramienta en la grilla del hub. Toda la tarjeta es clickeable.
 screen pl_card(t):
-    $ habilitada = pl_tool_habilitada(t["id"])
     $ _img = t["icono"] or (t["capturas"][0] if t["capturas"] else "")
 
-    frame:
+    button:
         style "pl_card"
+        action Function(pl_abrir, t)
 
-        vbox:
-            spacing 4
+        fixed:
+            xfill True
+            yfill True
 
-            button:
-                style "pl_card_open"
-                action Function(pl_abrir, t)
+            hbox:
+                spacing 14
+                yalign 0.5
+
+                frame:
+                    style "pl_card_thumb"
+                    if _img:
+                        add _img at pl_thumb
 
                 vbox:
-                    spacing 4
-                    if _img:
-                        add _img at pl_thumb xalign 0.5
-                    text _(t["titulo"]) style "pl_card_title" xalign 0.5
+                    spacing 2
+                    yalign 0.5
+                    text _(t["titulo"]) style "pl_card_title"
+                    text _(pl_corto(t["descripcion"], 100)) style "pl_card_desc" xmaximum 230
+                    text _(t["categoria"]) style "pl_card_cat"
 
-            text _(t["descripcion"]) style "pl_card_desc" xmaximum 250
-
-            textbutton (_("Mostrar") if not habilitada else _("Ocultar")):
-                style "pl_card_toggle"
-                action Function(pl_tool_alternar, t["id"])
+            text _("Abrir →") style "pl_card_open" xalign 0.98 yalign 0.5
 
 
 # Shell reutilizable para herramientas simples: fondo del menú, título, ESC y
@@ -494,14 +479,14 @@ style complements_hint is text:
     color "#888888"
     outlines []
 
-# --- Hub: búsqueda, tarjetas y grilla ---
+# --- Hub: búsqueda, chips y tarjetas ---
 
 transform pl_thumb:
     fit "contain"
-    xysize (64, 64)
+    xysize (96, 96)
 
 style pl_search_frame is frame:
-    background "#ffffffcc"
+    background "#ffffff"
     padding (10, 6)
     xsize 250
 
@@ -510,36 +495,55 @@ style pl_search is input:
     size 18
     outlines []
 
-style pl_card is frame:
-    background "#ffffffdd"
-    padding (14, 10)
-    xsize 280
-    ysize 180
+style pl_search_hint is text:
+    color "#999999"
+    size 18
+    outlines []
 
-style pl_card_open is button:
-    background None
-    hover_background "#ffccdd66"
-    padding (4, 4)
-    xfill True
+style pl_chip is button:
+    background "#ffffffcc"
+    hover_background "#ffffff"
+    selected_background "#f4a6c8"
+    selected_hover_background "#ef94bd"
+    padding (12, 4)
+
+style pl_chip_text is text:
+    size 15
+    color "#7a3355"
+    outlines []
+
+style pl_card is button:
+    background "#ffffff"
+    hover_background "#ffeef5"
+    padding (16, 12)
+    xsize 440
+    ysize 150
+
+style pl_card_thumb is frame:
+    background "#f3e7ee"
+    xysize (96, 96)
+    padding (0, 0)
+    xalign 0.0
+    yalign 0.5
 
 style pl_card_title is text:
-    size 20
+    size 26
     bold True
     color "#cc6699"
     outlines []
 
 style pl_card_desc is text:
-    size 13
-    color "#555555"
+    size 15
+    color "#444444"
     outlines []
 
-style pl_card_toggle is button:
-    background "#e6e6e6"
-    hover_background "#d6d6d6"
-    padding (8, 4)
-    xalign 0.5
-
-style pl_card_toggle_text is text:
+style pl_card_cat is text:
     size 13
-    color "#333333"
+    color "#aa7799"
+    outlines []
+
+style pl_card_open is text:
+    size 18
+    bold True
+    color "#cc6699"
     outlines []
