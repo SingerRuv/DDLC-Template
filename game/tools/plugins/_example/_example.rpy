@@ -5,7 +5,7 @@
 ## tool.json y reescribe este screen. El hub la descubre solo.
 ##
 ## Este ejemplo usa el shell reutilizable `tool_shell` (definido en
-## game/tools/complements.rpy), que aporta fondo, título, ESC y el botón
+## game/tools/complements_ui.rpy), que aporta fondo, título, ESC y el botón
 ## "Volver" al hub. Tu screen solo define tag/modal/zorder y el contenido.
 ##
 ## Ver game/tools/plugins/README.md.

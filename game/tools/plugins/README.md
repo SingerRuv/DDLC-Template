@@ -96,7 +96,7 @@ rompen el hub.
 ## El screen
 
 En tu `.rpy` define el screen que pusiste en `"screen"`. Lo más simple es usar
-el shell reutilizable `tool_shell` (definido en `game/tools/complements.rpy`),
+el shell reutilizable `tool_shell` (definido en `game/tools/complements_ui.rpy`),
 que aporta el fondo del menú, el título, ESC y el botón "Volver" al hub:
 
 ```renpy
@@ -116,7 +116,7 @@ screen mi_herramienta():
 ### Estilos reutilizables
 
 Para que tu herramienta se vea integrada, reutiliza estos estilos definidos en
-`game/tools/complements.rpy`:
+`game/tools/complements_ui.rpy`:
 
 - `complements_detail` — tarjeta blanca semi-opaca (panel).
 - `complements_detail_title` — título grande rosa.
