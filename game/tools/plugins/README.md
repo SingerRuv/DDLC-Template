@@ -22,26 +22,40 @@ game/tools/plugins/
 
 ```json
 {
+  "id": "mi_herramienta",
   "titulo": "Mi Herramienta",
   "descripcion": "Qué hace, en una línea.",
   "autor": "Tu nombre",
   "version": "1.0",
   "screen": "mi_herramienta",
+  "categoria": "Utilidades",
+  "orden": 10,
+  "icono": "icono.png",
+  "palabras_clave": ["poses", "sprites"],
   "capturas": ["capturas/1.png"]
 }
 ```
 
-| Campo         | Obligatorio | Descripción                                                        |
-|---------------|-------------|--------------------------------------------------------------------|
-| `titulo`      | No*         | Nombre visible en el hub. Por defecto, el nombre de la carpeta.     |
-| `descripcion` | No          | Texto del panel derecho.                                           |
-| `autor`       | No          | Se muestra junto a la versión.                                     |
-| `version`     | No          | Se muestra como `v1.0`.                                            |
-| `screen`      | **Sí**      | Nombre del screen que abre la herramienta.                         |
-| `capturas`    | No          | Rutas de PNG **relativas a la carpeta** del plugin.                |
+| Campo            | Obligatorio | Descripción                                                          |
+|------------------|-------------|----------------------------------------------------------------------|
+| `id`             | No          | Clave única. Por defecto, el nombre de la carpeta. Duplicados → diagnóstico. |
+| `titulo`         | No          | Nombre visible en el hub. Por defecto, el nombre de la carpeta.       |
+| `descripcion`    | No          | Texto del panel derecho.                                             |
+| `autor`          | No          | Se muestra junto a la versión.                                       |
+| `version`        | No          | Se muestra como `v1.0`.                                              |
+| `screen`         | **Sí**      | Nombre del screen que abre la herramienta.                           |
+| `categoria`      | No          | Agrupa herramientas en el hub (`"General"` por defecto).             |
+| `orden`          | No          | Entero; ordena la lista (menor primero), luego por título.           |
+| `icono`          | No          | PNG **relativo a la carpeta**; se valida que exista.                 |
+| `palabras_clave` | No          | Lista de strings para la búsqueda del hub.                           |
+| `capturas`       | No          | Rutas de PNG **relativas a la carpeta** del plugin.                  |
+| `args`           | No          | Objeto con kwargs que se pasan al `Show(screen)` al abrir.           |
+| `modulo`         | No          | Nombre del módulo Python del plugin (ver abajo).                     |
+| `min_version`    | No          | Versión mínima de la API de plugins (`tools_api_version`).           |
 
-\* Si `tool.json` está roto, falta, o `screen` no existe, el plugin se salta
-(el hub avisa en `log.txt` pero no falla).
+\* Si `tool.json` está roto o falta, o el `screen` no existe, el plugin **no**
+se muestra como herramienta pero **sí** aparece en el panel **Diagnóstico** del
+hub, con el motivo. Nunca se descarta en silencio.
 
 ## El screen
 
