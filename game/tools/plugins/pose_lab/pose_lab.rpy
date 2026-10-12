@@ -5,7 +5,7 @@
 ## Esto funciona con los personajes del template y con personajes propios:
 ## basta con que definan `image <tag> <pose> = Composite(...)`.
 ##
-## Es dev-only: se abre desde el hub "Herramientas" del menú principal.
+## Es dev-only: se abre desde el hub de Plugins del menú principal.
 ## Salida: la línea `show <tag> <pose> at <transform> zorder 2` en un bloque.
 ##
 ## Organización: pose_lab_data.rpy (lógica), pose_lab_preview.rpy (lienzo),
@@ -23,7 +23,7 @@ screen pose_lab():
     $ r = pl_resuelto()
     $ txt_show = pl_show(r["doki"], r["nombre"], r["trans"], r["zorder"])
 
-    # Volver al hub de Herramientas.
+    # Volver al hub de plugins.
     key "K_ESCAPE" action Show("complements")
 
     add Solid("#151515")

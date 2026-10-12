@@ -1,19 +1,19 @@
 ﻿## complements.rpy
-## Hub "Herramientas": punto de entrada a las herramientas dev del template.
+## Hub de Plugins: punto de entrada a los plugins dev del template.
 ##
 ## Es dev-only: el botón aparece en el menú principal solo si
 ## config.developer = True.
 ##
-## Las herramientas son PLUGINS autocontenidos: cada una es una carpeta en
+## Los plugins son autocontenidos: cada uno es una carpeta en
 ## game/tools/plugins/<id>/ con un tool.json (metadatos) y su propio .rpy
-## (el screen que nombra el manifiesto). El hub las descubre solo; no hay
+## (el screen que nombra el manifiesto). El hub los descubre solo; no hay
 ## que registrar nada a mano.
 ##
 ## Organización: complements_data.rpy (lógica), complements_ui.rpy (estilos,
 ## tarjeta de la grilla y tool_shell). Este archivo solo compone el screen
 ## del hub.
 ##
-## Ver game/tools/plugins/README.md para escribir tu propia herramienta.
+## Ver game/tools/plugins/README.md para escribir tu propio plugin.
 
 screen complements():
     tag menu
@@ -30,10 +30,10 @@ screen complements():
     # Mismo fondo animado que el menú principal.
     add gui.main_menu_background
 
-    $ herramientas, diagnosticos = pl_plugins()
-    $ categorias = sorted({t["categoria"] for t in herramientas})
+    $ plugins, diagnosticos = pl_plugins()
+    $ categorias = sorted({t["categoria"] for t in plugins})
     $ visibles = [
-        t for t in herramientas
+        t for t in plugins
         if (not cat or t["categoria"] == cat) and pl_coincide(t, busqueda)
     ]
 
@@ -49,7 +49,7 @@ screen complements():
             yoffset 24
             spacing 10
 
-            text _("Herramientas") style "pl_hub_title"
+            text _("Plugins") style "pl_hub_title"
 
             button:
                 style "pl_dropdown"
@@ -92,7 +92,7 @@ screen complements():
                         yalign 0.5
 
         if not visibles:
-            text _("No hay herramientas que coincidan.") style "complements_detail_desc"
+            text _("No hay plugins que coincidan.") style "complements_detail_desc"
 
         vpgrid:
             cols 2

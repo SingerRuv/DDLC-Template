@@ -1,20 +1,20 @@
-# Herramientas (plugins)
+# Plugins
 
-Este hub permite crear **herramientas propias** para el template sin tocar su
-código. Cada herramienta es una carpeta autocontenida dentro de
-`game/tools/plugins/`, y el hub la descubre y muestra automáticamente.
+Este hub permite crear **plugins propios** para el template sin tocar su
+código. Cada plugin es una carpeta autocontenida dentro de
+`game/tools/plugins/`, y el hub lo descubre y muestra automáticamente.
 
-> Dev-only: el botón **Herramientas** del menú principal solo aparece con
+> Dev-only: el botón **Plugins** del menú principal solo aparece con
 > `config.developer = True` (se oculta solo al publicar el juego).
 
 ## Estructura
 
 ```
 game/tools/plugins/
-  mi_herramienta/          <- tu carpeta (el nombre que quieras)
-    tool.json              <- metadatos (obligatorio)
-    mi_herramienta.rpy     <- tu screen (el que nombra tool.json)
-    capturas/              <- opcional: PNG para el hub
+  mi_plugin/          <- tu carpeta (el nombre que quieras)
+    tool.json         <- metadatos (obligatorio)
+    mi_plugin.rpy     <- tu screen (el que nombra tool.json)
+    capturas/         <- opcional: PNG para el hub
       1.png
 ```
 
@@ -22,12 +22,12 @@ game/tools/plugins/
 
 ```json
 {
-  "id": "mi_herramienta",
-  "titulo": "Mi Herramienta",
+  "id": "mi_plugin",
+  "titulo": "Mi Plugin",
   "descripcion": "Qué hace, en una línea.",
   "autor": "Tu nombre",
   "version": "1.0",
-  "screen": "mi_herramienta",
+  "screen": "mi_plugin",
   "categoria": "Utilidades",
   "orden": 10,
   "icono": "icono.png",
@@ -40,11 +40,11 @@ game/tools/plugins/
 |------------------|-------------|----------------------------------------------------------------------|
 | `id`             | No          | Clave única. Por defecto, el nombre de la carpeta. Duplicados → diagnóstico. |
 | `titulo`         | No          | Nombre visible en el hub. Por defecto, el nombre de la carpeta.       |
-| `descripcion`    | No          | Texto del panel derecho.                                             |
+| `descripcion`    | No          | Texto de la tarjeta.                                                |
 | `autor`          | No          | Se muestra junto a la versión.                                       |
 | `version`        | No          | Se muestra como `v1.0`.                                              |
-| `screen`         | **Sí**      | Nombre del screen que abre la herramienta.                           |
-| `categoria`      | No          | Agrupa herramientas en el hub (`"General"` por defecto).             |
+| `screen`         | **Sí**      | Nombre del screen que abre el plugin.                                |
+| `categoria`      | No          | Agrupa plugins en el hub (`"General"` por defecto).                  |
 | `orden`          | No          | Entero; ordena la lista (menor primero), luego por título.           |
 | `icono`          | No          | PNG **relativo a la carpeta**; se valida que exista.                 |
 | `palabras_clave` | No          | Lista de strings para la búsqueda del hub.                           |
@@ -54,7 +54,7 @@ game/tools/plugins/
 | `min_version`    | No          | Versión mínima de la API de plugins (`tools_api_version`).           |
 
 \* Si `tool.json` está roto o falta, o el `screen` no existe, el plugin **no**
-se muestra como herramienta pero **sí** aparece en el panel **Diagnóstico** del
+se muestra como plugin pero **sí** aparece en el panel **Diagnóstico** del
 hub, con el motivo. Nunca se descarta en silencio.
 
 ## Plugin en Python (`.py`)
@@ -77,13 +77,13 @@ def metadata():
     return {"categoria": "Sprites"}
 
 def setup(tool):
-    """Una vez, al init. `tool` es el dict de la herramienta."""
+    """Una vez, al init. `tool` es el dict del plugin."""
 
 def open(tool):
-    """Al abrir la herramienta (desde el hub)."""
+    """Al abrir el plugin (desde el hub)."""
 
 def close(tool):
-    """Al cerrarla (el hub lo detecta)."""
+    """Al cerrarlo (el hub lo detecta)."""
 ```
 
 El módulo puede importar otros `.py` de su propia carpeta (p. ej.
@@ -100,12 +100,12 @@ el shell reutilizable `tool_shell` (definido en `game/tools/complements_ui.rpy`)
 que aporta el fondo del menú, el título, ESC y el botón "Volver" al hub:
 
 ```renpy
-screen mi_herramienta():
+screen mi_plugin():
     tag menu
     modal True
     zorder 200
 
-    use tool_shell("Mi Herramienta"):
+    use tool_shell("Mi Plugin"):
         text "Contenido..." style "complements_detail_desc"
 ```
 
@@ -115,7 +115,7 @@ screen mi_herramienta():
 
 ### Estilos reutilizables
 
-Para que tu herramienta se vea integrada, reutiliza estos estilos definidos en
+Para que tu plugin se vea integrado, reutiliza estos estilos definidos en
 `game/tools/complements_ui.rpy`:
 
 - `complements_detail` — tarjeta blanca semi-opaca (panel).
@@ -130,7 +130,7 @@ Y el fondo del juego: `gui.main_menu_background`.
 ## Música (opcional)
 
 Los eventos `on "show"`/`on "hide"` de un screen con `tag menu` no se disparan
-de forma confiable. Si tu herramienta necesita música, manéjala desde el módulo
+de forma confiable. Si tu plugin necesita música, manéjala desde el módulo
 `.py` (hooks `open`/`close`):
 
 ```python
@@ -146,6 +146,6 @@ def close(tool):
 ## Probar
 
 1. Copia `_example/`, renómbrala y edita su `tool.json`.
-2. Arranca el template y abre **Herramientas** en el menú principal.
-3. Tu herramienta aparece como una tarjeta en el hub (con búsqueda, categorías
-   y un botón para ocultarla o mostrarla).
+2. Arranca el template y abre **Plugins** en el menú principal.
+3. Tu plugin aparece como una tarjeta en el hub (con búsqueda y filtro por
+   categoría).

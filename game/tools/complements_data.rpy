@@ -1,5 +1,5 @@
 ## complements_data.rpy
-## Hub "Herramientas" — Lógica (sin UI): descubrimiento de plugins, manifiesto
+## Hub de Plugins — Lógica (sin UI): descubrimiento de plugins, manifiesto
 ## (tool.json), validación/diagnóstico, búsqueda, y el soporte de módulos .py
 ## con sus hooks (setup/open/close/metadata).
 ##
@@ -28,17 +28,17 @@ init python:
             "id": id_, "ruta": ruta, "motivo": motivo, "fatal": fatal})
 
     def pl_plugins():
-        """Descubre las herramientas en tools/plugins/ y devuelve
-        (herramientas, diagnosticos).
+        """Descubre los plugins en tools/plugins/ y devuelve
+        (plugins, diagnosticos).
 
         Nunca descarta un plugin en silencio: todo problema (JSON roto, screen
         inexistente, id duplicado, icono faltante, etc.) queda en `diagnosticos`,
         con `fatal` indicando si el plugin se excluyo de la lista.
 
-        Cada herramienta: id, titulo, descripcion, autor, version, categoria,
+        Cada plugin: id, titulo, descripcion, autor, version, categoria,
         orden, icono, palabras_clave, capturas, screen, args, modulo,
         min_version. Ordenadas por (orden, titulo)."""
-        herramientas = []
+        plugins = []
         diagnosticos = []
         ids = set()
 
@@ -115,7 +115,7 @@ init python:
                 if renpy.loadable(ruta):
                     capturas.append(ruta)
 
-            herramientas.append({
+            plugins.append({
                 "id": id_,
                 "dir": carpeta,
                 "titulo": titulo,
@@ -133,18 +133,10 @@ init python:
                 "min_version": min_version,
             })
 
-        for e in herramientas:
+        for e in plugins:
             _pl_aplicar_metadata(e)
-        herramientas.sort(key=lambda d: (d["orden"], d["titulo"].lower()))
-        return herramientas, diagnosticos
-
-    def pl_herramientas():
-        """Lista de herramientas visibles en el hub."""
-        return pl_plugins()[0]
-
-    def pl_diagnosticos():
-        """Problemas de plugins detectados (fatales y warnings)."""
-        return pl_plugins()[1]
+        plugins.sort(key=lambda d: (d["orden"], d["titulo"].lower()))
+        return plugins, diagnosticos
 
     # ======================================================================
     # Hub: búsqueda.

@@ -137,8 +137,8 @@ init python:
             por_carpeta.setdefault("/".join(partes[:-1]), []).append(partes[-1][:-4])
         res = {}
         for carpeta, nombres in por_carpeta.items():
-            tiene_brazo = any(_PL_IZQ_RE.fullmatch(n) or _PL_DER_RE.fullmatch(n) 
-            for n in nombres)
+            tiene_brazo = any(_PL_IZQ_RE.fullmatch(n) or _PL_DER_RE.fullmatch(n)
+                              for n in nombres)
             tiene_cara = any(_PL_CARA_RE.fullmatch(n) for n in nombres)
             if tiene_brazo and tiene_cara:
                 res[carpeta.split("/")[-1]] = carpeta
@@ -150,7 +150,7 @@ init python:
         if not carpeta:
             return []
         return sorted(f.split("/")[-1][:-4] for f in renpy.list_files()
-        if f.startswith(carpeta + "/") and f.lower().endswith(".png"))
+                      if f.startswith(carpeta + "/") and f.lower().endswith(".png"))
 
     def pl_tiene_defs(tag):
         return bool(_pl_sprites().get(tag))
@@ -210,7 +210,7 @@ init python:
         if pl_tiene_defs(tag):
             return sorted(n for n in _pl_sprites().get(tag, {}) if n.startswith("5"))
         return sorted("5" + n[1:] for n in _pl_archivos_carpeta(tag)
-        if _pl_re.fullmatch(r"3\d*[a-z]*", n))
+                      if _pl_re.fullmatch(r"3\d*[a-z]*", n))
 
     @_pl_cacheado
     def pl_outfits(tag):

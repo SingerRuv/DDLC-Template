@@ -1,7 +1,7 @@
 ## _example.rpy
-## Herramienta de ejemplo para el hub "Herramientas".
+## Plugin de ejemplo para el hub de Plugins.
 ##
-## Copia la carpeta _example/, renómbrala (p. ej. mi_herramienta/), edita su
+## Copia la carpeta _example/, renómbrala (p. ej. mi_plugin/), edita su
 ## tool.json y reescribe este screen. El hub la descubre solo.
 ##
 ## Este ejemplo usa el shell reutilizable `tool_shell` (definido en

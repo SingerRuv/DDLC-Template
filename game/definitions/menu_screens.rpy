@@ -224,12 +224,12 @@ screen main_menu():
     # Botones fuera de la columna de navegación.
     # (Sin nav_button_anim: su deslizamiento a la derecha desbordaría el borde.)
 
-    # Herramientas (dev): esquina superior derecha.
+    # Plugins (dev): esquina superior derecha.
     if config.developer:
         hbox:
             xalign 1.0 yalign 0.0
             xoffset -20 yoffset 20
-            textbutton _("Herramientas"):
+            textbutton _("Plugins"):
                 style "main_navigation_button"
                 text_style "main_navigation_button_text"
                 action Show("complements")

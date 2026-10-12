@@ -1,6 +1,6 @@
 ## complements_ui.rpy
-## Hub "Herramientas" — Interfaz reutilizable: estilos, la tarjeta de la grilla
-## (pl_card) y el shell para herramientas simples (tool_shell).
+## Hub de Plugins — Interfaz reutilizable: estilos, la tarjeta de la grilla
+## (pl_card) y el shell para plugins simples (tool_shell).
 ##
 ## La lógica vive en complements_data.rpy y el screen raíz del hub en
 ## complements.rpy.
@@ -35,32 +35,12 @@ style complements_section is text:
     color "#666666"
     outlines []
 
-style complements_shot_frame is frame:
-    background "#e6e6e6"
-    padding (20, 30)
-    xsize 620
-
-style complements_shot_empty is text:
-    size 16
-    color "#888888"
-    outlines []
-
 # Botón "Abrir": mismo diseño que los textbuttons de navegación del menú,
 # sin el size_group (para no atar su ancho a los de la izquierda).
 style complements_open is main_navigation_button:
     size_group None
 
-style complements_title is text:
-    size 26
-    color "#ffffff"
-    outlines [(4, text_outline_color, 0, 0), (2, text_outline_color, 2, 2)]
-
-style complements_hint is text:
-    size 14
-    color "#888888"
-    outlines []
-
-# --- Hub: búsqueda, chips y tarjetas ---
+# --- Hub: búsqueda, desplegable y tarjetas ---
 
 transform pl_thumb:
     fit "contain"
@@ -167,7 +147,7 @@ style pl_card_open is text:
 
 
 # ---------------------------------------------------------------------------
-# Tarjeta de una herramienta en la grilla del hub. Toda la tarjeta es clickeable.
+# Tarjeta de un plugin en la grilla del hub. Toda la tarjeta es clickeable.
 # ---------------------------------------------------------------------------
 
 screen pl_card(t):
@@ -204,15 +184,15 @@ screen pl_card(t):
 
 
 # ---------------------------------------------------------------------------
-# Shell reutilizable para herramientas simples: fondo del menú, título, ESC y
+# Shell reutilizable para plugins simples: fondo del menú, título, ESC y
 # botón "Volver" al hub, y el frame de tarjeta. Tu screen define tag/modal/zorder
 # (las propiedades de screen NO se transfieren con `use`) y aporta el contenido:
 #
-#   screen mi_herramienta():
+#   screen mi_plugin():
 #       tag menu
 #       modal True
 #       zorder 200
-#       use tool_shell("Mi Herramienta"):
+#       use tool_shell("Mi Plugin"):
 #           text "Contenido..." style "complements_detail_desc"
 # ---------------------------------------------------------------------------
 
