@@ -103,17 +103,25 @@ define config.menu_clear_layers = ["front"]
 define config.gl_test_image = "white"
 
 init python:
-    if len(renpy.loadsave.location.locations) > 1: del(renpy.loadsave.location.locations[1])
+    # Deja una sola carpeta de guardado (evita el segundo "location" por defecto
+    # de Ren'Py; comportamiento heredado del template original).
+    if len(renpy.loadsave.location.locations) > 1:
+        del renpy.loadsave.location.locations[1]
+
+    # Desactiva el soporte de gamepad.
     renpy.game.preferences.pad_enabled = False
 
+    # Reemplaza los guiones largos del guion ("--" o " - ") por una raya (—).
     def replace_text(s):
         s = s.replace('--', u'\u2014')
         s = s.replace(' - ', u'\u2014')
         return s
     config.replace_text = replace_text
 
+    # Solo abre el menu de pausa si el menu rapido esta activo (paridad con DDLC).
     def game_menu_check():
-        if quick_menu: renpy.call_in_new_context('_game_menu')
+        if quick_menu:
+            renpy.call_in_new_context('_game_menu')
     config.game_menu_action = game_menu_check
 
     # Pedir siempre confirmacion al salir (boton X de la ventana).

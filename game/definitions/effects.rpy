@@ -61,6 +61,7 @@ init python:
                 self.timers.append(random.random() * 0.4 + 0.1)
 
         def add(self, d):
+            # Celda de 32px en una grilla de 41x24 que cubre 1280x720.
             s = self.sm.create(d)
             s.x = random.randint(0, 40) * 32
             s.y = random.randint(0, 23) * 32
@@ -176,12 +177,12 @@ init python:
 
     def recolorize(image, blackColor="#000", whiteColor="#fff", tintAmount=1):
         """
-        Devuelve una imagen nueva donde los píxeles oscuros se tiñen hacia
-        `blackColor` y los claros hacia `whiteColor`. `tintAmount` (0..1)
-        controla la intensidad del recoloreado. Implementado con im.MatrixColor
-        usando un gradiente de luminancia al objetivo — rápido y compatible con Ren'Py 8.
+        Devuelve `image` (displayable) recoloreada: los píxeles oscuros se tiñen
+        hacia `blackColor` y los claros hacia `whiteColor`; `tintAmount` (0..1)
+        controla la intensidad del recoloreado. Usa una matriz de color
+        (`matrixcolor`), que es la API vigente de Ren'Py 8; reemplaza al
+        obsoleto `im.MatrixColor`.
         """
-        from store import im
         bc = renpy.easy.color(blackColor)
         wc = renpy.easy.color(whiteColor)
         m = [
@@ -190,7 +191,7 @@ init python:
             0, 0, wc[2], 0, bc[2],
             0, 0, 0, tintAmount, 0,
         ]
-        return im.MatrixColor(image, m)
+        return Transform(image, matrixcolor=m)
 
 # ----- Screens que invocan los efectos --------------------------------------
 
