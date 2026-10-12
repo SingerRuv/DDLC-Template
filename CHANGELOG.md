@@ -4,7 +4,9 @@ Todas las versiones notables de **DDLC BrokenDreamsModTemplate**.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/)
 y el versionado [SemVer](https://semver.org/lang/es/).
 
-## [Unreleased] — 1.1.0
+## [Unreleased]
+
+## [1.1.0] - 2026-10-11
 
 ### Añadido
 - `mod_assets/` ahora forma parte del searchpath de Ren'Py (`core/0imports.rpy`):
@@ -15,6 +17,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 ### Corregido
 - La pestaña **Template Settings** (y su contenido) ya no aparece al publicar:
   solo se muestra con `config.developer = True`.
+- `effects.rpy`: `recolorize()` ya no usa el manipulador de imagen obsoleto
+  `im.MatrixColor` (migrado a `Transform(matrixcolor=…)`).
+
+### Cambiado
+- Limpieza interna: textos unificados («Plugins»), comentarios e indentación;
+  se quitaron estilos y funciones sin uso.
 
 ### Documentación
 - `README.md` y `mod_assets/README.md`: criterio unificado de `mod_assets`,
@@ -48,5 +56,6 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/SingerRuv/DDLC-Template/releases/tag/1.0.0
