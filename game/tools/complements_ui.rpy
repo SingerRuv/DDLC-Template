@@ -86,10 +86,11 @@ style pl_search_hint is text:
     outlines []
 
 style pl_hub_title is text:
-    size 26
+    font "gui/font/RifficFree-Bold.ttf"
+    size 30
     bold True
-    color "#5a1a3a"
-    outlines []
+    color "#ffffff"
+    outlines [(4, text_outline_color, 0, 0), (2, text_outline_color, 2, 2)]
 
 style pl_dropdown is button:
     background "#ffffff"
