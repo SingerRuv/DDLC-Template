@@ -1,0 +1,8 @@
+{
+  "titulo": "PoseLab",
+  "descripcion": "Arma poses leyendo las definiciones de sprites del proyecto.",
+  "autor": "Ryu MaGucci",
+  "version": "2.0",
+  "screen": "pose_lab",
+  "capturas": []
+}

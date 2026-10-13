@@ -1,0 +1,11 @@
+{
+  "titulo": "Ejemplo",
+  "descripcion": "Plugin de ejemplo. Copia esta carpeta, renombrala y edita este archivo para crear el tuyo.",
+  "autor": "Tu nombre",
+  "version": "1.0",
+  "screen": "example_tool",
+  "categoria": "Ejemplos",
+  "orden": 100,
+  "palabras_clave": ["ejemplo", "plantilla"],
+  "capturas": []
+}
