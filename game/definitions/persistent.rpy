@@ -23,3 +23,13 @@ default persistent.first_load = False
 # El token anti-cheat local (no persistente). Se define al inicio del juego y se
 # restablece al guardar/cargar; debe coincidir con persistent.anticheat.
 default anticheat = 0
+
+# ---- Sistema de migración de assets -----------------------------------------
+# Caché del chequeo de la última release en GitHub: {ts, version, url} o None.
+default persistent.mg_cache = None
+
+# Versión del template que el modder pidió no volver a ofrecer.
+default persistent.mg_ignorar = None
+
+# Marca del último reporte de migración ya mostrado (evita repetirlo).
+default persistent.mg_ultimo_reporte = None

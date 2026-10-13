@@ -37,3 +37,12 @@ game/.vscode/
 
 # --- Empaquetado ---
 /dist/
+
+# --- Sistema de migración de assets ---
+# El manifest se genera en cada release (no se commitea).
+game/migracion/manifest.json
+game/migracion/.job.json
+game/migracion/.template.zip
+game/migracion/reporte.json
+# Respaldos de la migración (van en la raíz, fuera de game/).
+migracion_backup/
