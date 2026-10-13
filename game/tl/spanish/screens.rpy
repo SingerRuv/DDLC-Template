@@ -142,6 +142,12 @@ translate spanish strings:
     old "Template Settings"
     new "Ajustes del Template"
 
+    old "Updates"
+    new "Actualizaciones"
+
+    old "Check for Updates"
+    new "Buscar actualizaciones"
+
     # game/screens.rpy:1445
     old "The dialogue history is empty."
     new "El historial de diálogo está vacío."

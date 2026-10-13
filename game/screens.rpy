@@ -851,6 +851,25 @@ screen template_preferences():
                 no_action=Hide("confirm")):
                 text_style "navigation_button_text"
 
+    # La sección de actualizaciones solo aplica a proyectos que traen el
+    # manifest del template (un mod derivado de un release). El repo fuente
+    # del template no lo tiene, así que ahí no se muestra.
+    if mg_hay_manifest():
+        null height (2 * gui.pref_spacing)
+
+        hbox:
+            box_wrap True
+
+            vbox:
+                style_prefix "name"
+                label _("Updates")
+
+                null height 3
+
+                # Busca una versión nueva del template y ofrece migrar tus assets.
+                textbutton _("Check for Updates") action Function(mg_buscar_manual):
+                    text_style "navigation_button_text"
+
     null height (4 * gui.pref_spacing)
 
     hbox:

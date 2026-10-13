@@ -96,6 +96,7 @@ game/
 ├── bgm/                  ← música (desde audio.rpa)
 ├── sfx/                  ← efectos de sonido (desde audio.rpa)
 ├── mod_assets/           ← tus assets propios (fondos, CGs, audio, sprites)
+├── migracion/            ← sistema de migración de assets entre versiones
 └── tl/                   ← traducciones (ej: tl/spanish)
 
 docs/                     ← documentación para modders
@@ -119,6 +120,9 @@ docs/                     ← documentación para modders
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
   animaciones del menú y partículas, cambiar su nombre y borrar todos los datos.
 - **Splash + anti-cheat:** aviso legal al primer arranque, autoload y chequeo de partidas.
+- **Migración de assets:** cuando sale una versión nueva del template, el juego te
+  avisa y actualiza el template **conservando tus assets** (mod_assets, tu historia,
+  tus `definitions` y `gui`). Ver `game/migracion/README.md`.
 
 ## Documentación
 
