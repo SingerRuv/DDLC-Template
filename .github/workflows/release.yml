@@ -17,10 +17,14 @@ jobs:
         run: |
           TAG="${{ github.event.release.tag_name || github.ref_name }}"
           VER="${TAG#v}"
-          mkdir -p ZIPs
-          git archive --format=zip \
-            --prefix="DDLCBrokenDreamsModTemplate-${VER}/" \
-            -o "ZIPs/DDLCBrokenDreamsModTemplate-${VER}.zip" HEAD
+          DEST="DDLCBrokenDreamsModTemplate-${VER}"
+          mkdir -p "build/${DEST}" ZIPs
+          # git archive respeta export-ignore (excluye .github, CHANGELOG, tools, etc.)
+          git archive --format=tar HEAD | tar -x -C "build/${DEST}"
+          # Genera game/migracion/manifest.json dentro del árbol que se empaqueta.
+          python3 tools/gen_manifest.py "build/${DEST}" --version "${VER}" \
+            --repo "${{ github.repository }}"
+          (cd build && zip -r "../ZIPs/${DEST}.zip" "${DEST}")
 
       - name: Upload
         uses: softprops/action-gh-release@v3
