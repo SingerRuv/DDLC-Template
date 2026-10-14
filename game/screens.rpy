@@ -763,6 +763,10 @@ screen ddlc_preferences():
                     action Preference("all mute", "toggle")
                     style "mute_all_button"
 
+    null height (4 * gui.pref_spacing)
+
+    use touch_preferences
+
 screen template_preferences():
     hbox:
         box_wrap True
@@ -1588,3 +1592,96 @@ screen end():
             textbutton _("Quit") action Quit(confirm=True) style "navigation_button"
 
     key "K_ESCAPE" action MainMenu()
+
+
+## Pantalla android_asset_setup ###############################################
+##
+## Se muestra solo en Android y la primera vez, para que el jugador obtenga los
+## assets de DDLC (IP Guidelines de Team Salvato). El motor vive en
+## definitions/py/android_assets_ren.py y el chequeo en definitions/splash.rpy.
+##
+## NO LA MODIFIQUES: si la rompés, nadie puede jugar el mod en Android.
+
+screen android_asset_setup():
+
+    modal True
+
+    zorder 200
+
+    style_prefix "aas"
+
+    add Solid("#000000cc")
+
+    if asset_setup_busy:
+        timer 0.25 repeat True action renpy.restart_interaction
+
+    frame:
+        background Solid("#b59")
+        padding (4, 4)
+
+        frame:
+            vbox:
+                xalign .5
+                yalign .5
+                spacing 30
+
+                label _("In accordance with Team Salvato's IP guidelines, before playing [config.name] you must obtain the DDLC assets."):
+                    style "aas_prompt"
+                    xalign .5
+
+                vbox:
+                    spacing 10
+                    xfill True
+
+                    if asset_setup_status:
+                        text asset_setup_status:
+                            substitute False
+                            xalign .5
+                            if asset_setup_busy:
+                                italic True
+
+                    if asset_setup_busy:
+                        bar:
+                            value asset_setup_progress
+                            range 1.0
+                            xalign .5
+                            xsize 520
+
+                    if not asset_setup_busy:
+                        text _("Depending on the mod creator, you may need the PC or the Android version of DDLC."):
+                            xalign .5
+                        text _("If you're unsure which to download, choose the 'Android' option."):
+                            xalign .5
+
+                hbox:
+                    xalign .5
+                    spacing 60
+
+                    textbutton _("PC"):
+                        sensitive not asset_setup_busy
+                        action Function(prompt_and_extract_pc)
+
+                    textbutton _("Android"):
+                        sensitive not asset_setup_busy
+                        action Function(prompt_and_extract_android)
+
+                    textbutton _("Cancel"):
+                        sensitive not asset_setup_busy
+                        action Function(cancel_asset_setup)
+
+                    textbutton _("Quit"):
+                        action Quit(confirm=False)
+
+style aas_frame:
+    background Solid("#ffe6f4")
+    padding (40, 40, 40, 40)
+    xalign .5
+    yalign .5
+
+style aas_prompt:
+    xsize 900
+    xalign 0.5
+    text_align 0.5
+
+style aas_prompt_text:
+    font "DejaVuSans.ttf"

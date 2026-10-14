@@ -52,6 +52,19 @@ Con eso, Ren'Py resolverá las rutas `images/…`, `bgm/…`, `sfx/…` y **`gui
 (interfaz, menú, botones y fuentes). Sin ellos, el juego arranca pero **no se
 verán sprites, fondos, interfaz ni sonará la música**.
 
+### Android
+
+En Android no se pueden copiar los `.rpa` a `game/` (van dentro del APK), así que
+en el **primer arranque** el juego le pide al jugador **seleccionar su APK/XAPK de
+DDLC (o el ZIP de PC)** y **extrae los assets solo** a la carpeta escribible
+(IP Guidelines). No hace falta hacer nada: el flujo está en
+`definitions/py/android_assets_ren.py` y la pantalla en `screens.rpy`.
+Requiere los permisos de almacenamiento (ya configurados en `options.rpy`).
+
+> **Ícono en Android:** si compilás para Android y falla el ícono de la ventana,
+> agregá tu propio `game/gui/window_icon.png` (tu ícono/logo). Ojo: ese archivo
+> **pisa** al del `.rpa`, así que también pasa a ser el logo del menú principal.
+
 ## Requisitos
 
 - **[Ren'Py 8.5.x](https://www.renpy.org/latest.html)** (probado en 8.5.3).
@@ -120,6 +133,13 @@ docs/                     ← documentación para modders
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
   animaciones del menú y partículas, cambiar su nombre y borrar todos los datos.
 - **Splash + anti-cheat:** aviso legal al primer arranque, autoload y chequeo de partidas.
+- **Controles táctiles + accesibilidad:** gestos (deslizar) para Atrás/Historial/Menú,
+  quick menu agrandado y reposicionable en móvil, y acceso a la pantalla de
+  accesibilidad de Ren'Py. Se configuran desde Ajustes (default: ON en táctil).
+  Ver `game/definitions/touch.rpy`.
+- **Android:** en el primer arranque, el jugador extrae los assets de DDLC desde su
+  APK/XAPK (o el ZIP de PC) a la carpeta del juego (IP Guidelines). Ver
+  `game/definitions/py/android_assets_ren.py`.
 - **Migración de assets:** cuando sale una versión nueva del template, el juego te
   avisa y actualiza el template **conservando tus assets** (mod_assets, tu historia,
   tus `definitions` y `gui`). Ver `game/migracion/README.md`.

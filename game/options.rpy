@@ -137,7 +137,7 @@ init python:
 
 init python:
     # Estas variables declaran los paquetes para compilar tu juego.
-    build.package("DDLCBrokenDreamsModTemplate", 'zip', 'windows linux mac renpy mod',
+    build.package("DDLCBrokenDreamsModTemplate", 'zip', 'windows linux mac android renpy mod',
         description="Ren'Py 8 Game")
 
     # Estas variables declaran los archivos que se crearan para tu juego empaquetado.
@@ -171,5 +171,9 @@ init python:
 
     # Esto define README.html como documentacion
     build.documentation('README.html')
+
+    # Permisos de Android: hacen falta para que el jugador pueda elegir y extraer
+    # los assets de DDLC (ver definitions/py/android_assets_ren.py).
+    build.android_permissions = [ 'android.permission.READ_EXTERNAL_STORAGE', 'android.permission.WRITE_EXTERNAL_STORAGE' ]
 
     build.include_old_themes = False
