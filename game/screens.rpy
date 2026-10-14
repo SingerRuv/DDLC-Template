@@ -309,11 +309,11 @@ screen choice(items):
                     $ arg1 = kwarg[0]
                     $ arg2 = kwarg[-1]
 
+                    $ _m_base = SaturationMatrix(0) * ContrastMatrix(1.29) * ColorizeMatrix("#00f", "#fff") * SaturationMatrix(120)
+
                     textbutton caption:
-                        idle_background Frame(im.MatrixColor(im.MatrixColor("gui/button/choice_idle_background.png", im.matrix.desaturate() * im.matrix.contrast(1.29) * im.matrix.colorize("#00f", "#fff") * im.matrix.saturation(120)),
-                            im.matrix.desaturate() * im.matrix.colorize(arg1, arg2)), gui.choice_button_borders)
-                        hover_background Frame(im.MatrixColor(im.MatrixColor("gui/button/choice_hover_background.png", im.matrix.desaturate() * im.matrix.contrast(1.29) * im.matrix.colorize("#00f", "#fff") * im.matrix.saturation(120)),
-                            im.matrix.desaturate() * im.matrix.colorize(arg1, "#fff")), gui.choice_button_borders)
+                        idle_background Frame(Transform(Transform("gui/button/choice_idle_background.png", matrixcolor=_m_base), matrixcolor=SaturationMatrix(0) * ColorizeMatrix(arg1, arg2)), gui.choice_button_borders)
+                        hover_background Frame(Transform(Transform("gui/button/choice_hover_background.png", matrixcolor=_m_base), matrixcolor=SaturationMatrix(0) * ColorizeMatrix(arg1, "#fff")), gui.choice_button_borders)
                         action i.action
 
                 else:
@@ -355,25 +355,6 @@ style choice_button_text is default:
     outlines []
 
 
-init python:
-    def RigMouse():
-        currentpos = renpy.get_mouse_pos()
-        targetpos = [640, 345]
-        if currentpos[1] < targetpos[1]:
-            renpy.display.draw.set_mouse_pos((currentpos[0] * 9 + targetpos[0]) / 10.0, (currentpos[1] * 9 + targetpos[1]) / 10.0)
-
-screen rigged_choice(items):
-    style_prefix "choice"
-
-    vbox:
-        for i in items:
-            textbutton i.caption action i.action
-
-    timer 1.0/30.0 repeat True action Function(RigMouse)
-
-
-
-
 ################################################################################
 # Pantallas del menu principal y de pausa
 ################################################################################
@@ -391,7 +372,6 @@ init python:
         renpy.hide_screen("name_input")
         if launchGame:
             renpy.jump_out_of_context("start")
-
 
 
 style hyperlink_text:
@@ -535,129 +515,6 @@ style slot_button_text:
     properties gui.button_text_properties("slot_button")
     color "#666"
     outlines []
-
-screen viewframe_options(title):
-
-    style_prefix "viewframe"
-
-    add "gui/overlay/confirm.png"
-
-    frame:
-
-        vbox:
-            xalign .5
-            yalign .5
-            spacing 2
-
-            label title
-
-            null height 10
-
-            transclude
-
-style viewframe_frame is confirm_frame
-style viewframe_label is confirm_prompt:
-    xalign 0.5
-style viewframe_label_text is confirm_prompt_text
-style viewframe_button is confirm_button
-style viewframe_button_text is confirm_button_text
-style viewframe_text is confirm_prompt_text:
-    size 20
-    yalign 0.7
-
-## Resoluciones en ventana
-## Las resoluciones en ventana permiten escalar el juego a distintas resoluciones.
-## Descomenta los # de abajo para activarlo.
-# screen confirm_res(old_res):
-
-#     ## Asegura que otras pantallas no reciban input mientras esta se muestra.
-#     modal True
-
-#     zorder 200
-
-#     style_prefix "confirm"
-
-#     add "gui/overlay/confirm.png"
-
-#     frame:
-
-#         vbox:
-#             xalign .5
-#             yalign .5
-#             spacing 30
-
-#             ## Este if-else muestra un cuadro de texto normal o
-#             ## glitcheado si estas en la escena de muerte de Sayori y
-#             ## estas saliendo del juego.
-#             # if in_sayori_kill and message == layout.QUIT:
-#             #     add "confirm_glitch" xalign 0.5
-#             # else:
-#             label _("Would you like to keep these changes?"):
-#                 style "confirm_prompt"
-#                 xalign 0.5
-
-#             add DynamicDisplayable(res_text_timer) xalign 0.5
-
-#             hbox:
-#                 xalign 0.5
-#                 spacing 100
-
-#                 ## Este if-else desactiva salir desde el cuadro de salida
-#                 ## si estas en la escena de muerte de Sayori; si no, cuadro normal.
-#                 # if in_sayori_kill and message == layout.QUIT:
-#                 #     textbutton _("Yes") action NullAction()
-#                 #     textbutton _("No") action Hide("confirm")
-#                 # else:
-#                 textbutton _("Yes") action Hide("confirm_res")
-#                 textbutton _("No") action [Function(renpy.set_physical_size, old_res), Hide("confirm_res")]
-
-#     timer 5.0 action [Function(renpy.set_physical_size, old_res), Hide("confirm_res")]
-
-# init python:
-#     def res_text_timer(st, at):
-#         if st <= 5.0:
-#             time_left = str(round(5.0 - st))
-#             return Text(time_left, style="confirm_prompt"), 0.1
-#         else: return Text("0", style="confirm_prompt"), 0.0
-
-#     def set_physical_resolution(res):
-#         old_res = renpy.get_physical_size()
-#         renpy.set_physical_size(res)
-#         renpy.show_screen("confirm_res", old_res=old_res)
-
-# screen display_options():
-
-#     style_prefix "viewframe"
-
-#     modal True
-
-#     zorder 150
-
-#     use viewframe_options(_("Display Resolutions")):
-
-#         default scale = renpy.get_physical_size()
-
-#         vbox:
-#             xmaximum 500
-#             ysize 120
-#             viewport:
-#                 style_prefix "radio"
-#                 scrollbars "vertical"
-#                 mousewheel True
-#                 draggable True
-#                 has vbox
-
-#                 textbutton "1280x720" action SetScreenVariable("scale", (1280, 720))
-#                 textbutton "1600x900" action SetScreenVariable("scale", (1600, 900))
-
-#         null height 10
-
-#         hbox:
-#             xalign 0.5
-#             spacing 100
-
-#             textbutton _("Reset") action [Hide("display_options"), Function(renpy.reset_physical_size)]
-#             textbutton _("Set") action [Hide("display_options"), Function(set_physical_resolution, scale)]
 
 screen ddlc_preferences():
     hbox:
@@ -1273,8 +1130,6 @@ style confirm_button_text is navigation_button_text:
 ## en curso.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#skip-indicator
-screen fake_skip_indicator():
-    use skip_indicator
 
 screen skip_indicator():
 
