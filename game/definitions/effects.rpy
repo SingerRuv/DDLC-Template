@@ -44,39 +44,6 @@ init python:
                 render.blit(self.srf, (0, 0))
             return render
 
-    class RectCluster(python_object):
-        """Crea un cúmulo de rectángulos de color sólido (para efectos glitch)."""
-        __slots__ = ("sm", "rects", "timers", "displayable", "numRects", "rectWidth", "rectHeight")
-
-        def __init__(self, theDisplayable, numRects=12, rectWidth=30, rectHeight=30):
-            self.sm = SpriteManager(update=self.update)
-            self.rects = []
-            self.timers = []
-            self.displayable = theDisplayable
-            self.numRects = numRects
-            self.rectWidth = rectWidth
-            self.rectHeight = rectHeight
-            for i in range(self.numRects):
-                self.add(self.displayable)
-                self.timers.append(random.random() * 0.4 + 0.1)
-
-        def add(self, d):
-            # Celda de 32px en una grilla de 41x24 que cubre 1280x720.
-            s = self.sm.create(d)
-            s.x = random.randint(0, 40) * 32
-            s.y = random.randint(0, 23) * 32
-            s.width = self.rectWidth
-            s.height = self.rectHeight
-            self.rects.append(s)
-
-        def update(self, st):
-            for i, s in enumerate(self.rects):
-                if st >= self.timers[i]:
-                    s.x = random.randint(0, 40) * 32
-                    s.y = random.randint(0, 23) * 32
-                    self.timers[i] = st + random.random() * 0.4 + 0.1
-            return 0
-
     class ParticleBurst(python_object):
         """Ráfaga de partículas que irradia desde un punto (usada en el menú principal)."""
         __slots__ = ("sm", "stars", "displayable", "explodeTime", "numParticles",

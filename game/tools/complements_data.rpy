@@ -155,13 +155,6 @@ init python:
             " ".join(t["palabras_clave"]), t["id"])
         return any(texto in str(c).lower() for c in campos)
 
-    def pl_tool_por_id(id_):
-        """Devuelve el dict de una herramienta por su id (o None)."""
-        for t in pl_plugins()[0]:
-            if t["id"] == id_:
-                return t
-        return None
-
     def pl_corto(texto, n=110):
         """Recorta un texto para la tarjeta (con '…')."""
         texto = texto or ""

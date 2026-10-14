@@ -37,11 +37,6 @@ style pl_code is text:
     size 15
     color "#e6e6e6"
 
-style pl_panel is frame:
-    background "#20232a"
-    padding (14, 14)
-    xfill True
-
 style pl_field is button:
     background "#2c313a"
     hover_background "#3a4150"
