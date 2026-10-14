@@ -26,10 +26,42 @@ init python:
 
     # ======================================================================
     # Transforms del template ofrecidos para la salida `show ... at <t>`.
-    #   Posición: t11..t44 (definidas en definitions/transforms.rpy)
+    # Se arman como familia (letra) + slot (11..44). Definidas en
+    # definitions/transforms.rpy. La familia "Normal" = t11..t44.
     # ======================================================================
 
-    _PL_POS = ["t11", "t21", "t22", "t31", "t32", "t33", "t41", "t42", "t43", "t44"]
+    _PL_SLOTS = ["11", "21", "22", "31", "32", "33", "41", "42", "43", "44"]
+
+    # Familias: (etiqueta, prefijo). El transform es prefijo + slot.
+    _PL_FAMILIAS = [
+        ("Normal", "t"),
+        ("Instantáneo", "i"),
+        ("Focus", "f"),
+        ("Hop", "h"),
+        ("Dip", "d"),
+        ("Sink", "s"),
+        ("Hop-focus", "hf"),
+        ("Entrada izq", "l"),
+        ("Entrada der", "r"),
+    ]
+
+    def pl_prefijo(variante):
+        for label, pref in _PL_FAMILIAS:
+            if label == variante:
+                return pref
+        return "t"
+
+    def pl_trans_de(variante, slot):
+        return "%s%s" % (pl_prefijo(variante), slot)
+
+    def pl_slot_de(trans):
+        """Slot ('11'..'44') de un transform, o '' si no es una posición."""
+        for label, pref in _PL_FAMILIAS:
+            if trans.startswith(pref):
+                resto = trans[len(pref):]
+                if resto in _PL_SLOTS:
+                    return resto
+        return ""
 
     # Capas de la línea `show ... zorder N` (quién queda detrás/delante).
     _PL_ZORDERS = [0, 1, 2, 3, 4, 5]
@@ -271,7 +303,7 @@ init python:
 
     pl_state = {
         "doki": "", "cuerpo": "", "outfit": "", "pose": 0,
-        "cara": "", "trans": "t11", "zorder": 2, "fondo": "class", "open": "",
+        "cara": "", "trans": "t11", "variante": "Normal", "zorder": 2, "fondo": "class", "open": "",
         # "Copiar en…": archivo destino, línea elegida y texto a insertar.
         "destino_archivo": "", "destino_linea": 0, "destino_texto": "",
     }
@@ -286,7 +318,7 @@ init python:
         fondos = pl_fondos()
         pl_state.update(
             doki=(dokis[0] if dokis else ""), cuerpo="", outfit="", pose=0,
-            cara="", trans="t11",
+            cara="", trans="t11", variante="Normal",
             fondo=("class" if "class" in fondos else (fondos[0] if fondos else "")),
             open="")
         pl_initialized = True
@@ -314,7 +346,7 @@ init python:
             "poses": poses, "pose": pose,
             "caras": caras, "cara": cara,
             "nombre": nombre, "fondo": pl_state["fondo"],
-            "trans": pl_state["trans"], "zorder": pl_state["zorder"],
+            "trans": pl_state["trans"], "variante": pl_state["variante"], "zorder": pl_state["zorder"],
         }
 
     def pl_referencia(doki):
@@ -344,16 +376,23 @@ init python:
     def pl_choose(name, value):
         return [SetDict(pl_state, name, value), SetDict(pl_state, "open", "")]
 
+    def pl_choose_variante(variante):
+        # Cambia la familia conservando el slot actual (por defecto, 11).
+        slot = pl_slot_de(pl_state["trans"]) or "11"
+        return [SetDict(pl_state, "variante", variante),
+                SetDict(pl_state, "trans", pl_trans_de(variante, slot)),
+                SetDict(pl_state, "open", "")]
+
     def pl_choose_doki(value):
         return [SetDict(pl_state, k, v) for k, v in (
             ("doki", value), ("cuerpo", ""), ("outfit", ""), ("pose", 0),
             ("cara", ""), ("open", ""))]
 
     def pl_choose_cuerpo(value):
-        # Al elegir cuerpo completo, si el transform no es de posición, resetealo.
+        # Al elegir cuerpo completo, si el transform no es una posición, resetealo.
         acciones = [SetDict(pl_state, "cuerpo", value), SetDict(pl_state, "open", "")]
-        if value and pl_state["trans"] not in _PL_POS:
-            acciones.append(SetDict(pl_state, "trans", "t11"))
+        if value and not pl_slot_de(pl_state["trans"]):
+            acciones.append(SetDict(pl_state, "trans", pl_trans_de(pl_state["variante"], "11")))
         return acciones
 
     def pl_choose_outfit(value):
@@ -391,9 +430,14 @@ init python:
                 (pl_cara_label(c), pl_choose("cara", c), c == r["cara"])
                 for c in r["caras"]
             ]))
-        # Posición (solo transforms t11..t44).
+        # Familia (letra) y posición (slot). El transform final es familia+slot.
+        menus.append(("Variante", pl_state["variante"], "variante", [
+            (label, pl_choose_variante(label), label == pl_state["variante"])
+            for label, _pref in _PL_FAMILIAS
+        ]))
         menus.append(("Posición", pl_state["trans"], "trans", [
-            (t, pl_choose("trans", t), t == pl_state["trans"]) for t in _PL_POS
+            (pl_trans_de(pl_state["variante"], s), pl_choose("trans", pl_trans_de(pl_state["variante"], s)),
+             pl_trans_de(pl_state["variante"], s) == pl_state["trans"]) for s in _PL_SLOTS
         ]))
         menus.append(("Fondo", r["fondo"] or "—", "fondo", [
             (f, pl_choose("fondo", f), f == r["fondo"]) for f in pl_fondos()
