@@ -148,6 +148,109 @@ translate spanish strings:
     old "Check for Updates"
     new "Buscar actualizaciones"
 
+    old "Touch"
+    new "Táctil"
+
+    old "Touch gestures"
+    new "Gestos táctiles"
+
+    old "Accessibility"
+    new "Accesibilidad"
+
+    old "Accessibility Options"
+    new "Opciones de accesibilidad"
+
+    old "In accordance with Team Salvato's IP guidelines, before playing [config.name] you must obtain the DDLC assets."
+    new "De acuerdo con las IP Guidelines de Team Salvato, antes de jugar [config.name] tenés que obtener los assets de DDLC."
+
+    old "Depending on the mod creator, you may need the PC or the Android version of DDLC."
+    new "Según el creador del mod, puede que necesites la versión de DDLC para PC o la de Android."
+
+    old "If you're unsure which to download, choose the 'Android' option."
+    new "Si no sabés cuál bajar, elegí la opción 'Android'."
+
+    # --- Android: extracción de assets (definitions/py/android_assets_ren.py) ---
+    old "Reading the selected file..."
+    new "Leyendo el archivo seleccionado..."
+
+    old "Scanning the package..."
+    new "Analizando el paquete..."
+
+    old "Extracting PC assets..."
+    new "Extrayendo los assets de PC..."
+
+    old "Extracting Android assets..."
+    new "Extrayendo los assets de Android..."
+
+    old "Extracting %s..."
+    new "Extrayendo %s..."
+
+    old "Extracting Android assets... (%d/%d)"
+    new "Extrayendo los assets de Android... (%d/%d)"
+
+    old "Installing assets..."
+    new "Instalando assets..."
+
+    old "Copying the selected file..."
+    new "Copiando el archivo seleccionado..."
+
+    old "Extraction complete! Restarting..."
+    new "¡Extracción completa! Reiniciando..."
+
+    old "Cancelling..."
+    new "Cancelando..."
+
+    old "Asset extraction canceled."
+    new "Extracción cancelada."
+
+    old "Select a DDLC PC ZIP file..."
+    new "Seleccioná el ZIP de DDLC para PC..."
+
+    old "Select a DDLC Android APK/XAPK file..."
+    new "Seleccioná el APK/XAPK de DDLC para Android..."
+
+    old "The selected file contains an unsafe path and was rejected."
+    new "El archivo seleccionado contiene una ruta insegura; se rechazó."
+
+    old "Not enough free storage. About %s is needed, but only %s is available."
+    new "No hay espacio suficiente. Se necesitan unos %s y hay %s."
+
+    old "This ZIP is missing %s. Make sure it is the official DDLC PC download."
+    new "A este ZIP le falta %s. Asegurate de que sea la descarga oficial de DDLC para PC."
+
+    old "%s in this ZIP appears to be corrupt."
+    new "%s en este ZIP parece estar corrupto."
+
+    old "No DDLC assets were found in this file. Make sure it is a downloaded DDLC Android APK/XAPK."
+    new "No se encontraron assets de DDLC en este archivo. Asegurate de que sea el APK/XAPK oficial de DDLC para Android."
+
+    old "No DDLC assets were found in this XAPK. Make sure it is the official DDLC Android package."
+    new "No se encontraron assets de DDLC en este XAPK. Asegurate de que sea el paquete oficial de DDLC para Android."
+
+    old "That file isn't a valid ZIP/APK archive, or it is damaged. Try downloading it again."
+    new "Ese archivo no es un ZIP/APK válido o está dañado. Probá bajarlo de nuevo."
+
+    old "Not enough free storage to extract the DDLC assets."
+    new "No hay espacio suficiente para extraer los assets de DDLC."
+
+    old "File error during extraction: %s"
+    new "Error de archivo durante la extracción: %s"
+
+    old "Unexpected error during extraction: %s: %s"
+    new "Error inesperado durante la extracción: %s: %s"
+
+    old "Error: No file selected."
+    new "Error: no se seleccionó ningún archivo."
+
+    old "Error handling the selected file: %s"
+    new "Error al procesar el archivo seleccionado: %s"
+
+    old "Error reading the file picker result: %s"
+    new "Error leyendo el resultado del selector: %s"
+
+    old "Error opening the file picker: %s"
+    new "Error abriendo el selector de archivos: %s"
+
     # game/screens.rpy:1445
     old "The dialogue history is empty."
     new "El historial de diálogo está vacío."

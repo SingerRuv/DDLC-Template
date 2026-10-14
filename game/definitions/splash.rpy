@@ -157,6 +157,16 @@ init python:
 label splashscreen:
     $ quick_menu = False
 
+    # Android: por IP Guidelines, el jugador debe extraer los assets de DDLC.
+    # (Ver definitions/py/android_assets_ren.py y la pantalla android_asset_setup.)
+    if renpy.mobile:
+        if not renpy.android:
+            $ raise NotImplementedError("Los mods de DDLC no estan soportados en iOS. Usa Android o PC.")
+        if not has_installed_ddlc_assets():
+            call screen android_asset_setup
+        if not has_installed_ddlc_assets():
+            $ raise NotImplementedError("Se requieren los assets de DDLC para jugar. Instalalos e intenta de nuevo.")
+
     # Sistema de migración: si hay un reporte de la última migración sin ver,
     # lo muestra. (Solo relevante en modo dev.)
     python:

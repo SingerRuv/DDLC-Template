@@ -474,9 +474,10 @@ screen quick_menu():
 
     if enable_quick_menu and quick_menu and persistent.show_quick_menu:
 
-        # Anade el menu rapido dentro del juego.
+        # Anade el menu rapido dentro del juego (escalado en pantallas táctiles).
         hbox:
             style_prefix "quick"
+            at quick_menu_touch
 
             # Posición según la esquina elegida (quick_menu_corner).
             if quick_menu_corner == "top":
