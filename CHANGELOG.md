@@ -6,6 +6,48 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-14
+
+### Añadido
+- **Migración de assets:** cuando sale una versión nueva del template, el juego
+  avisa y actualiza el template **conservando tus assets** (`mod_assets`, tu
+  historia, tus `definitions` y `gui`). El reemplazo lo hace un script externo
+  (`game/migracion/migrar.py`) al cerrar el juego. Solo se activa en proyectos
+  derivados de un release (con `game/migracion/manifest.json`).
+- **Controles táctiles + accesibilidad:** gestos (deslizar) para Atrás/Historial/
+  Menú, quick menu escalado en pantallas táctiles, y acceso a la pantalla de
+  accesibilidad de Ren'Py (self-voicing y opciones de texto). Se configuran desde
+  Ajustes; en táctil arrancan activados.
+- **Soporte Android:** en el primer arranque, el jugador extrae los assets de DDLC
+  desde su APK/XAPK (o el ZIP de PC) a la carpeta del juego, con barra de progreso
+  y cancelación, según las IP Guidelines de Team Salvato.
+- **PoseLab:** ahora se elige la **familia** del transform (Normal / Instantáneo /
+  Focus / Hop / Dip / Sink / Hop-focus / Entrada izq / Entrada der) además de la
+  posición (slot 11..44).
+- **Nuevos transforms** en `definitions/transforms.rpy`: `sink` + `s*`, `hopfocus`
+  + `hf*`, `h*`, `d*`, `l11`/`r11` y `thide`.
+
+### Corregido
+- Codificación (mojibake) de `definitions/splash.rpy`.
+- El sistema de migración no molesta en el repositorio fuente del template
+  (no tiene manifest → queda inerte).
+
+### Cambiado
+- `screens.rpy`: la pantalla `choice` ya no usa la API obsoleta
+  `im.MatrixColor`/`im.matrix` (migrada a `Transform(matrixcolor=…)`).
+- `options.rpy`: el build incluye el target `android` y los permisos de
+  almacenamiento.
+
+### Limpieza
+- Código muerto eliminado (~190 líneas): el bloque comentado *"Display
+  Resolutions"*, `viewframe_options` y sus estilos, `screen rigged_choice`,
+  `screen fake_skip_indicator`, `class RectCluster`, `pl_tool_por_id` y
+  `style pl_panel`.
+
+### Documentación
+- `README.md`: secciones de controles táctiles/accesibilidad y de Android.
+- `game/migracion/README.md`: guía del sistema de migración.
+
 ## [1.1.0] - 2026-10-11
 
 ### Añadido
@@ -56,6 +98,7 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/SingerRuv/DDLC-Template/releases/tag/1.0.0
