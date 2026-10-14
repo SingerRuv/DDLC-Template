@@ -43,10 +43,21 @@ transform hop(x=640, z=0.80):
     easein .1 yoffset -20
     easeout .1 yoffset 0
 
+# Salta y queda en foco (zoom de "hablando").
+transform hopfocus(x=640, z=0.80):
+    xcenter x yoffset 0 yanchor 1.0 ypos 1.03 zoom z*1.05 alpha 1.00 subpixel True
+    easein .1 yoffset -21
+    easeout .1 yoffset 0
+
 transform dip(x=640, z=0.80):
     xcenter x yoffset 0 yanchor 1.0 ypos 1.03 zoom z*1.00 alpha 1.00 subpixel True
     easein .25 yoffset 25
     easeout .25 yoffset 0
+
+# Se hunde hacia abajo (queda más abajo).
+transform sink(x=640, z=0.80):
+    xcenter x yoffset 0 yanchor 1.0 ypos 1.03 zoom z*1.00 alpha 1.00 subpixel True
+    easein .5 ypos 1.06
 
 # ----------------------------------------------------------------------------
 # Posiciones DDLC (nomenclatura: primera cifra = nº personajes, segunda = slot)
@@ -122,6 +133,95 @@ transform f44:
     t_focus(1080)
 
 # ----------------------------------------------------------------------------
+# Otras familias por posición (misma nomenclatura 11..44)
+#   h* = hop    d* = dip    s* = sink    hf* = hopfocus
+# ----------------------------------------------------------------------------
+
+transform h11:
+    hop(640)
+transform h21:
+    hop(400)
+transform h22:
+    hop(880)
+transform h31:
+    hop(240)
+transform h32:
+    hop(640)
+transform h33:
+    hop(1040)
+transform h41:
+    hop(200)
+transform h42:
+    hop(493)
+transform h43:
+    hop(786)
+transform h44:
+    hop(1080)
+
+transform d11:
+    dip(640)
+transform d21:
+    dip(400)
+transform d22:
+    dip(880)
+transform d31:
+    dip(240)
+transform d32:
+    dip(640)
+transform d33:
+    dip(1040)
+transform d41:
+    dip(200)
+transform d42:
+    dip(493)
+transform d43:
+    dip(786)
+transform d44:
+    dip(1080)
+
+transform s11:
+    sink(640)
+transform s21:
+    sink(400)
+transform s22:
+    sink(880)
+transform s31:
+    sink(240)
+transform s32:
+    sink(640)
+transform s33:
+    sink(1040)
+transform s41:
+    sink(200)
+transform s42:
+    sink(493)
+transform s43:
+    sink(786)
+transform s44:
+    sink(1080)
+
+transform hf11:
+    hopfocus(640)
+transform hf21:
+    hopfocus(400)
+transform hf22:
+    hopfocus(880)
+transform hf31:
+    hopfocus(240)
+transform hf32:
+    hopfocus(640)
+transform hf33:
+    hopfocus(1040)
+transform hf41:
+    hopfocus(200)
+transform hf42:
+    hopfocus(493)
+transform hf43:
+    hopfocus(786)
+transform hf44:
+    hopfocus(1080)
+
+# ----------------------------------------------------------------------------
 # Entrada / salida de personajes
 # ----------------------------------------------------------------------------
 
@@ -137,6 +237,13 @@ transform rhide:
     on hide:
         easeout .25 xcenter 2000
 
+# Oculta el personaje con zoom-out + fade (se usa con `show <tag> <pose> at thide`).
+transform thide(z=0.80):
+    subpixel True
+    transform_anchor True
+    on hide:
+        easein .25 zoom z*0.95 alpha 0.00 yoffset -20
+
 # Hace entrar al personaje "volando" desde la izquierda.
 transform leftin(x=640, z=0.80):
     xcenter -300 yoffset 0 yanchor 1.0 ypos 1.03 zoom z*1.00 alpha 1.00 subpixel True
@@ -148,6 +255,8 @@ transform rightin(x=640, z=0.80):
     easein .25 xcenter x
 
 # Versiones leftin (entran desde la izquierda)
+transform l11:
+    leftin(640)
 transform l21:
     leftin(400)
 transform l22:
@@ -168,6 +277,8 @@ transform l44:
     leftin(1080)
 
 # Versiones rightin (entran desde la derecha)
+transform r11:
+    rightin(640)
 transform r21:
     rightin(400)
 transform r22:
