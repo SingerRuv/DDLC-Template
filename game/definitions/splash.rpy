@@ -157,7 +157,7 @@ init python:
 label splashscreen:
     $ quick_menu = False
 
-    # Sistema de migraciÃ³n: si hay un reporte de la Ãºltima migraciÃ³n sin ver,
+    # Sistema de migración: si hay un reporte de la última migración sin ver,
     # lo muestra. (Solo relevante en modo dev.)
     python:
         _mg_reporte = mg_reporte_pendiente()
@@ -194,7 +194,7 @@ label splashscreen:
                 call screen choose_language
 
         "Este es un juego de fans no oficial, no afiliado a Team Salvato ni al autor del DDLC Mod Template, Azariel Del Carmen (bronya_rand)."
-        "EstÃ¡ diseÃ±ado para jugarse despuÃ©s de haber completado la historia original, y contiene spoilers de la historia original."
+        "Está diseñado para jugarse después de haber completado la historia original, y contiene spoilers de la historia original."
         "Se requieren los archivos del juego original para jugar. Doki Doki Literature Club es de Team Salvato y puede descargarse en {a=https://ddlc.moe}https://ddlc.moe{/a}."
         "Hecho por Broken Dreams Studio, basado en el DDLC Mod Template de Azariel Del Carmen (bronya_rand)."
 
@@ -257,7 +257,7 @@ label after_load:
             m "You're so funny, [persistent.playername]."
         $ renpy.utter_restart()
     else:
-        # Consejo en la primera carga sobre el botÃ³n "Skip".
+        # Consejo en la primera carga sobre el botón "Skip".
         if persistent.playthrough == 0 and not persistent.first_load and not config.developer:
             $ persistent.first_load = True
             call screen dialog("Hint: You can use the \"Skip\" button to\nfast-forward through text you've already read.", ok_action=Return())
@@ -286,7 +286,7 @@ label autoload:
 
 label before_main_menu:
     $ config.main_menu_music = audio.t1
-    # Arranca el chequeo de versiÃ³n del template (solo en modo dev/modder).
+    # Arranca el chequeo de versión del template (solo en modo dev/modder).
     if config.developer:
         $ mg_iniciar()
     return
