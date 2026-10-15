@@ -12,4 +12,4 @@
 CHANGELOG.md   export-ignore
 RELEASE.md     export-ignore
 RELEASES.md    export-ignore
-tools/         export-ignore
+/tools/        export-ignore
