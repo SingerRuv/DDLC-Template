@@ -31,6 +31,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - Codificación (mojibake) de `definitions/splash.rpy`.
 - El sistema de migración no molesta en el repositorio fuente del template
   (no tiene manifest → queda inerte).
+- El **ZIP de release** vuelve a incluir `game/tools/` (hub de **Plugins** + PoseLab):
+  el patrón `tools/` del `export-ignore` lo excluía por error (el botón *Plugins*
+  fallaba con `ScreenNotFound: 'complements'`).
 
 ### Cambiado
 - `screens.rpy`: la pantalla `choice` ya no usa la API obsoleta
