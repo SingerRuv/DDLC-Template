@@ -6,9 +6,16 @@
 
 init python:
     def _pl_mostrar(tag, nombre):
-        """Displayable de la pose: imagen registrada, o composite de archivos
-        (custom suelto). None si no hay nombre."""
+        """Displayable de la pose: imagen registrada, composite custom (3 capas)
+        o composite "cuerpo + expresión" (2 capas). None si no hay nombre."""
         if not nombre:
+            return None
+        if pl_tiene_defs(tag):
+            return renpy.displayable("%s %s" % (pl_tag(tag), nombre))
+        if pl_es_body_expr(tag):
+            b, e = _pl_paths_body_expr(tag, nombre)
+            if b and e:
+                return Composite((960, 960), (0, 0), b, (0, 0), e)
             return None
         if pl_es_custom(tag):
             carpeta = _pl_carpetas().get(tag, "")

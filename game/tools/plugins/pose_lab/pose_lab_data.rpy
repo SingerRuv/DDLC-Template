@@ -10,11 +10,17 @@ init python:
     import os as _pl_os
     import pygame as _pl_pygame
 
+    # Registro de todas las cachés de PoseLab (para poder limpiarlas con el
+    # botón "Reescanear"). Ver `pl_limpiar_cache`.
+    _PL_CACHES = []
+
     def _pl_cacheado(fn):
         """Cachea el resultado de `fn` por (nombre, argumentos).
 
-        Las definiciones no cambian en runtime, así que se leen una sola vez."""
+        Las definiciones no cambian en runtime, así que se leen una sola vez.
+        La caché se registra en `_PL_CACHES` para poder limpiarla."""
         cache = {}
+        _PL_CACHES.append(cache)
 
         def wrapper(*args):
             key = (fn.__name__, args)
@@ -78,6 +84,10 @@ init python:
     _PL_CARA_RE = _pl_re.compile(r"^[a-z]$")
     # Poses especiales de Natsuki: 12/42 (cabeza 2t*) — la cara va como `2t[letra]`.
     _PL_ESPECIAL_RE = _pl_re.compile(r"^(12|42)([a-z]?)$")
+    # Formato "cuerpo + expresión" (2 capas): cuerpo = pose (`1`, `2`, `1b`, `2b`),
+    # expresión = `a`, `a1`, `i5`… (ver `_pl_capas_body_cara`).
+    _PL_BODY_RE = _pl_re.compile(r"^\d+[a-z]*$")
+    _PL_CARA2_RE = _pl_re.compile(r"^[a-z]\d*$")
 
     @_pl_cacheado
     def _pl_sprites():
@@ -119,6 +129,20 @@ init python:
             return izq, der, cara
         return None
 
+    def _pl_capas_body_cara(capas):
+        """(body, cara) si las capas son 'cuerpo + expresión' (2 capas); si no, None.
+
+        Formato del pack MC: `Composite("1.png", "a.png")` → cuerpo `1` + expresión `a`."""
+        body = cara = None
+        for c in capas:
+            if _PL_BODY_RE.fullmatch(c):
+                body = c
+            elif _PL_CARA2_RE.fullmatch(c):
+                cara = c
+        if body and cara:
+            return body, cara
+        return None
+
     def _pl_digitos(arm):
         return int(_pl_re.match(r"\d+", arm).group(0))
 
@@ -141,12 +165,18 @@ init python:
                 continue
 
             t = _pl_capas_normales(capas)
-            if not t:
+            if t:
+                izq, der, cara = t
+                outfit = _pl_outfit(izq)
+                pose = 1 + 2 * (_pl_digitos(izq) - 1) + (_pl_digitos(der) - 1)
+                res[(outfit, pose, cara)] = nombre
                 continue
-            izq, der, cara = t
-            outfit = _pl_outfit(izq)
-            pose = 1 + 2 * (_pl_digitos(izq) - 1) + (_pl_digitos(der) - 1)
-            res[(outfit, pose, cara)] = nombre
+
+            # Formato "cuerpo + expresión" (2 capas), p.ej. `image mc 1a = Composite("1", "a")`.
+            bc = _pl_capas_body_cara(capas)
+            if bc:
+                body, cara = bc
+                res[(_pl_outfit(body), _pl_digitos(body), cara)] = nombre
         return res
 
     # ======================================================================
@@ -188,7 +218,8 @@ init python:
         return bool(_pl_sprites().get(tag))
 
     def pl_es_custom(tag):
-        return tag in _pl_carpetas() and not pl_tiene_defs(tag)
+        return ((tag in _pl_carpetas() or tag in _pl_carpetas_body_expr())
+                and not pl_tiene_defs(tag))
 
     @_pl_cacheado
     def _pl_indice_archivos(tag):
@@ -210,10 +241,89 @@ init python:
                         "izq": izq, "der": der, "cara": cara}
         return res
 
+    # --- Formato "cuerpo + expresión" por carpetas anidadas (sin definiciones):
+    #     una subcarpeta con los cuerpos y otra con las expresiones. El
+    #     personaje es la carpeta PADRE.
+
+    @_pl_cacheado
+    def _pl_carpetas_body_expr():
+        """{tag: (dir_cuerpos, dir_expresiones)}."""
+        por_dir = {}
+        for f in renpy.list_files():
+            if not f.lower().endswith(".png"):
+                continue
+            partes = f.split("/")
+            if len(partes) < 2 or any(p in _PL_EXCLUIR for p in partes[:-1]):
+                continue
+            por_dir.setdefault("/".join(partes[:-1]), []).append(partes[-1][:-4])
+        tipos = {}
+        for d, nombres in por_dir.items():
+            tiene_cuerpo = any(_PL_BODY_RE.fullmatch(n) for n in nombres)
+            tiene_expr = any(_PL_CARA2_RE.fullmatch(n) for n in nombres)
+            if tiene_cuerpo and not tiene_expr:
+                tipos[d] = "cuerpos"
+            elif tiene_expr and not tiene_cuerpo:
+                tipos[d] = "exprs"
+        res = {}
+        for d in tipos:
+            padre = d.rsplit("/", 1)[0] if "/" in d else ""
+            if not padre or padre in res:
+                continue
+            hermanos = [dd for dd, tt in tipos.items()
+                        if (dd.rsplit("/", 1)[0] if "/" in dd else "") == padre]
+            dc = next((dd for dd in hermanos if tipos[dd] == "cuerpos"), None)
+            de = next((dd for dd in hermanos if tipos[dd] == "exprs"), None)
+            if dc and de:
+                res[padre.split("/")[-1]] = (dc, de)
+        return res
+
+    def pl_es_body_expr(tag):
+        return tag in _pl_carpetas_body_expr() and not pl_tiene_defs(tag)
+
+    @_pl_cacheado
+    def _pl_imgs_en(carpeta):
+        """{nombre: ruta} de los .png directamente en `carpeta`."""
+        res = {}
+        pre = carpeta + "/"
+        for f in renpy.list_files():
+            if f.startswith(pre) and f.lower().endswith(".png"):
+                resto = f[len(pre):]
+                if "/" not in resto:
+                    res[resto[:-4]] = f
+        return res
+
+    @_pl_cacheado
+    def _pl_indice_body_expr(tag):
+        """{(outfit, pose, cara): {nombre, body, expr}} (custom, 2 capas)."""
+        dc = _pl_carpetas_body_expr().get(tag)
+        if not dc:
+            return {}
+        cuerpos, exprs = _pl_imgs_en(dc[0]), _pl_imgs_en(dc[1])
+        res = {}
+        for body, body_path in cuerpos.items():
+            if not _PL_BODY_RE.fullmatch(body):
+                continue
+            for expr, expr_path in exprs.items():
+                if not _PL_CARA2_RE.fullmatch(expr):
+                    continue
+                res[(_pl_outfit(body), _pl_digitos(body), expr)] = {
+                    "nombre": "%s%s" % (body, expr),
+                    "body": body_path, "expr": expr_path}
+        return res
+
+    def _pl_paths_body_expr(tag, nombre):
+        """(ruta_cuerpo, ruta_expr) del nombre dado, o (None, None)."""
+        for v in _pl_indice_body_expr(tag).values():
+            if v["nombre"] == nombre:
+                return v["body"], v["expr"]
+        return None, None
+
     def _pl_indice_tag(tag):
         """{(outfit, pose, cara): nombre}, según el modo del personaje."""
         if pl_tiene_defs(tag):
             return _pl_indice(tag)
+        if tag in _pl_carpetas_body_expr():
+            return {k: v["nombre"] for k, v in _pl_indice_body_expr(tag).items()}
         return {k: v["nombre"] for k, v in _pl_indice_archivos(tag).items()}
 
     # ======================================================================
@@ -229,6 +339,9 @@ init python:
                 tags.add(t)
         for t in _pl_carpetas():
             if _pl_indice_archivos(t) or pl_cuerpos(t):
+                tags.add(t)
+        for t in _pl_carpetas_body_expr():
+            if _pl_indice_body_expr(t):
                 tags.add(t)
         orden = ("sayori", "natsuki", "yuri", "monika")
         vanilla = [t for t in orden if t in tags]
@@ -295,6 +408,21 @@ init python:
         if not nombre:
             return ""
         return "show %s %s at %s zorder %d" % (pl_tag(tag), nombre, trans, zorder)
+
+    def pl_codigo(r):
+        """Código para el botón "Código". En el modo "cuerpo + expresión" sin
+        definiciones, incluye la definición `image ... = Composite(...)`
+        (si no, un `show <tag> <pose>` daría error)."""
+        if not r["nombre"]:
+            return ""
+        linea = pl_show(r["doki"], r["nombre"], r["trans"], r["zorder"])
+        if pl_es_body_expr(r["doki"]):
+            b, e = _pl_paths_body_expr(r["doki"], r["nombre"])
+            if b and e:
+                defn = ('image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s")'
+                        % (pl_tag(r["doki"]), r["nombre"], b, e))
+                return defn + "\n" + linea
+        return linea
 
     # ======================================================================
     # Estado de la herramienta. Vive en el store (no en variables de screen)
@@ -493,6 +621,30 @@ init python:
         """Toast propio (animado) de la herramienta. Ver `screen pl_notify`."""
         renpy.hide_screen("pl_notify")
         renpy.show_screen("pl_notify", message=mensaje)
+
+    def pl_limpiar_cache():
+        """Limpia todas las cachés de lectura (definiciones de sprites/carpetas)."""
+        for c in _PL_CACHES:
+            c.clear()
+
+    def pl_avisar_deteccion():
+        """Toast al abrir: cuántos personajes hay y cuáles son nuevos."""
+        tags = pl_personajes()
+        vistos = persistent.pl_personajes_visto or []
+        nuevos = [t for t in tags if t not in vistos]
+        msg = "%d personaje%s" % (len(tags), "" if len(tags) == 1 else "s")
+        if nuevos:
+            msg += " · nuevo: " + ", ".join(nuevos)
+        persistent.pl_personajes_visto = list(tags)
+        pl_toast(msg)
+
+    def pl_reescanear():
+        """Vuelve a leer las definiciones/carpetas (limpia las cachés)."""
+        pl_limpiar_cache()
+        pl_resuelto()  # re-resuelve la selección con las listas nuevas
+        tags = pl_personajes()
+        pl_toast("Reescaneado: %d personaje%s"
+                 % (len(tags), "" if len(tags) == 1 else "s"))
 
     def pl_copiar(texto):
         if not texto:

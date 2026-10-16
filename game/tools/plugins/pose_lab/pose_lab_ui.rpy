@@ -205,16 +205,18 @@ screen pl_barra(titulo, nombre):
 #
 # Los campos se ubican en una grilla 2 columnas de posición explícita dentro de
 # un `fixed`. El dropdown del campo abierto se dibuja como overlay anclado justo
-# debajo de su campo: flota por encima del resto sin desplazarlo ni agrandar la
-# ventana. El `fixed` reserva de antemano la "zona del dropdown" (DZ) para que
-# este siempre entre dentro de la ventana (sin scroll externo ni recortes).
+# debajo de su campo: flota por encima del resto sin desplazarlo. La ventana se
+# ajusta al alto de los campos (sin reservar la zona del dropdown): el dropdown
+# puede salir por debajo del marco, sobre el juego.
 screen pl_controls(r):
     $ menus = pl_menus(r)
     $ cw = 130            # ancho de columna
     $ gx = 12             # separación horizontal entre columnas
     $ pitch = 58         # alto de fila (título + campo + espacio)
     $ dz = 160            # alto de la zona reservada para el dropdown
-    $ filas = (len(menus) + 1) // 2
+    # Celdas de la grilla: los campos + el botón "Reescanear" (va en la celda
+    # siguiente a Zorder, así que reservamos su fila).
+    $ filas = (len(menus) + 2) // 2
     $ idx = next((j for j, m in enumerate(menus) if m[2] == pl_state["open"]), -1)
 
     frame:
@@ -231,7 +233,7 @@ screen pl_controls(r):
                 padding (14, 12)
 
                 fixed:
-                    xysize (2 * cw + gx, 22 + filas * pitch - 8 + dz)
+                    xysize (2 * cw + gx, 22 + filas * pitch)
 
                     text "Arma una pose y copia el código." style "pl_hint" xpos 0 ypos 0
 
@@ -246,6 +248,18 @@ screen pl_controls(r):
                                 style "pl_field"
                                 xsize cw
                                 action ToggleDict(pl_state, "open", clave, "")
+
+                    # "Reescanear": en la misma grilla, en la celda a la derecha
+                    # de Zorder (no agranda ni desplaza la ventana).
+                    vbox:
+                        xpos (len(menus) % 2) * (cw + gx)
+                        ypos 22 + (len(menus) // 2) * pitch
+                        spacing 2
+                        text " " style "pl_caption"
+                        textbutton "Reescanear":
+                            style "pl_copy"
+                            xsize cw
+                            action Function(pl_reescanear)
 
                     # Dropdown del campo abierto, encima de los campos siguientes.
                     if idx >= 0:

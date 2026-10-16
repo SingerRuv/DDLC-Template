@@ -33,3 +33,7 @@ default persistent.mg_ignorar = None
 
 # Marca del último reporte de migración ya mostrado (evita repetirlo).
 default persistent.mg_ultimo_reporte = None
+
+# ---- PoseLab (herramienta dev) ---------------------------------------------
+# Personajes que PoseLab ya vio (para avisar cuáles son nuevos al abrirlo).
+default persistent.pl_personajes_visto = None
