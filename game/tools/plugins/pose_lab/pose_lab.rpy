@@ -16,12 +16,13 @@ screen pose_lab():
     modal True
     zorder 200
 
-    # Al mostrarse: inicializa la selección (primera vez).
-    on "show" action Function(pl_ensure_init)
+    # Al mostrarse: inicializa la selección (primera vez) y avisa cuántos
+    # personajes detectó (y si hay alguno nuevo respecto a la sesión anterior).
+    on "show" action [Function(pl_ensure_init), Function(pl_avisar_deteccion)]
 
     # --- Resolución de la selección efectiva (cascada) ---
     $ r = pl_resuelto()
-    $ txt_show = pl_show(r["doki"], r["nombre"], r["trans"], r["zorder"])
+    $ txt_show = pl_codigo(r)
 
     # Volver al hub de plugins.
     key "K_ESCAPE" action Show("complements")
