@@ -10,9 +10,12 @@ init python:
         o composite "cuerpo + expresión" (2 capas). None si no hay nombre."""
         if not nombre:
             return None
-        if pl_tiene_defs(tag):
-            return renpy.displayable("%s %s" % (pl_tag(tag), nombre))
-        if pl_es_body_expr(tag):
+        nombre_img = "%s %s" % (pl_tag(tag), nombre)
+        # La definición solo sirve si YA está cargada en el juego: las recién
+        # escritas en sprites.rpy existen en disco pero no hasta reiniciar.
+        if pl_tiene_defs(tag) and renpy.image_exists(nombre_img, exact=True):
+            return renpy.displayable(nombre_img)
+        if tag in _pl_carpetas_body_expr():
             b, e = _pl_paths_body_expr(tag, nombre)
             if b and e:
                 return Composite((960, 960), (0, 0), b, (0, 0), e)
@@ -26,7 +29,7 @@ init python:
                     return Composite((960, 960), (0, 0), ref["izq"],
                                      (0, 0), ref["der"], (0, 0), ref["cara"])
             return None
-        if pl_es_custom(tag):
+        if tag in _pl_carpetas():
             carpeta = _pl_carpetas().get(tag, "")
             if nombre.startswith("5"):  # cuerpo completo: archivo 3x.png directo
                 return "%s/3%s.png" % (carpeta, nombre[1:])
@@ -38,7 +41,7 @@ init python:
                         (0, 0), "%s/%s.png" % (carpeta, d),
                         (0, 0), "%s/%s.png" % (carpeta, c))
             return None
-        return renpy.displayable("%s %s" % (pl_tag(tag), nombre))
+        return renpy.displayable(nombre_img)
 
     def pl_trans_objeto(trans):
         """Transform a aplicar en el preview.
