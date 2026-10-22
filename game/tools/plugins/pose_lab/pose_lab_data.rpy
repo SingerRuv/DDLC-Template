@@ -349,9 +349,6 @@ init python:
                 res[padre.split("/")[-1]] = (dc, de)
         return res
 
-    def pl_es_body_expr(tag):
-        return tag in _pl_carpetas_body_expr() and not pl_tiene_defs(tag)
-
     @_pl_cacheado
     def _pl_imgs_en(carpeta):
         """{nombre: ruta} de los .png directamente en `carpeta`."""
@@ -544,19 +541,17 @@ init python:
         return "show %s %s at %s zorder %d" % (pl_tag(tag), nombre, trans, zorder)
 
     def pl_codigo(r):
-        """Código para el botón "Código". En el modo "cuerpo + expresión" sin
-        definiciones, incluye la definición `image ... = Composite(...)`
-        (si no, un `show <tag> <pose>` daría error)."""
+        """Línea `show ...` para el panel "Código" ('' si no hay pose)."""
+        return pl_show(r["doki"], r["nombre"], r["trans"], r["zorder"])
+
+    def pl_codigo_rico(r):
+        """Igual que `pl_codigo` pero con colores: solo para mostrar, no copiar."""
         if not r["nombre"]:
             return ""
-        linea = pl_show(r["doki"], r["nombre"], r["trans"], r["zorder"])
-        if pl_es_body_expr(r["doki"]):
-            b, e = _pl_paths_body_expr(r["doki"], r["nombre"])
-            if b and e:
-                defn = ('image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s")'
-                        % (pl_tag(r["doki"]), r["nombre"], b, e))
-                return defn + "\n" + linea
-        return linea
+        return ("{color=#4a5160}›{/color}  "
+                "{color=#7fb0ff}show{/color}  {color=#ffd479}%s %s{/color}  "
+                "{color=#c792ea}at %s{/color}  {color=#8a8f98}zorder %d{/color}"
+                % (pl_tag(r["doki"]), r["nombre"], r["trans"], r["zorder"]))
 
     # ======================================================================
     # Estado de la herramienta. Vive en el store (no en variables de screen)
@@ -723,14 +718,17 @@ init python:
         pos = getattr(persistent, "pl_pos_" + nombre, None)
         return pos if pos is not None else _PL_VENTANAS[nombre]
 
+    _PL_FIJAS = {}   # ventanas fijadas en esta sesión (no persistente)
+
     def pl_ventana_fija(nombre):
-        return bool(getattr(persistent, "pl_fija_" + nombre, None))
+        return bool(_PL_FIJAS.get(nombre, False))
 
     def pl_ventana_mover(nombre, x, y):
         setattr(persistent, "pl_pos_" + nombre, (int(x), int(y)))
 
     def pl_ventana_alternar_fija(nombre):
-        setattr(persistent, "pl_fija_" + nombre, not pl_ventana_fija(nombre))
+        _PL_FIJAS[nombre] = not pl_ventana_fija(nombre)
+        renpy.restart_interaction()
 
     def pl_drag_mover(nombre):
         """Callback para `dragged`: guarda dónde quedó la ventana al soltarla."""
@@ -763,6 +761,10 @@ init python:
 
     def pl_avisar_deteccion():
         """Toast al abrir: cuántos personajes hay y cuáles son nuevos."""
+        global _PL_AVISADO
+        if _PL_AVISADO:
+            return
+        _PL_AVISADO = True
         tags = pl_personajes()
         vistos = persistent.pl_personajes_visto or []
         nuevos = [t for t in tags if t not in vistos]
@@ -783,6 +785,7 @@ init python:
 
     _PL_DEFINIDOS = set()       # tags resueltos en esta sesión
     _PL_PROMPT_VISTO = False    # el prompt se ofrece una vez por sesión
+    _PL_AVISADO = False         # el toast de detección, una vez por sesión
 
     def pl_custom_sin_defs():
         """Tags custom (carpeta o 2 capas) sin definiciones ni resueltos."""
@@ -908,8 +911,8 @@ init python:
         pendientes = pl_custom_sin_defs()
         if not pendientes:
             return
-        _PL_PROMPT_VISTO = True
         renpy.show_screen("pl_definir", tags=pendientes)
+        _PL_PROMPT_VISTO = True
 
     def pl_reescanear():
         """Vuelve a leer las definiciones/carpetas (limpia las cachés)."""
@@ -924,7 +927,7 @@ init python:
             return
         try:
             _pl_pygame.scrap.put(_pl_pygame.scrap.SCRAP_TEXT, texto.encode("utf-8"))
-            pl_toast("¡Definición copiada!")
+            pl_toast("¡Código copiado!")
             renpy.restart_interaction()
         except Exception:
             pl_toast("No se pudo copiar")
@@ -1028,7 +1031,7 @@ init python:
         idx = pl_state["destino_linea"]
         if pl_insertar(rel, idx, pl_state["destino_texto"]):
             pl_state["destino_linea"] = idx + 1
-            pl_toast("Definición insertada")
+            pl_toast("Código insertado")
         else:
             pl_toast("No se pudo escribir")
         renpy.restart_interaction()

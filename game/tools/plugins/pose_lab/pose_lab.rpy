@@ -18,14 +18,20 @@ screen pose_lab():
 
     # Al mostrarse: inicializa la selección (primera vez) y avisa cuántos
     # personajes detectó (y si hay alguno nuevo respecto a la sesión anterior).
-    on "show" action [Function(pl_ensure_init), Function(pl_avisar_deteccion), Function(pl_ofrecer_definiciones)]
+    # Un timer en vez de `on "show"`: el hub (mismo `tag menu`) reemplaza la
+    # pantalla y el evento "show" no se dispara.
+    timer 0.15 action [Function(pl_ensure_init), Function(pl_avisar_deteccion), Function(pl_ofrecer_definiciones)]
 
     # --- Resolución de la selección efectiva (cascada) ---
     $ r = pl_resuelto()
     $ txt_show = pl_codigo(r)
+    $ txt_code = pl_codigo_rico(r)
 
     # Volver al hub de plugins.
     key "K_ESCAPE" action Show("complements")
+
+    # Copiar el código con Ctrl+C.
+    key "ctrl_K_c" action Function(pl_copiar, txt_show)
 
     add Solid("#151515")
 
@@ -52,4 +58,4 @@ screen pose_lab():
             xpos pl_ventana_pos("code")[0]
             ypos pl_ventana_pos("code")[1]
             dragged pl_drag_mover("code")
-            use pl_code(txt_show)
+            use pl_code(txt_show, txt_code)

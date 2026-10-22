@@ -36,6 +36,13 @@ style pl_toast_text is pl_text:
 style pl_code is text:
     size 15
     color "#e6e6e6"
+    kerning 1
+
+# Bloque del código (fondo oscuro tipo editor).
+style pl_code_box is frame:
+    background "#181b21"
+    padding (12, 10)
+    xfill True
 
 style pl_field is button:
     background "#2c313a"
@@ -287,10 +294,11 @@ screen pl_controls(r):
 
 
 # Ventana flotante del bloque de código (se arrastra por la barra de título).
-screen pl_code(txt_show):
+screen pl_code(txt_show, txt_code):
+
     frame:
         style "pl_window"
-        xsize 470
+        xsize 460
 
         vbox:
             spacing 0
@@ -306,7 +314,9 @@ screen pl_code(txt_show):
                     spacing 8
 
                     if txt_show:
-                        text "[txt_show]" style "pl_code" xmaximum 440
+                        frame:
+                            style "pl_code_box"
+                            text "[txt_code]" style "pl_code" xmaximum 395
 
                         hbox:
                             spacing 10
@@ -316,6 +326,7 @@ screen pl_code(txt_show):
                             textbutton "Copiar en…":
                                 style "pl_copy"
                                 action Show("pl_aviso", texto=txt_show)
+                            text "Ctrl+C" style "pl_hint" yalign 0.5
                     else:
                         text "Elige personaje, outfit, pose y cara." style "pl_hint"
 
@@ -337,7 +348,7 @@ screen pl_aviso(texto):
             spacing 12
 
             text "Copiar en…" style "pl_destino_title"
-            text "Escribe `# poselab` al principio del .rpy donde quieres pegar la definición. Si no lo tiene, ese archivo no aparece en la lista." style "pl_text"
+            text "Escribe `# poselab` al principio del .rpy donde quieres pegar el código. Si no lo tiene, ese archivo no aparece en la lista." style "pl_text"
 
             hbox:
                 spacing 8
@@ -349,7 +360,7 @@ screen pl_aviso(texto):
                     action Hide("pl_aviso")
 
 
-# Panel "Copiar en…": escribe la definición dentro de un .rpy del guion.
+# Panel "Copiar en…": escribe el código dentro de un .rpy del guion.
 # Un archivo aparece en la lista si tiene una línea `# poselab` en cualquier
 # parte (marcador que lo habilita como destino).
 screen pl_destino(texto):
