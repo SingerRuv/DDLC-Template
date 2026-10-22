@@ -18,7 +18,7 @@ screen pose_lab():
 
     # Al mostrarse: inicializa la selección (primera vez) y avisa cuántos
     # personajes detectó (y si hay alguno nuevo respecto a la sesión anterior).
-    on "show" action [Function(pl_ensure_init), Function(pl_avisar_deteccion)]
+    on "show" action [Function(pl_ensure_init), Function(pl_avisar_deteccion), Function(pl_ofrecer_definiciones)]
 
     # --- Resolución de la selección efectiva (cascada) ---
     $ r = pl_resuelto()
