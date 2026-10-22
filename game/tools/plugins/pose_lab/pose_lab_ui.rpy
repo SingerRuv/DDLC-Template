@@ -467,3 +467,42 @@ screen pl_destino(texto):
                         textbutton "Cerrar":
                             style "pl_copy"
                             action Hide("pl_destino")
+
+
+# Pregunta automática: personajes custom sin definiciones propias.
+screen pl_definir(tags=[]):
+    modal True
+    zorder 300
+    key "K_ESCAPE" action Hide("pl_definir")
+
+    add Solid("#00000099")
+
+    frame:
+        style "pl_destino_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 560
+
+        vbox:
+            spacing 12
+
+            text "ATENCIÓN" style "pl_destino_title"
+
+            if len(tags) == 1:
+                text "Este sprite no cuenta con definiciones propias. ¿Te gustaría que las cree?" style "pl_text"
+            else:
+                text "Estos sprites no cuentan con definiciones propias. ¿Te gustaría que las cree?" style "pl_text"
+
+            vbox:
+                spacing 2
+                for t in tags:
+                    text ("• " + t) style "pl_hint"
+
+            hbox:
+                spacing 10
+                textbutton "Crear":
+                    style "pl_button"
+                    action [Function(pl_crear_definiciones, tags), Hide("pl_definir")]
+                textbutton "Ahora no":
+                    style "pl_copy"
+                    action Hide("pl_definir")

@@ -17,6 +17,15 @@ init python:
             if b and e:
                 return Composite((960, 960), (0, 0), b, (0, 0), e)
             return None
+        if tag in _pl_carpetas_outfit():
+            for ref in _pl_indice_outfit(tag).values():
+                if ref["nombre"] == nombre:
+                    if ref.get("full"):
+                        return Composite((960, 960), (0, 0), ref["full"],
+                                         (0, 0), ref["cara"])
+                    return Composite((960, 960), (0, 0), ref["izq"],
+                                     (0, 0), ref["der"], (0, 0), ref["cara"])
+            return None
         if pl_es_custom(tag):
             carpeta = _pl_carpetas().get(tag, "")
             if nombre.startswith("5"):  # cuerpo completo: archivo 3x.png directo

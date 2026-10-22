@@ -81,13 +81,22 @@ init python:
     _PL_LINEA_RE = _pl_re.compile(r'^\s*image\s+(\w+)\s+(\w+)\s*=\s*(.+)$')
     _PL_IZQ_RE = _pl_re.compile(r"^\d+[a-z]*l$")
     _PL_DER_RE = _pl_re.compile(r"^\d+[a-z]*r$")
-    _PL_CARA_RE = _pl_re.compile(r"^[a-z]$")
+    # Caras sueltas de una carpeta custom: `a`..`z` y variantes `a2`, `y1`...
+    _PL_CARA_RE = _pl_re.compile(r"^[a-z]\d*$")
+    # Capa "cara" dentro de una definicion: ademas, palabras (`scream`) y las
+    # cabezas manga de Natsuki (`2t`, `2bta`...).
+    _PL_CARA_WIDE_RE = _pl_re.compile(r"^([a-z][a-z0-9]*|\d+[a-z]+)$")
     # Poses especiales de Natsuki: 12/42 (cabeza 2t*) — la cara va como `2t[letra]`.
     _PL_ESPECIAL_RE = _pl_re.compile(r"^(12|42)([a-z]?)$")
     # Formato "cuerpo + expresión" (2 capas): cuerpo = pose (`1`, `2`, `1b`, `2b`),
     # expresión = `a`, `a1`, `i5`… (ver `_pl_capas_body_cara`).
     _PL_BODY_RE = _pl_re.compile(r"^\d+[a-z]*$")
     _PL_CARA2_RE = _pl_re.compile(r"^[a-z]\d*$")
+
+    # Outfit packs: carpeta "<Etiqueta> <Doki>" con brazos alternativos.
+    # Izquierda: `1l`, `1lx`, `2l`… (l + letras opcionales). Derecha: `1r`, `2r`.
+    _PL_IZQ2_RE = _pl_re.compile(r"^\d+[a-z]*l[a-z]*$")
+    _PL_DOKIS = ("sayori", "natsuki", "yuri", "monika")
 
     @_pl_cacheado
     def _pl_sprites():
@@ -115,6 +124,29 @@ init python:
                 datos.setdefault(m.group(1).lower(), {})[m.group(2)] = capas
         return datos
 
+    @_pl_cacheado
+    def _pl_sprites_rutas():
+        """{tag: {nombre: [rutas]}} con las rutas completas (para caras base)."""
+        datos = {}
+        for f in renpy.list_files():
+            if not f.endswith(".rpy") or f.startswith(("tl/", "tools/")):
+                continue
+            try:
+                with renpy.file(f) as fh:
+                    texto = fh.read().decode("utf-8")
+            except Exception:
+                continue
+            for linea in texto.splitlines():
+                if not linea.lstrip().startswith("image"):
+                    continue
+                m = _PL_LINEA_RE.match(linea)
+                if not m:
+                    continue
+                rutas = _pl_re.findall(r'"([^"]+\.png)"', m.group(3))
+                if rutas:
+                    datos.setdefault(m.group(1).lower(), {})[m.group(2)] = rutas
+        return datos
+
     def _pl_capas_normales(capas):
         """(izq, der, cara) si las capas son una pose normal; si no, None."""
         izq = der = cara = None
@@ -123,7 +155,7 @@ init python:
                 izq = c
             elif _PL_DER_RE.fullmatch(c):
                 der = c
-            elif _PL_CARA_RE.fullmatch(c):
+            elif _PL_CARA_WIDE_RE.fullmatch(c):
                 cara = c
         if izq and der and cara:
             return izq, der, cara
@@ -206,6 +238,45 @@ init python:
                 res[carpeta.split("/")[-1]] = carpeta
         return res
 
+    def _pl_slug(texto):
+        """'Sleepy' -> 'sleepy'; 'Casual 2' -> 'casual_2'."""
+        return _pl_re.sub(r"[^a-z0-9]+", "_", texto.lower()).strip("_")
+
+    @_pl_cacheado
+    def _pl_carpetas_outfit():
+        """{tag: (carpeta, doki_base)} de carpetas '<Etiqueta> <Doki>' con mitades.
+
+        El tag es `<doki>_<etiqueta>` (p. ej. 'Sleepy Yuri' -> 'yuri_sleepy').
+        Estas carpetas no traen caras: se usan las de la doki base.
+        """
+        por_carpeta = {}
+        for f in renpy.list_files():
+            if not f.lower().endswith(".png"):
+                continue
+            partes = f.split("/")
+            if len(partes) < 2 or any(p in _PL_EXCLUIR for p in partes[:-1]):
+                continue
+            por_carpeta.setdefault("/".join(partes[:-1]), []).append(partes[-1][:-4])
+
+        res = {}
+        for carpeta, nombres in por_carpeta.items():
+            base = carpeta.split("/")[-1]
+            if " " not in base:
+                continue
+            bajo = base.lower()
+            doki = next((d for d in _PL_DOKIS if d in bajo), None)
+            if not doki:
+                continue
+            tiene_izq = any(_PL_IZQ2_RE.fullmatch(n) for n in nombres)
+            tiene_der = any(_PL_DER_RE.fullmatch(n) for n in nombres)
+            if not (tiene_izq and tiene_der):
+                continue
+            etiqueta = _pl_slug(bajo.replace(doki, " "))
+            if not etiqueta:
+                continue
+            res["%s_%s" % (doki, etiqueta)] = (carpeta, doki)
+        return res
+
     @_pl_cacheado
     def _pl_archivos_carpeta(tag):
         carpeta = _pl_carpetas().get(tag)
@@ -218,7 +289,8 @@ init python:
         return bool(_pl_sprites().get(tag))
 
     def pl_es_custom(tag):
-        return ((tag in _pl_carpetas() or tag in _pl_carpetas_body_expr())
+        return ((tag in _pl_carpetas() or tag in _pl_carpetas_body_expr()
+                 or tag in _pl_carpetas_outfit())
                 and not pl_tiene_defs(tag))
 
     @_pl_cacheado
@@ -292,6 +364,59 @@ init python:
                     res[resto[:-4]] = f
         return res
 
+    def _pl_caras_base(doki):
+        """[(cara, ruta), …] con las caras de la doki base (de sus definiciones)."""
+        res = {}
+        rutas = _pl_sprites_rutas().get(doki, {})
+        for nombre, capas in _pl_sprites().get(doki, {}).items():
+            t = _pl_capas_normales(capas)
+            if not t:
+                continue
+            cara = t[2]
+            r = rutas.get(nombre) or []
+            if len(r) >= 3:
+                res.setdefault(cara, r[2])
+        if not res:
+            for cara in sorted({k[2] for k in _pl_indice(doki)}):
+                res[cara] = "images/%s/%s.png" % (doki, cara)
+        return sorted(res.items())
+
+    @_pl_cacheado
+    def _pl_indice_outfit(tag):
+        """{(outfit, pose, cara): {nombre, izq, der, cara}} de un outfit pack.
+
+        Izquierdas ('1l', '1lx', '2l', …) × derechas ('1r', '2r', …) -> poses 1..N
+        (orden izquierda-mayor). Las caras son las de la doki base.
+        """
+        oc = _pl_carpetas_outfit().get(tag)
+        if not oc:
+            return {}
+        carpeta, doki = oc
+        imgs = _pl_imgs_en(carpeta)
+        izqs = sorted(n for n in imgs if _PL_IZQ2_RE.fullmatch(n))
+        ders = sorted(n for n in imgs if _PL_DER_RE.fullmatch(n))
+        caras = _pl_caras_base(doki)
+        res = {}
+        pose = 0
+        for izq in izqs:
+            for der in ders:
+                pose += 1
+                for cara, cara_path in caras:
+                    res[("", pose, cara)] = {
+                        "nombre": "%d%s" % (pose, cara),
+                        "izq": imgs[izq], "der": imgs[der], "cara": cara_path}
+
+        # El 3.png del pack = una pose mas (cuerpo entero + cara por defecto),
+        # no un "cuerpo completo" aparte.
+        for nombre in sorted(imgs):
+            if _pl_re.fullmatch(r"3\d*[a-z]*", nombre):
+                pose += 1
+                for cara, cara_path in caras:
+                    res[("", pose, cara)] = {
+                        "nombre": "%d%s" % (pose, cara),
+                        "full": imgs[nombre], "cara": cara_path}
+        return res
+
     @_pl_cacheado
     def _pl_indice_body_expr(tag):
         """{(outfit, pose, cara): {nombre, body, expr}} (custom, 2 capas)."""
@@ -324,6 +449,8 @@ init python:
             return _pl_indice(tag)
         if tag in _pl_carpetas_body_expr():
             return {k: v["nombre"] for k, v in _pl_indice_body_expr(tag).items()}
+        if tag in _pl_carpetas_outfit():
+            return {k: v["nombre"] for k, v in _pl_indice_outfit(tag).items()}
         return {k: v["nombre"] for k, v in _pl_indice_archivos(tag).items()}
 
     # ======================================================================
@@ -343,6 +470,9 @@ init python:
         for t in _pl_carpetas_body_expr():
             if _pl_indice_body_expr(t):
                 tags.add(t)
+        for t in _pl_carpetas_outfit():
+            if _pl_indice_outfit(t) or pl_cuerpos(t):
+                tags.add(t)
         orden = ("sayori", "natsuki", "yuri", "monika")
         vanilla = [t for t in orden if t in tags]
         resto = sorted(t for t in tags if t not in orden)
@@ -354,6 +484,8 @@ init python:
         los archivos '3x' (convención DDLC: 3a.png -> 5a), mostrados como '5x'."""
         if pl_tiene_defs(tag):
             return sorted(n for n in _pl_sprites().get(tag, {}) if n.startswith("5"))
+        if _pl_carpetas_outfit().get(tag):
+            return []                       # su 3.png va como pose, no como "5"
         return sorted("5" + n[1:] for n in _pl_archivos_carpeta(tag)
                       if _pl_re.fullmatch(r"3\d*[a-z]*", n))
 
@@ -382,6 +514,8 @@ init python:
         return cara if cara else "(base)"
 
     def pl_label(tag):
+        if tag in _pl_carpetas_outfit():
+            return tag      # yuri_sleepy, tal cual
         return "%s (custom)" % tag if pl_es_custom(tag) else tag
 
     @_pl_cacheado
@@ -637,6 +771,145 @@ init python:
             msg += " · nuevo: " + ", ".join(nuevos)
         persistent.pl_personajes_visto = list(tags)
         pl_toast(msg)
+
+    # ======================================================================
+    # Definiciones para personajes custom (carpetas sin `image`).
+    #
+    # PoseLab previsualiza una carpeta custom, pero el juego no puede hacer
+    # `show <tag> ...` si no existe la `image`. Estas funciones generan las
+    # definiciones con el patrón de los sprites por defecto y las escriben en
+    # `definitions/sprites.rpy` (sección marcada, reemplazable).
+    # ======================================================================
+
+    _PL_DEFINIDOS = set()       # tags resueltos en esta sesión
+    _PL_PROMPT_VISTO = False    # el prompt se ofrece una vez por sesión
+
+    def pl_custom_sin_defs():
+        """Tags custom (carpeta o 2 capas) sin definiciones ni resueltos."""
+        res = []
+        for t in _pl_carpetas():
+            if t in _PL_DEFINIDOS or pl_tiene_defs(t):
+                continue
+            if _pl_indice_archivos(t):
+                res.append(t)
+        for t in _pl_carpetas_body_expr():
+            if t in _PL_DEFINIDOS or pl_tiene_defs(t):
+                continue
+            if _pl_indice_body_expr(t):
+                res.append(t)
+        for t in _pl_carpetas_outfit():
+            if t in _PL_DEFINIDOS or pl_tiene_defs(t):
+                continue
+            if _pl_indice_outfit(t) or pl_cuerpos(t):
+                res.append(t)
+        return sorted(res)
+
+    def pl_definiciones_texto(tag):
+        """Líneas `image ...` para el personaje custom (sin escribir nada)."""
+        lineas = []
+        carpeta = _pl_carpetas().get(tag)
+
+        if carpeta:
+            # 3 capas: mitades izquierda/derecha + cara.
+            for _k, v in sorted(_pl_indice_archivos(tag).items()):
+                lineas.append(
+                    'image %s %s = Composite((960, 960), (0, 0), "%s/%s.png", '
+                    '(0, 0), "%s/%s.png", (0, 0), "%s/%s.png")'
+                    % (pl_tag(tag), v["nombre"], carpeta, v["izq"],
+                       carpeta, v["der"], carpeta, v["cara"]))
+            # Sprites completos sueltos (p. ej. 3a, 3b).
+            for nombre in _pl_archivos_carpeta(tag):
+                if (_PL_BODY_RE.fullmatch(nombre)
+                        and not _PL_IZQ_RE.fullmatch(nombre)
+                        and not _PL_DER_RE.fullmatch(nombre)):
+                    lineas.append('image %s %s = "%s/%s.png"'
+                                  % (pl_tag(tag), nombre, carpeta, nombre))
+            return lineas
+
+        # 2 capas: cuerpo + expresión.
+        if tag in _pl_carpetas_body_expr():
+            for _k, v in sorted(_pl_indice_body_expr(tag).items()):
+                lineas.append(
+                    'image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s")'
+                    % (pl_tag(tag), v["nombre"], v["body"], v["expr"]))
+
+        # Outfit pack: mitades + caras de la doki base.
+        oc = _pl_carpetas_outfit().get(tag)
+        if oc:
+            for _k, v in sorted(_pl_indice_outfit(tag).items()):
+                if v.get("full"):
+                    lineas.append(
+                        'image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s")'
+                        % (pl_tag(tag), v["nombre"], v["full"], v["cara"]))
+                else:
+                    lineas.append(
+                        'image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s", (0, 0), "%s")'
+                        % (pl_tag(tag), v["nombre"], v["izq"], v["der"], v["cara"]))
+        return lineas
+
+    def pl_escribir_definiciones(tags):
+        """Escribe/reemplaza la sección de cada tag en definitions/sprites.rpy."""
+        ruta = _pl_os.path.join(config.gamedir, "definitions", "sprites.rpy")
+        if not _pl_os.path.isfile(ruta):
+            return 0
+
+        with open(ruta, "r", encoding="utf-8") as fh:
+            texto = fh.read()
+
+        try:
+            with open(ruta + ".poselab.bak", "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(texto)
+        except Exception:
+            pass
+
+        total = 0
+        for tag in tags:
+            lineas = pl_definiciones_texto(tag)
+            if not lineas:
+                continue
+            ini = "# === PoseLab: %s (auto) ===" % tag
+            fin = "# === fin PoseLab: %s ===" % tag
+            bloque = "\n".join([ini] + lineas + [fin]) + "\n"
+            if ini in texto and fin in texto:
+                a = texto.index(ini)
+                b = texto.index(fin) + len(fin)
+                if texto[b:b + 1] == "\n":
+                    b += 1
+                texto = texto[:a] + bloque + texto[b:]
+            else:
+                if not texto.endswith("\n"):
+                    texto += "\n"
+                texto += "\n" + bloque
+            _PL_DEFINIDOS.add(tag)
+            total += len(lineas)
+
+        try:
+            with open(ruta, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(texto)
+        except Exception as e:
+            renpy.log("pose_lab: no se pudo escribir sprites.rpy: %s" % e)
+            return 0
+        return total
+
+    def pl_crear_definiciones(tags):
+        """Acción "Crear": escribe las definiciones y avisa."""
+        n = pl_escribir_definiciones(tags)
+        if n:
+            pl_toast("%d definición%s escrita%s. Se aplican al reiniciar el juego."
+                     % (n, "" if n == 1 else "es", "" if n == 1 else "s"))
+        else:
+            pl_toast("No se pudo escribir definitions/sprites.rpy.")
+
+    def pl_ofrecer_definiciones():
+        """Muestra el prompt de definiciones (una vez por sesión)."""
+        global _PL_PROMPT_VISTO
+        if _PL_PROMPT_VISTO:
+            return
+        pendientes = pl_custom_sin_defs()
+        if not pendientes:
+            return
+        _PL_PROMPT_VISTO = True
+        renpy.show_screen("pl_definir", tags=pendientes)
 
     def pl_reescanear():
         """Vuelve a leer las definiciones/carpetas (limpia las cachés)."""
