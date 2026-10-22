@@ -81,6 +81,23 @@ transform menu_logo_move:
     time 1.925
     easein_bounce 1.5 yoffset 0
 
+# Versiones sin la animación de entrada, para re-evaluar el menú sin re-animar
+# (p. ej. al cambiar de idioma). El fondo conserva su paneo (loop).
+transform menu_bg_static:
+    subpixel True
+    topleft
+    ypos -500
+    parallel:
+        xoffset 0 yoffset 0
+        linear 3.0 xoffset -100 yoffset -100
+        repeat
+
+transform menu_logo_static:
+    subpixel True
+    xcenter 240
+    ycenter 120
+    zoom 0.60
+
 transform menu_nav_move:
     subpixel True
     xoffset -500
