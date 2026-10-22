@@ -63,6 +63,24 @@ default menu_sprites = [
     ("menu_art_m", 1000, 640, 1.00, 1.00),
 ]
 
+# Ren'Py re-evalúa la screen al cambiar el idioma (pero NO la vuelve a mostrar,
+# así que el `on "show"` no corre). Para que la entrada del menú se vea solo en
+# un show real y no en cada cambio de idioma, se marca "entrada ya hecha" en la
+# primera evaluación tras el show.
+init python:
+    _menu_intro_done = True
+
+    def menu_intro_show():
+        global _menu_intro_done
+        _menu_intro_done = False
+
+    def menu_intro_take():
+        """True si hay que saltear la entrada (no es un show nuevo)."""
+        global _menu_intro_done
+        skip = _menu_intro_done
+        _menu_intro_done = True
+        return skip
+
 # --- Quick Menu (menú rápido durante el juego) --------------------------------
 
 # ¿Mostrar el quick_menu durante el juego? (True/False).
@@ -184,33 +202,52 @@ screen main_menu():
     # Esto asegura que cualquier otra screen de menu sea reemplazada.
     tag menu
 
+    # Al mostrarse, marca que la entrada del menú debe verse.
+    on "show" action Function(menu_intro_show)
+
+    # Si esta evaluación no es la de un show nuevo (p. ej. cambio de idioma),
+    # usar versiones sin la animación de entrada.
+    $ menu_intro_skip = menu_intro_take()
+
     style_prefix "main_menu"
 
     # Fondo del menú (configurable con gui.main_menu_background).
-    add gui.main_menu_background
+    if menu_intro_skip:
+        add "gui/menu_bg.png" at menu_bg_static
+    else:
+        add gui.main_menu_background
 
     # Sprites de personaje (configurables con menu_sprites).
     # Cada entrada: (tag, x, y, zoom, z_anim) → posición + animación fly-in.
     for img, x, y, zoom, z in menu_sprites:
-        add img at transform:
-            subpixel True
-            xcenter x ycenter y zoom zoom
-            menu_art_move(z, x, zoom)
+        if menu_intro_skip:
+            add img at transform:
+                subpixel True
+                xcenter x ycenter y zoom zoom
+        else:
+            add img at transform:
+                subpixel True
+                xcenter x ycenter y zoom zoom
+                menu_art_move(z, x, zoom)
 
     ## La sentencia use incluye la screen de navegacion dentro de esta.
     use main_navigation
 
     # Partículas del menú (configurables).
-    if gui.main_menu_particle_count > 0 and persistent.menu_particles:
+    if not menu_intro_skip and gui.main_menu_particle_count > 0 and persistent.menu_particles:
         for i in range(gui.main_menu_particle_count):
             add gui.main_menu_particles
 
     # Fade final del menú.
-    add gui.main_menu_fade
+    if not menu_intro_skip:
+        add gui.main_menu_fade
 
     # Logo del menú (configurable; se muestra tras el fade, como en el
     # template original).
-    add gui.main_menu_logo
+    if menu_intro_skip:
+        add "gui/window_icon.png" at menu_logo_static
+    else:
+        add gui.main_menu_logo
 
     if gui.show_name:
 
