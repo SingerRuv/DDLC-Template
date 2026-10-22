@@ -5,6 +5,27 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.2.1 — 2026-10-21
+
+Plantilla para crear mods de **DDLC** sobre **Ren'Py 8**, con el look del DDLC
+Mod Template y sistemas listos para usar.
+
+### Novedades
+- **PoseLab: sprites "cuerpo + expresión".** Soporte de sprites armados con dos
+  capas (cuerpo + expresión), tanto con definiciones `Composite` como con las
+  carpetas `Poses/` + `Expressions/`. Además avisa cuántos personajes detecta al
+  abrir y suma el botón **Reescanear**.
+- **Variantes de cara de Yuri y Natsuki.** Yuri suma `a2`–`e2` (rubor) y `y1`–`y7`;
+  Natsuki suma las cabezas manga casuales (`12b`/`42b`) y `scream`, en todas sus
+  poses.
+
+### Corregido
+- **Menú principal:** al cambiar de idioma ya no se repite la animación de
+  entrada (logo, fondo, sprites). Solo cambia el texto y el fondo sigue con su
+  paneo.
+
+---
+
 ## 1.2.0 — 2026-10-14
 
 Plantilla para crear mods de **DDLC** sobre **Ren'Py 8**, con el look del DDLC

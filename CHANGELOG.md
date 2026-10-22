@@ -6,6 +6,19 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-21
+
+### Añadido
+- **PoseLab:** soporte de sprites "cuerpo + expresión" (2 capas), tanto con
+  definiciones `Composite` como con carpetas `Poses/` + `Expressions/`; aviso
+  de personajes detectados y botón "Reescanear".
+- **Sprites:** variantes de cara de Yuri (`a2`–`e2`, `y1`–`y7`) y de Natsuki
+  (manga casual `12b`/`42b`, `scream`), en todas sus poses.
+
+### Corregido
+- El menú principal ya no re-anima (logo, fondo, sprites) al cambiar de idioma;
+  solo cambia el texto y el fondo mantiene su paneo.
+
 ## [1.2.0] - 2026-10-14
 
 ### Añadido
