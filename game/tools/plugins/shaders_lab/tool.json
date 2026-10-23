@@ -1,0 +1,11 @@
+{
+  "titulo": "Shaders",
+  "descripcion": "Vista previa de los shaders incluidos: scanlines, aberración, viñeta, glitch y CRT.",
+  "autor": "Broken Dreams Studio",
+  "version": "1.0",
+  "screen": "shaders_lab",
+  "categoria": "Herramientas",
+  "orden": 20,
+  "palabras_clave": ["shaders", "efectos", "crt", "glitch", "viñeta"],
+  "capturas": []
+}
