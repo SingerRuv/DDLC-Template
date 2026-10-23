@@ -303,10 +303,11 @@ def aplicar(project, staging, plan, man_new):
         # Borra el bytecode viejo: si el .rpyc sobrevive, Ren'Py puede seguir
         # ejecutando el código anterior aunque el .rpy ya esté actualizado.
         if rel.endswith(".rpy"):
+            base = os.path.splitext(dst)[0]
             for sufijo in (".rpyc", ".rpyb"):
                 try:
-                    if os.path.isfile(dst + sufijo):
-                        os.remove(dst + sufijo)
+                    if os.path.isfile(base + sufijo):
+                        os.remove(base + sufijo)
                 except Exception:
                     pass
     # El manifest nuevo se instala siempre (es la fuente de verdad de la version).
