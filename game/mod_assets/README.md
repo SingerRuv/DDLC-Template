@@ -7,7 +7,7 @@ completa `"mod_assets/..."` **o** con nombre corto (`"images/bg/mi_cuarto.png"`)
 igual que los de DDLC.
 
 > **Importante:** aquí **solo se guardan archivos**. Las *definiciones*
-> (`image`, `define audio`, `im.Composite`, etc.) van en
+> (`image`, `define audio`, `Composite`, etc.) van en
 > `game/definitions/definitions.rpy` (y `sprites.rpy` para los sprites).
 
 ## Estructura
@@ -49,7 +49,7 @@ define audio.mi_click = "mod_assets/audio/sfx/mi_click.ogg"
 Y en `sprites.rpy`, un sprite propio (patrón DDLC: mitades + caras):
 
 ```renpy
-image mi_pj 1a = im.Composite((960, 960), (0, 0), "mod_assets/images/mi_pj/1l.png", (0, 0), "mod_assets/images/mi_pj/1r.png", (0, 0), "mod_assets/images/mi_pj/a.png")
+image mi_pj 1a = Composite((960, 960), (0, 0), "mod_assets/images/mi_pj/1l.png", (0, 0), "mod_assets/images/mi_pj/1r.png", (0, 0), "mod_assets/images/mi_pj/a.png")
 ```
 
 > Nota: los assets **oficiales de DDLC** vienen de los `.rpa` y se referencian

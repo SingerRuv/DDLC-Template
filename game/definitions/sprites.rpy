@@ -301,7 +301,6 @@ image natsuki 2z = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0)
 # Pose 12 (con cabeza 2t, manga leyendo)
 image natsuki 12 = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0), "images/natsuki/1r.png", (0, 0), "images/natsuki/2t.png")
 image natsuki 12a = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0), "images/natsuki/1r.png", (0, 0), "images/natsuki/2ta.png")
-image natsuki 12b = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0), "images/natsuki/1r.png", (0, 0), "images/natsuki/2tb.png")
 image natsuki 12c = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0), "images/natsuki/1r.png", (0, 0), "images/natsuki/2tc.png")
 image natsuki 12d = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0), "images/natsuki/1r.png", (0, 0), "images/natsuki/2td.png")
 image natsuki 12e = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0), "images/natsuki/1r.png", (0, 0), "images/natsuki/2te.png")
@@ -313,7 +312,6 @@ image natsuki 12i = Composite((960, 960), (0, 0), "images/natsuki/1l.png", (0, 0
 # Pose 42 (con cabeza 2t y cuerpo 2)
 image natsuki 42 = Composite((960, 960), (0, 0), "images/natsuki/2l.png", (0, 0), "images/natsuki/2r.png", (0, 0), "images/natsuki/2t.png")
 image natsuki 42a = Composite((960, 960), (0, 0), "images/natsuki/2l.png", (0, 0), "images/natsuki/2r.png", (0, 0), "images/natsuki/2ta.png")
-image natsuki 42b = Composite((960, 960), (0, 0), "images/natsuki/2l.png", (0, 0), "images/natsuki/2r.png", (0, 0), "images/natsuki/2tb.png")
 image natsuki 42c = Composite((960, 960), (0, 0), "images/natsuki/2l.png", (0, 0), "images/natsuki/2r.png", (0, 0), "images/natsuki/2tc.png")
 image natsuki 42d = Composite((960, 960), (0, 0), "images/natsuki/2l.png", (0, 0), "images/natsuki/2r.png", (0, 0), "images/natsuki/2td.png")
 image natsuki 42e = Composite((960, 960), (0, 0), "images/natsuki/2l.png", (0, 0), "images/natsuki/2r.png", (0, 0), "images/natsuki/2te.png")
@@ -828,6 +826,7 @@ image yuri 4by7 = Composite((960, 960), (0, 0), "images/yuri/2bl.png", (0, 0), "
 # ===== fin Yuri: variantes de cara =====
 
 # ===== Natsuki: variantes (manga casual, 1t, scream) =====
+# Estas definen 12b/42b (antes existían con cabeza 2t*): gana este bloque.
 image natsuki 12b = Composite((960, 960), (0, 0), "images/natsuki/1bl.png", (0, 0), "images/natsuki/1br.png", (0, 0), "images/natsuki/2bt.png")
 image natsuki 12ba = Composite((960, 960), (0, 0), "images/natsuki/1bl.png", (0, 0), "images/natsuki/1br.png", (0, 0), "images/natsuki/2bta.png")
 image natsuki 12bb = Composite((960, 960), (0, 0), "images/natsuki/1bl.png", (0, 0), "images/natsuki/1br.png", (0, 0), "images/natsuki/2btb.png")

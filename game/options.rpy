@@ -74,7 +74,12 @@ default preferences.sfx_volume = 0.75
 #   Windows: %AppData%/RenPy/
 #   macOS: $HOME/Library/RenPy/ (desoculta la carpeta Library)
 #   Linux: $HOME/.renpy/
+# IMPORTANTE: si publicás un mod, cambiá este nombre para no compartir
+# partidas/persistent con otros mods hechos con esta plantilla.
 define config.save_directory = "DDLCBrokenDreamsModTemplate"
+
+# Avisa (en el log) si dos propiedades incompatibles se usan a la vez.
+define config.check_conflicting_properties = True
 
 # Esto controla el icono de la ventana de tu juego.
 define config.window_icon = "gui/window_icon.png"

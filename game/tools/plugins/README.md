@@ -123,7 +123,7 @@ Para que tu plugin se vea integrado, reutiliza estos estilos definidos en
 - `complements_meta` — línea de autor/versión.
 - `complements_detail_desc` — texto de descripción.
 - `complements_section` — subtítulo de sección.
-- `complements_open` / `complements_open_text` — botón (como los del menú).
+- `complements_open` — botón (como los del menú).
 
 Y el fondo del juego: `gui.main_menu_background`.
 

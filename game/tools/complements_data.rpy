@@ -203,9 +203,17 @@ init python:
             renpy.log("%s: metadata() de '%s' fallo: %s" % (_PL_PLUGINS_LOG, e["id"], ex))
             return
         if isinstance(md, _pl_builtins.dict):
-            for k in ("titulo", "descripcion", "autor", "version", "categoria", "palabras_clave", "orden"):
+            for k in ("titulo", "descripcion", "autor", "version", "categoria"):
                 if k in md:
-                    e[k] = md[k]
+                    e[k] = str(md[k])
+            if "orden" in md:
+                try:
+                    e["orden"] = int(md["orden"])
+                except Exception:
+                    pass
+            palabras = md.get("palabras_clave")
+            if isinstance(palabras, (_pl_builtins.list, _pl_builtins.tuple)):
+                e["palabras_clave"] = [str(p) for p in palabras]
 
     def _pl_llamar(mod, nombre, *args):
         """Llama un hook opcional del modulo; los errores van al log."""

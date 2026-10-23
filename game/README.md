@@ -63,7 +63,7 @@ Este archivo es el script principal que Ren'Py llama para iniciar la historia de
 
 ### Definición de la estructura (resumen del sistema original de DDLC)
 
-- Los **personajes** se declaran en `definitions/definitions.rpy` con `DynamicCharacter` y su nombre se define en `script.rpy` (`$ s_name = "???"`). Los sprites viven en `definitions/sprites.rpy` con `im.Composite` (sistema Bronya).
+- Los **personajes** se declaran en `definitions/definitions.rpy` con `DynamicCharacter` y su nombre se define en `script.rpy` (`$ s_name = "???"`). Los sprites viven en `definitions/sprites.rpy` con `Composite` (sistema Bronya).
 - La **música** y **fondos** se declaran en `definitions/definitions.rpy` con `define audio.x` e `image bg x`.
 - Las **transiciones y animaciones** viven en `definitions/transforms.rpy`.
 - La **historia** se organiza en archivos de script por capítulos, llamados desde `script.rpy` con `call capituloX`.

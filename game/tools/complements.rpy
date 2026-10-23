@@ -1,4 +1,4 @@
-﻿## complements.rpy
+## complements.rpy
 ## Hub de Plugins: punto de entrada a los plugins dev del template.
 ##
 ## Es dev-only: el botón aparece en el menú principal solo si

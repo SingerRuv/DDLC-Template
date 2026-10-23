@@ -25,4 +25,4 @@ Este archivo define las variables persistentes (se guardan entre partidas).
 Este archivo define la música y los efectos de sonido.
 
 ## sprites.rpy
-Este archivo define los sprites de los personajes (im.Composite, sistema Bronya).
+Este archivo define los sprites de los personajes (Composite, sistema Bronya).

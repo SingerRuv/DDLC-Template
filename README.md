@@ -28,7 +28,7 @@ efectos, menús configurables y un conjunto de ajustes para el jugador — todo 
 valores por defecto sensatos que el modder puede cambiar sin tocar el motor.
 
 - **Para quién:** quienes quieran empezar un mod con una base sólida y consistente.
-- **Qué trae:** la interfaz de DDLC, el sistema de sprites (`im.Composite`),
+- **Qué trae:** la interfaz de DDLC, el sistema de sprites (`Composite`),
   transforms, transiciones, efectos, menús configurables y ajustes del jugador.
 - **Qué NO trae:** los **assets oficiales de DDLC** (sprites, fondos, música,
   fuentes **y la interfaz `gui/…`**) — se aportan desde tu copia del juego (ver
@@ -95,7 +95,7 @@ game/
 ├── options.rpy           ← nombre, versión, configuración de build
 ├── definitions/
 │   ├── definitions.rpy   ← fondos (bg), personajes y variables
-│   ├── sprites.rpy       ← todos los sprites de las dokis (im.Composite)
+│   ├── sprites.rpy       ← todos los sprites de las dokis (Composite)
 │   ├── transforms.rpy    ← posiciones, animaciones y transiciones
 │   ├── music.rpy         ← música y efectos de sonido
 │   ├── effects.rpy       ← efectos visuales especiales
@@ -120,7 +120,7 @@ docs/                     ← documentación para modders
 
 ## Features
 
-- **Sprites estilo Bronya** (`im.Composite`): ~100 poses por personaje con
+- **Sprites estilo Bronya** (`Composite`): ~100 poses por personaje con
   notación compacta, ej. `show sayori 2b at t41`.
 - **Transforms de posición:** `t11`–`t44`, focus `f*`, entradas laterales `l*`/`r*`,
   animaciones `hop`/`dip`, salidas `lhide`/`rhide`.
