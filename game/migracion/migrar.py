@@ -18,7 +18,7 @@
 ## Uso:
 ##   python migrar.py <job.json>          # flujo normal (lo lanza el juego)
 ##   python migrar.py --selftest          # autotest del algoritmo de mezcla
-##   python migrar.py --zip <zip> --project <dir>   # modo manual (sin job)
+##   python migrar.py --zip <zip> --project <dir> [--dry-run]   # modo manual
 
 import hashlib
 import json
@@ -45,10 +45,15 @@ ARCHIVOS_SISTEMA = (
     "game/migracion/.template.zip",
     "game/migracion/manual.zip",
     "game/migracion/reporte.json",
+    "game/migracion/migracion.log",
 )
 
 RUTA_MANIFEST = os.path.join("game", "migracion", "manifest.json")
 RUTA_REPORTE = os.path.join("game", "migracion", "reporte.json")
+RUTA_LOG = os.path.join("game", "migracion", "migracion.log")
+
+# Tope de tamano descomprimido del ZIP del template (defensa ante zip-bombs).
+LIMITE_ZIP = 500 * 1024 * 1024
 
 
 def _norm(rel):
@@ -91,6 +96,34 @@ def _listar(raiz, sub):
     return sorted(resultado)
 
 
+_DRY = [False]  # en --dry-run no se escribe nada en el proyecto, ni el log
+
+
+def _log(project, mensaje):
+    """Registra un paso en game/migracion/migracion.log (el juego no tiene consola)."""
+    if _DRY[0]:
+        return
+    try:
+        ruta = os.path.join(project, RUTA_LOG.replace("/", os.sep))
+        os.makedirs(os.path.dirname(ruta), exist_ok=True)
+        with open(ruta, "a", encoding="utf-8", newline="\n") as f:
+            f.write("%s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), mensaje))
+    except Exception:
+        pass
+
+
+def _ver(txt):
+    """(1, 2, 0) a partir de '1.2' / 'v1.2.0'. None si no se puede."""
+    try:
+        partes = str(txt).strip().lstrip("vV").split(".")
+        nums = [int(p) for p in partes[:3]]
+        while len(nums) < 3:
+            nums.append(0)
+        return tuple(nums)
+    except Exception:
+        return None
+
+
 def _leer_manifest(raiz):
     """Lee game/migracion/manifest.json bajo `raiz`. Devuelve dict o None."""
     ruta = os.path.join(raiz, RUTA_MANIFEST)
@@ -106,7 +139,7 @@ def _leer_manifest(raiz):
 
 # ---- Plan de migracion --------------------------------------------------------------
 
-def planificar(project, staging, man_old, man_new):
+def planificar(project, man_old, man_new):
     """Calcula que hacer con cada archivo.
 
     Devuelve un dict con:
@@ -116,6 +149,7 @@ def planificar(project, staging, man_old, man_new):
       nuevos    -> archivos que trae el template nuevo y no existian
       borrados  -> archivos que el template viejo tenia y el nuevo ya no
       agregados -> archivos que el modder agrego (para respaldar)
+      ausentes  -> archivos del template viejo que el modder borro
     """
     viejos = man_old.get("files", {})
     nuevos = man_new.get("files", {})
@@ -126,12 +160,14 @@ def planificar(project, staging, man_old, man_new):
     nuevos_files = []
     borrados = []
     agregados = []
+    ausentes = set()
 
     # 1) Archivos del template: ¿los toco el modder? ¿los cambio el template?
     for rel, hash_viejo in viejos.items():
         abs_ = os.path.join(project, rel)
         if not os.path.isfile(abs_):
-            continue  # lo borro el modder: se respeta (no se re-copia)
+            ausentes.add(rel)  # lo borro el modder: no se vuelve a crear
+            continue
         if _sha256(abs_) != hash_viejo:
             conservar[rel] = "editado por el modder"
             if rel in nuevos and nuevos[rel] != hash_viejo:
@@ -142,7 +178,7 @@ def planificar(project, staging, man_old, man_new):
         if rel not in viejos:
             nuevos_files.append(rel)
 
-    # 3) Archivos que el template nuevo ya no trae (dejados en el proyecto).
+    # 3) Archivos que el template nuevo ya no trae (se dejan, solo se reportan).
     for rel in viejos:
         if rel not in nuevos:
             borrados.append(rel)
@@ -157,10 +193,12 @@ def planificar(project, staging, man_old, man_new):
         else:
             agregados.append(rel)
 
-    # 5) A copiar: todo el template nuevo menos lo que se conserva del modder.
+    # 5) A copiar: todo el template nuevo menos lo que se conserva del modder y
+    #    lo que el modder habia borrado.
     for rel in nuevos:
-        if rel not in conservar:
-            copiar.append(rel)
+        if rel in ausentes or rel in conservar:
+            continue
+        copiar.append(rel)
 
     return {
         "copiar": sorted(copiar),
@@ -169,6 +207,7 @@ def planificar(project, staging, man_old, man_new):
         "nuevos": sorted(nuevos_files),
         "borrados": sorted(borrados),
         "agregados": sorted(agregados),
+        "ausentes": sorted(ausentes),
     }
 
 
@@ -181,34 +220,95 @@ def respaldar(project, plan, desde, cuando):
     destino = os.path.join(project, "migracion_backup",
                            "%s-%s" % (desde or "0.0.0", cuando))
     rels = set(plan["conservar"].keys()) | set(plan.get("agregados", []))
-    for rel in rels:
+    copiados = 0
+    for rel in sorted(rels):
         origen = os.path.join(project, rel.replace("/", os.sep))
         if not os.path.isfile(origen):
             continue
         dst = os.path.join(destino, rel.replace("/", os.sep))
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copy2(origen, dst)
-    return destino, len(rels)
+        copiados += 1
+    return destino, copiados
+
+
+def _dir_previos(backup):
+    return os.path.join(backup, "_previos")
+
+
+def respaldar_previos(project, plan, backup):
+    """Copia el estado actual de los archivos que se van a sobrescribir.
+
+    Es la red de seguridad para poder revertir si `aplicar()` falla a mitad.
+    Se borra al terminar bien."""
+    base = _dir_previos(backup)
+    rels = list(plan["copiar"])
+    if os.path.isfile(os.path.join(project, RUTA_MANIFEST.replace("/", os.sep))):
+        rels.append(_norm(RUTA_MANIFEST))
+    copiados = 0
+    for rel in rels:
+        origen = os.path.join(project, rel.replace("/", os.sep))
+        if not os.path.isfile(origen):
+            continue
+        dst = os.path.join(base, rel.replace("/", os.sep))
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copy2(origen, dst)
+        copiados += 1
+    return copiados
+
+
+def restaurar_previos(project, backup):
+    """Devuelve el proyecto al estado previo a la migración. Devuelve cuántos."""
+    base = _dir_previos(backup)
+    if not os.path.isdir(base):
+        return 0
+    restaurados = 0
+    for dirpath, _dirnames, filenames in os.walk(base):
+        for nombre in filenames:
+            abs_ = os.path.join(dirpath, nombre)
+            rel = _norm(os.path.relpath(abs_, base))
+            dst = os.path.join(project, rel.replace("/", os.sep))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            tmp = dst + ".tmp"
+            shutil.copy2(abs_, tmp)
+            os.replace(tmp, dst)
+            restaurados += 1
+    return restaurados
+
+
+def _escribir_atomico(origen_abs, dst_abs):
+    """Copia a un temporal y reemplaza, para no dejar archivos a medias."""
+    os.makedirs(os.path.dirname(dst_abs), exist_ok=True)
+    tmp = dst_abs + ".tmp"
+    shutil.copy2(origen_abs, tmp)
+    os.replace(tmp, dst_abs)
 
 
 def aplicar(project, staging, plan, man_new):
-    """Copia el template nuevo y deja el manifest actualizado."""
+    """Copia el template nuevo (atómico por archivo) y deja el manifest."""
     escritos = 0
     for rel in plan["copiar"]:
         origen = os.path.join(staging, rel.replace("/", os.sep))
         if not os.path.isfile(origen):
             continue
-        dst = os.path.join(project, rel.replace("/", os.sep))
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copy2(origen, dst)
+        _escribir_atomico(origen, os.path.join(project, rel.replace("/", os.sep)))
         escritos += 1
     # El manifest nuevo se instala siempre (es la fuente de verdad de la version).
     origen_man = os.path.join(staging, RUTA_MANIFEST.replace("/", os.sep))
     if os.path.isfile(origen_man):
-        dst_man = os.path.join(project, RUTA_MANIFEST.replace("/", os.sep))
-        os.makedirs(os.path.dirname(dst_man), exist_ok=True)
-        shutil.copy2(origen_man, dst_man)
+        _escribir_atomico(origen_man,
+                          os.path.join(project, RUTA_MANIFEST.replace("/", os.sep)))
     return escritos
+
+
+def _imprimir_plan(plan, desde, hasta):
+    print("Migracion %s -> %s" % (desde or "?", hasta or "?"))
+    for clave in ("copiar", "conservar", "conflictos", "nuevos", "borrados",
+                  "agregados", "ausentes"):
+        valor = plan.get(clave)
+        print("%-11s %d" % (clave + ":", len(valor or [])))
+    for rel in plan["copiar"]:
+        print("  + %s" % rel)
 
 
 def escribir_reporte(project, desde, hasta, plan, backup, escritos, ok=True, error=""):
@@ -235,12 +335,17 @@ def escribir_reporte(project, desde, hasta, plan, backup, escritos, ok=True, err
 # ---- Procesos, descarga y extraccion ------------------------------------------------
 
 def _proceso_vivo(pid):
+    """True si el PID exacto sigue vivo (evita falsos positivos tipo 123/1234)."""
     try:
         if os.name == "nt":
             out = subprocess.run(
-                ["tasklist", "/FI", "PID eq %d" % pid],
-                capture_output=True, text=True).stdout
-            return str(pid) in (out or "")
+                ["tasklist", "/FI", "PID eq %d" % pid, "/FO", "CSV", "/NH"],
+                capture_output=True, text=True).stdout or ""
+            primera = out.strip().splitlines()[0] if out.strip() else ""
+            if not primera.startswith('"'):
+                return False
+            campos = primera.split('","')
+            return len(campos) > 1 and campos[1].strip('"').strip() == str(pid)
         os.kill(pid, 0)
         return True
     except Exception:
@@ -248,13 +353,16 @@ def _proceso_vivo(pid):
 
 
 def esperar_cierre(pid, timeout=300):
-    """Espera a que el proceso del juego termine (o el timeout)."""
+    """Espera a que el proceso del juego termine. True si ya no corre."""
     if not pid:
-        return
+        return True
     fin = time.time() + timeout
     time.sleep(0.5)
-    while time.time() < fin and _proceso_vivo(pid):
+    while time.time() < fin:
+        if not _proceso_vivo(pid):
+            return True
         time.sleep(0.5)
+    return not _proceso_vivo(pid)
 
 
 def descargar(url, destino):
@@ -273,8 +381,23 @@ def descargar(url, destino):
 
 
 def extraer(zip_path, destino):
-    """Extrae el ZIP y devuelve la carpeta que contiene `game/` (sin el prefijo)."""
+    """Valida y extrae el ZIP. Devuelve la carpeta que contiene `game/`."""
+    if not zipfile.is_zipfile(zip_path):
+        raise RuntimeError("el archivo no es un ZIP valido: %s" % zip_path)
     with zipfile.ZipFile(zip_path) as z:
+        total = 0
+        for info in z.infolist():
+            nombre = _norm(info.filename)
+            if nombre.startswith("/") or ".." in nombre.split("/"):
+                raise RuntimeError("el ZIP contiene una ruta no permitida: %s"
+                                   % info.filename)
+            if ((info.external_attr >> 16) & 0o170000) == 0o120000:
+                raise RuntimeError("el ZIP contiene un enlace simbolico: %s"
+                                   % info.filename)
+            total += info.file_size
+            if total > LIMITE_ZIP:
+                raise RuntimeError("el ZIP supera el limite de %d MB"
+                                   % (LIMITE_ZIP // (1024 * 1024)))
         z.extractall(destino)
     for nombre in sorted(os.listdir(destino)):
         candidato = os.path.join(destino, nombre)
@@ -301,54 +424,83 @@ def relanzar(job):
 
 # ---- Flujo principal ----------------------------------------------------------------
 
-def migrar(job):
+def migrar(job, dry_run=False):
     project = job["project"]
     tmp = tempfile.mkdtemp(prefix="bdmigrar-")
-
-    man_old = _leer_manifest(project)
-    if man_old is None:
-        escribir_reporte(project, job.get("from_version"), job.get("to_version"),
-                         None, None, 0, ok=False,
-                         error="El proyecto no tiene manifest; no se puede migrar.")
-        return False
-    desde = man_old.get("template_version") or job.get("from_version")
-
-    # 1) Esperar a que el juego cierre.
-    esperar_cierre(job.get("pid"))
-
-    # 2) Obtener el ZIP del template nuevo.
+    desde = job.get("from_version")
+    hasta = job.get("to_version")
+    plan = None
+    backup = None
+    _DRY[0] = dry_run
     try:
+        man_old = _leer_manifest(project)
+        if man_old is None:
+            _log(project, "sin manifest: no se puede migrar")
+            escribir_reporte(project, desde, job.get("to_version"), None, None, 0,
+                             ok=False,
+                             error="El proyecto no tiene manifest; no se puede migrar.")
+            return False
+        desde = man_old.get("template_version") or desde
+
+        # 1) Esperar a que el juego cierre; si sigue vivo, no se toca nada.
+        if not esperar_cierre(job.get("pid")):
+            raise RuntimeError("el juego no se cerro a tiempo; no se modifico nada")
+
+        # 2) Obtener y validar el ZIP del template nuevo.
         zip_path = job.get("zip")
         if not zip_path:
+            url = job.get("download_url")
+            if not url:
+                raise RuntimeError("la actualizacion no trae ZIP ni URL de descarga")
             zip_path = os.path.join(tmp, "template.zip")
-            descargar(job["download_url"], zip_path)
+            _log(project, "descargando %s" % url)
+            descargar(url, zip_path)
+        if not os.path.isfile(zip_path):
+            raise RuntimeError("no se encontro el ZIP: %s" % zip_path)
         staging = extraer(zip_path, os.path.join(tmp, "x"))
+
+        man_new = _leer_manifest(staging)
+        if man_new is None:
+            raise RuntimeError("el template nuevo no trae manifest")
+        hasta = man_new.get("template_version") or job.get("to_version")
+        v_new, v_old = _ver(hasta), _ver(desde)
+        if v_new and v_old and v_new < v_old:
+            raise RuntimeError("el ZIP es mas viejo (%s) que el instalado (%s)"
+                               % (hasta, desde))
+
+        # 3) Planificar.
+        plan = planificar(project, man_old, man_new)
+        _log(project, "plan: %d copiar, %d conservar, %d conflictos, %d ausentes"
+             % (len(plan["copiar"]), len(plan["conservar"]),
+                len(plan["conflictos"]), len(plan["ausentes"])))
+
+        if dry_run:
+            _imprimir_plan(plan, desde, hasta)
+            return True
+
+        # 4) Respaldar (modder + estado previo) y aplicar.
+        cuando = time.strftime("%Y%m%d-%H%M%S")
+        backup, _n = respaldar(project, plan, desde, cuando)
+        respaldar_previos(project, plan, backup)
+        escritos = aplicar(project, staging, plan, man_new)
+
+        escribir_reporte(project, desde, hasta, plan, backup, escritos)
+        shutil.rmtree(_dir_previos(backup), ignore_errors=True)
+        _log(project, "migracion OK: %d archivos" % escritos)
+        return True
     except Exception as e:
-        escribir_reporte(project, desde, job.get("to_version"), None, None, 0, ok=False,
-                         error="No se pudo obtener/extraer el template: %s" % e)
-        shutil.rmtree(tmp, ignore_errors=True)
+        _log(project, "ERROR: %s" % e)
+        if backup:
+            n = restaurar_previos(project, backup)
+            _log(project, "rollback: %d archivos restaurados" % n)
+        escribir_reporte(project, desde, hasta, plan, backup, 0,
+                         ok=False, error=str(e))
         return False
-
-    man_new = _leer_manifest(staging)
-    if man_new is None:
-        escribir_reporte(project, desde, job.get("to_version"), None, None, 0, ok=False,
-                         error="El template nuevo no trae manifest.")
+    finally:
+        _DRY[0] = False
         shutil.rmtree(tmp, ignore_errors=True)
-        return False
-    hasta = man_new.get("template_version") or job.get("to_version")
-
-    # 3) Planificar, respaldar y aplicar.
-    plan = planificar(project, staging, man_old, man_new)
-    cuando = time.strftime("%Y%m%d-%H%M%S")
-    backup, _n = respaldar(project, plan, desde, cuando)
-    escritos = aplicar(project, staging, plan, man_new)
-    reporte = escribir_reporte(project, desde, hasta, plan, backup, escritos)
-
-    shutil.rmtree(tmp, ignore_errors=True)
-
-    # 4) Relanzar el juego.
-    relanzar(job)
-    return reporte
+        if not dry_run:
+            relanzar(job)
 
 
 def cargar_job(ruta):
@@ -384,8 +536,10 @@ def selftest():
     escribir(project, "game/definitions/def.rpy", "DEF v1")
     escribir(project, "game/gui.rpy", "GUI v1")
     escribir(project, "README.md", "readme v1")
+    escribir(project, "game/core/borrado.rpy", "BORRADO v1")  # el modder lo borra
     escribir(project, "game/migracion/manifest.json", "{}")  # se regenera abajo
     man_old = manifest_de(project, "1.0.0")
+    os.remove(os.path.join(project, "game", "core", "borrado.rpy"))
 
     # --- El modder toca cosas ---
     escribir(project, "game/definitions/def.rpy", "DEF v1 + MI CAMBIO")  # editado (conflicto)
@@ -398,13 +552,14 @@ def selftest():
     escribir(staging, "game/definitions/def.rpy", "DEF v2")     # cambia + editado -> conflicto
     escribir(staging, "game/gui.rpy", "GUI v1")                  # igual -> copiar (no pisa?)
     escribir(staging, "game/core/b.rpy", "B v2")                # nuevo -> copiar
+    escribir(staging, "game/core/borrado.rpy", "BORRADO v2")    # el modder lo borro: no vuelve
     escribir(staging, "README.md", "readme v2")                 # cambia -> copiar
     man_new = manifest_de(staging, "2.0.0")
 
     # El template nuevo tambien incluye mod_assets vacio (no debe pisar al modder).
     escribir(staging, "game/migracion/manifest.json", "{}")
 
-    plan = planificar(project, staging, man_old, man_new)
+    plan = planificar(project, man_old, man_new)
 
     assert "game/core/a.rpy" in plan["copiar"], "a.rpy deberia copiarse"
     assert "game/definitions/def.rpy" in plan["conservar"], "def.rpy editado se conserva"
@@ -413,6 +568,8 @@ def selftest():
     assert "game/gui.rpy" not in plan["conflictos"], "gui.rpy no es conflicto (template igual)"
     assert "game/core/b.rpy" in plan["nuevos"], "b.rpy es nuevo"
     assert "README.md" in plan["copiar"], "README.md se copia"
+    assert "game/core/borrado.rpy" in plan["ausentes"], "borrado.rpy figura como ausente"
+    assert "game/core/borrado.rpy" not in plan["copiar"], "no se re-crea un archivo borrado"
 
     backup, n = respaldar(project, plan, "1.0.0", "test")
     assert n >= 3, "deberia respaldar def.rpy, gui.rpy y los agregados"
@@ -431,8 +588,29 @@ def selftest():
         "mod_assets no debe tocarse"
     with open(os.path.join(project, "game", "script.rpy")) as f:
         assert f.read() == "MI HISTORIA", "script.rpy no debe tocarse"
+    assert not os.path.isfile(os.path.join(project, "game", "core", "borrado.rpy")), \
+        "el archivo borrado por el modder no debe reaparecer"
     man_final = _leer_manifest(project)
     assert man_final["template_version"] == "2.0.0", "el manifest debe quedar en 2.0.0"
+
+    # --- Rollback: restaurar _previos devuelve el estado anterior ---
+    backup2 = os.path.join(tmp, "backup2")
+    os.makedirs(backup2)
+    respaldar_previos(project, {"copiar": ["game/core/a.rpy"]}, backup2)
+    escribir(project, "game/core/a.rpy", "A ROTO")
+    assert restaurar_previos(project, backup2) >= 1, "deberia restaurar al menos un archivo"
+    with open(os.path.join(project, "game", "core", "a.rpy")) as f:
+        assert f.read() == "A v2", "el rollback debe devolver el contenido previo"
+
+    # --- ZIP con ruta no permitida se rechaza ---
+    malo = os.path.join(tmp, "malo.zip")
+    with zipfile.ZipFile(malo, "w") as z:
+        z.writestr("../evil.txt", "x")
+    try:
+        extraer(malo, os.path.join(tmp, "x2"))
+        raise AssertionError("deberia rechazar rutas con ..")
+    except RuntimeError:
+        pass
 
     shutil.rmtree(tmp, ignore_errors=True)
     print("selftest OK")
@@ -446,18 +624,19 @@ def main(argv):
     if "--selftest" in argv:
         selftest()
         return 0
+    dry = "--dry-run" in argv
     # Modo manual: --zip <zip> --project <dir> [--version X.Y.Z]
     if "--zip" in argv and "--project" in argv:
         z = argv[argv.index("--zip") + 1]
         p = argv[argv.index("--project") + 1]
         ver = argv[argv.index("--version") + 1] if "--version" in argv else ""
-        return 0 if migrar({"project": p, "zip": z, "to_version": ver}) else 1
+        return 0 if migrar({"project": p, "zip": z, "to_version": ver}, dry_run=dry) else 1
     # Flujo normal: un job.json.
     jobs = [a for a in argv[1:] if not a.startswith("-")]
     if not jobs:
         _usage()
         return 2
-    return 0 if migrar(cargar_job(jobs[0])) else 1
+    return 0 if migrar(cargar_job(jobs[0]), dry_run=dry) else 1
 
 
 if __name__ == "__main__":

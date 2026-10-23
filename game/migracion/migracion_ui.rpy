@@ -14,6 +14,14 @@ init -1 python:
         lineas.append(_("Template: v%s a v%s") % (reporte.get("desde", "?"), reporte.get("hasta", "?")))
         if reporte.get("ok"):
             lineas.append(_("Se actualizaron %d archivos del template.") % reporte.get("copiados", 0))
+            if reporte.get("nuevos"):
+                lineas.append(_("Se agregaron %d archivos nuevos del template.") % len(reporte["nuevos"]))
+            if reporte.get("borrados"):
+                lineas.append(_("El template ya no incluye estos archivos (se dejaron como estaban):"))
+                for r in reporte["borrados"][:8]:
+                    lineas.append("    • " + r)
+                if len(reporte["borrados"]) > 8:
+                    lineas.append("    …")
             if reporte.get("conservados"):
                 lineas.append(_("Se conservaron %d archivos tuyos.") % len(reporte["conservados"]))
             if reporte.get("conflictos"):
@@ -145,7 +153,8 @@ screen migracion_reporte(reporte):
         vbox:
             spacing 16
 
-            text _("Migración de assets completada"):
+            text (_("Migración de assets completada") if reporte.get("ok")
+                  else _("Migración de assets fallida")):
                 style "migracion_titulo"
 
             for linea in mg_resumen(reporte):

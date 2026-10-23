@@ -43,6 +43,8 @@ game/.vscode/
 game/migracion/manifest.json
 game/migracion/.job.json
 game/migracion/.template.zip
+game/migracion/manual.zip
 game/migracion/reporte.json
+game/migracion/migracion.log
 # Respaldos de la migración (van en la raíz, fuera de game/).
 migracion_backup/
