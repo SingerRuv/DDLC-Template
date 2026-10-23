@@ -1,4 +1,4 @@
-﻿## pose_lab.rpy
+## pose_lab.rpy
 ## PoseLab: arma poses de los personajes leyendo las definiciones REALES de
 ## Composite de todos los .rpy del proyecto. No hay reglas fijas de nombres:
 ## lo que existe en sprites.rpy (o en cualquier .rpy) es lo que se puede armar.

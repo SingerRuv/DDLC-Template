@@ -41,7 +41,13 @@ init python:
                         (0, 0), "%s/%s.png" % (carpeta, d),
                         (0, 0), "%s/%s.png" % (carpeta, c))
             return None
-        return renpy.displayable(nombre_img)
+        if renpy.image_exists(nombre_img, exact=True):
+            return renpy.displayable(nombre_img)
+        return None
+
+    # Posiciones x de la familia Focus (`f11..f44`). Debe seguir a transforms.rpy.
+    _PL_FOCUS_X = {"11": 640, "21": 400, "22": 880, "31": 240, "32": 640,
+                   "33": 1040, "41": 200, "42": 493, "43": 786, "44": 1080}
 
     def pl_trans_objeto(trans):
         """Transform a aplicar en el preview.
@@ -51,11 +57,19 @@ init python:
         screen ese evento no se dispara (config.containers_pass_transform_events
         no incluye "show"), así que el sprite quedaría sin posición y a zoom
         1.0. La variante instantánea `iNN` fija esos mismos valores como
-        propiedades estáticas (misma pose de reposo), por eso se prefiere."""
+        propiedades estáticas (misma pose de reposo), por eso se prefiere.
+        La familia Focus (`fNN`) no tiene variante instantánea: se arma acá el
+        mismo estado de reposo de `t_focus` (zoom 1.05, alpha 1)."""
         if trans.startswith("t"):
             inst = getattr(store, "i" + trans[1:], None)
             if inst is not None:
                 return inst
+        if trans.startswith("f"):
+            x = _PL_FOCUS_X.get(trans[1:])
+            if x is not None:
+                return Transform(xcenter=x, yanchor=1.0, ypos=1.03,
+                                 yoffset=0, zoom=0.80 * 1.05, alpha=1.0,
+                                 subpixel=True)
         return getattr(store, trans, None)
 
 

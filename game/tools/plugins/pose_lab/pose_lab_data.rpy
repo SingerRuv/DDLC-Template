@@ -98,6 +98,16 @@ init python:
     _PL_IZQ2_RE = _pl_re.compile(r"^\d+[a-z]*l[a-z]*$")
     _PL_DOKIS = ("sayori", "natsuki", "yuri", "monika")
 
+    _PL_RUTAS_RE = _pl_re.compile(r"""["']([^"']+\.png)["']""")
+
+    def _pl_agregar_sprites(datos, item):
+        """Registra un `image tag nombre = ...` si referencia algún .png."""
+        rutas = _PL_RUTAS_RE.findall(item[2])
+        if not rutas:
+            return
+        capas = [r.split("/")[-1][:-4] for r in rutas]
+        datos.setdefault(item[0].lower(), {})[item[1]] = capas
+
     @_pl_cacheado
     def _pl_sprites():
         """{tag: {nombre: [capas]}} de todos los .rpy (excluye tl/ y tools/)."""
@@ -107,21 +117,27 @@ init python:
                 continue
             try:
                 with renpy.file(f) as fh:
-                    texto = fh.read().decode("utf-8")
+                    texto = fh.read().decode("utf-8-sig")
             except Exception:
                 continue
+            pendiente = None  # [tag, nombre, cuerpo] de una definición multilínea
             for linea in texto.splitlines():
+                if pendiente is not None:
+                    pendiente[2] += " " + linea.strip()
+                    if pendiente[2].count("(") <= pendiente[2].count(")"):
+                        _pl_agregar_sprites(datos, pendiente)
+                        pendiente = None
+                    continue
                 if not linea.lstrip().startswith("image"):
                     continue
                 m = _PL_LINEA_RE.match(linea)
                 if not m:
                     continue
-                # sirve tanto para Composite(...) como para = "ruta.png"
-                rutas = _pl_re.findall(r'"([^"]+\.png)"', m.group(3))
-                if not rutas:
-                    continue
-                capas = [r.split("/")[-1][:-4] for r in rutas]
-                datos.setdefault(m.group(1).lower(), {})[m.group(2)] = capas
+                cuerpo = m.group(3)
+                if cuerpo.count("(") > cuerpo.count(")"):
+                    pendiente = [m.group(1), m.group(2), cuerpo]
+                else:
+                    _pl_agregar_sprites(datos, [m.group(1), m.group(2), cuerpo])
         return datos
 
     @_pl_cacheado
@@ -133,18 +149,31 @@ init python:
                 continue
             try:
                 with renpy.file(f) as fh:
-                    texto = fh.read().decode("utf-8")
+                    texto = fh.read().decode("utf-8-sig")
             except Exception:
                 continue
+            pendiente = None
             for linea in texto.splitlines():
+                if pendiente is not None:
+                    pendiente[2] += " " + linea.strip()
+                    if pendiente[2].count("(") <= pendiente[2].count(")"):
+                        rutas = _PL_RUTAS_RE.findall(pendiente[2])
+                        if rutas:
+                            datos.setdefault(pendiente[0].lower(), {})[pendiente[1]] = rutas
+                        pendiente = None
+                    continue
                 if not linea.lstrip().startswith("image"):
                     continue
                 m = _PL_LINEA_RE.match(linea)
                 if not m:
                     continue
-                rutas = _pl_re.findall(r'"([^"]+\.png)"', m.group(3))
-                if rutas:
-                    datos.setdefault(m.group(1).lower(), {})[m.group(2)] = rutas
+                cuerpo = m.group(3)
+                if cuerpo.count("(") > cuerpo.count(")"):
+                    pendiente = [m.group(1), m.group(2), cuerpo]
+                else:
+                    rutas = _PL_RUTAS_RE.findall(cuerpo)
+                    if rutas:
+                        datos.setdefault(m.group(1).lower(), {})[m.group(2)] = rutas
         return datos
 
     def _pl_capas_normales(capas):
@@ -563,6 +592,7 @@ init python:
         "cara": "", "trans": "t11", "variante": "Normal", "zorder": 2, "fondo": "class", "open": "",
         # "Copiar en…": archivo destino, línea elegida y texto a insertar.
         "destino_archivo": "", "destino_linea": 0, "destino_texto": "",
+        "destinos": [],
     }
     pl_initialized = False
 
@@ -856,16 +886,18 @@ init python:
         if not _pl_os.path.isfile(ruta):
             return 0
 
-        with open(ruta, "r", encoding="utf-8") as fh:
-            texto = fh.read()
-
         try:
+            with open(ruta, "r", encoding="utf-8", newline="") as fh:
+                texto = fh.read().replace("\r\n", "\n").replace("\r", "\n")
+            # El backup es obligatorio: si falla, no se toca el archivo.
             with open(ruta + ".poselab.bak", "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(texto)
-        except Exception:
-            pass
+        except Exception as e:
+            renpy.log("pose_lab: no se pudo respaldar sprites.rpy: %s" % e)
+            return 0
 
         total = 0
+        hechos = set()
         for tag in tags:
             lineas = pl_definiciones_texto(tag)
             if not lineas:
@@ -873,9 +905,15 @@ init python:
             ini = "# === PoseLab: %s (auto) ===" % tag
             fin = "# === fin PoseLab: %s ===" % tag
             bloque = "\n".join([ini] + lineas + [fin]) + "\n"
-            if ini in texto and fin in texto:
+            if ini in texto:
                 a = texto.index(ini)
-                b = texto.index(fin) + len(fin)
+                if fin in texto:
+                    b = texto.index(fin) + len(fin)
+                else:
+                    # Bloque huérfano (sin marcador de fin): se reemplaza hasta
+                    # el próximo bloque PoseLab o el final del archivo.
+                    sig = texto.find("# === ", a + len(ini))
+                    b = sig if sig != -1 else len(texto)
                 if texto[b:b + 1] == "\n":
                     b += 1
                 texto = texto[:a] + bloque + texto[b:]
@@ -883,15 +921,18 @@ init python:
                 if not texto.endswith("\n"):
                     texto += "\n"
                 texto += "\n" + bloque
-            _PL_DEFINIDOS.add(tag)
+            hechos.add(tag)
             total += len(lineas)
 
         try:
-            with open(ruta, "w", encoding="utf-8", newline="\n") as fh:
+            tmp = ruta + ".poselab.tmp"
+            with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(texto)
+            _pl_os.replace(tmp, ruta)
         except Exception as e:
             renpy.log("pose_lab: no se pudo escribir sprites.rpy: %s" % e)
             return 0
+        _PL_DEFINIDOS.update(hechos)
         return total
 
     def pl_crear_definiciones(tags):
@@ -961,7 +1002,7 @@ init python:
                 continue
             try:
                 with renpy.file(f) as fh:
-                    texto = fh.read().decode("utf-8")
+                    texto = fh.read().decode("utf-8-sig")
             except Exception:
                 continue
             if _PL_MARCADOR_RE.search(texto):
@@ -974,39 +1015,39 @@ init python:
         if not rel:
             return []
         try:
-            with open(_pl_objetivo_abs(rel), "r", encoding="utf-8") as fh:
-                return fh.read().split("\n")
+            with open(_pl_objetivo_abs(rel), "r", encoding="utf-8", newline="") as fh:
+                texto = fh.read()
+            return texto.replace("\r\n", "\n").replace("\r", "\n").split("\n")
         except Exception:
             return []
 
     def pl_insertar(rel, idx, texto, sangria="    "):
         """Inserta `texto` con sangría de 4 espacios (columna 5) tras la línea
-        `idx` (0-based). Guarda un backup antes de escribir."""
+        `idx` (0-based). Guarda un backup antes de escribir. Deja el archivo en LF."""
         ruta = _pl_objetivo_abs(rel)
         try:
-            with open(ruta, "r", encoding="utf-8") as fh:
+            with open(ruta, "r", encoding="utf-8", newline="") as fh:
                 original = fh.read()
-            nl = "\r\n" if "\r\n" in original else "\n"
-            lineas = original.split(nl)
+            lineas = original.replace("\r\n", "\n").replace("\r", "\n").split("\n")
             lineas.insert(idx + 1, (sangria + texto) if texto else "")
-            with open(ruta + ".poselab.bak", "w", encoding="utf-8") as fh:
+            with open(ruta + ".poselab.bak", "w", encoding="utf-8", newline="") as fh:
                 fh.write(original)
-            with open(ruta, "w", encoding="utf-8") as fh:
-                fh.write(nl.join(lineas))
+            with open(ruta, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write("\n".join(lineas))
             return True
         except Exception:
             return False
 
     def pl_deshacer(rel):
-        """Restaura el archivo desde su backup (un nivel)."""
+        """Restaura el archivo desde su backup (un nivel), tal cual estaba."""
         ruta = _pl_objetivo_abs(rel)
         bak = ruta + ".poselab.bak"
         if not _pl_os.path.isfile(bak):
             return False
         try:
-            with open(bak, "r", encoding="utf-8") as fh:
+            with open(bak, "r", encoding="utf-8", newline="") as fh:
                 original = fh.read()
-            with open(ruta, "w", encoding="utf-8") as fh:
+            with open(ruta, "w", encoding="utf-8", newline="") as fh:
                 fh.write(original)
             return True
         except Exception:
@@ -1018,8 +1059,12 @@ init python:
             renpy.launch_editor([_pl_objetivo_abs(rel)], line=linea + 1)
 
     def pl_destino_init(texto):
-        """Prepara el estado de "Copiar en…" al abrir el panel."""
+        """Prepara el estado de "Copiar en…" al abrir el panel.
+
+        La lista de destinos se calcula una vez por apertura (evita escanear
+        todos los .rpy en cada evaluación del screen)."""
         objs = pl_objetivos()
+        pl_state["destinos"] = objs
         pl_state["destino_archivo"] = objs[0] if objs else ""
         pl_state["destino_linea"] = 0
         pl_state["destino_texto"] = texto

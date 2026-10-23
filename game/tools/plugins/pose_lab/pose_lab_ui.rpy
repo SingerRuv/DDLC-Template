@@ -385,7 +385,7 @@ screen pl_destino(texto):
 
             text "Copiar en…" style "pl_destino_title"
 
-            $ objs = pl_objetivos()
+            $ objs = pl_state["destinos"]
 
             if not objs:
                 text "Agrega una línea `# poselab` a un .rpy para que aparezca aquí." style "pl_hint"
@@ -436,8 +436,10 @@ screen pl_destino(texto):
                                 xfill True
                                 spacing 0
                                 for i, linea in enumerate(lineas):
-                                    $ etiqueta = "%d  %s" % (i + 1, linea)
-                                    textbutton "[etiqueta]":
+                                    # `[` se escapa para que no se interpole.
+                                    $ etiqueta = ("%d  %s" % (i + 1, linea)).replace("[", "[[")
+                                    textbutton etiqueta:
+                                        substitute False
                                         style "pl_linea"
                                         selected i == pl_state["destino_linea"]
                                         action SetDict(pl_state, "destino_linea", i)
@@ -449,7 +451,8 @@ screen pl_destino(texto):
                     frame:
                         style "pl_tray"
                         xfill True
-                        text "[pl_state['destino_texto']]" style "pl_code"
+                        $ _texto_pegar = pl_state["destino_texto"].replace("[", "[[")
+                        text _texto_pegar style "pl_code" substitute False
 
                 # Confirmación y acciones.
                 hbox:
