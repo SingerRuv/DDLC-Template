@@ -5,6 +5,29 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.2.2 — 2026-10-22
+
+Plantilla para crear mods de **DDLC** sobre **Ren'Py 8**, con el look del DDLC
+Mod Template y sistemas listos para usar.
+
+### Novedades
+- **Migración más segura.** Si la actualización falla a mitad, revierte los
+  cambios y deja un reporte; ya no reaparecen archivos que borraste. Además,
+  `migrar.py --dry-run` muestra qué haría sin tocar nada.
+- **PoseLab más robusto.** El panel "Código" se ve con colores, se copia con
+  Ctrl+C y sus ventanas se mueven y fijan. Respeta los archivos (LF, backup y
+  guardado atómico) y detecta `Composite` multilínea, comillas simples y BOM.
+- **Android:** el botón Cancelar funciona mientras extrae y no hay traceback al
+  cancelar. En iOS, un aviso claro en vez de un error.
+- **Aviso legal en inglés** con traducción al español (según el idioma elegido).
+
+### Corregido
+- Definiciones duplicadas de Natsuki (`12b`/`42b`).
+- `Tear` y `ParticleBurst` (efectos) usan bien el tiempo y la lista.
+- Todos los `.rpy` normalizados a UTF-8 sin BOM y LF.
+
+---
+
 ## 1.2.1 — 2026-10-21
 
 Plantilla para crear mods de **DDLC** sobre **Ren'Py 8**, con el look del DDLC

@@ -6,6 +6,37 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-22
+
+### Añadido
+- **Migración:** modo `--dry-run` para ver qué haría sin tocar nada, y registro
+  de pasos en `game/migracion/migracion.log`.
+- **PoseLab:** el panel "Código" muestra la línea con colores, se copia con
+  Ctrl+C y las ventanas se pueden mover y fijar.
+
+### Corregido
+- **Migración:** si algo falla a mitad, revierte los archivos ya reemplazados y
+  deja reporte; el juego se relanza siempre. Respeta los archivos que borraste,
+  valida el ZIP (rutas y tamaño) y no cierra el juego si no hay ZIP o URL. La
+  caché de versiones ya no se escribe desde un hilo.
+- **PoseLab:** escribe los `.rpy` en LF (sin CRLF), con backup obligatorio y
+  escritura atómica; el parser entiende `Composite` multilínea, comillas
+  simples y archivos con BOM; el preview de líneas muestra `[` literal y las
+  poses Focus se ven con su posición y zoom reales.
+- **Android:** el botón Cancelar funciona durante la extracción y cancelar (o
+  abrir en iOS) ya no muestra un traceback.
+- **Sprites:** eliminadas definiciones duplicadas de Natsuki (`12b`/`42b`).
+- **Efectos:** `Tear` usa el delta real de tiempo y `ParticleBurst` ya no
+  modifica la lista mientras la recorre.
+- **Aviso legal:** está en inglés (idioma base) con traducción al español.
+
+### Cambiado
+- Documentación: `im.Composite` → `Composite`; README del hub de Plugins.
+- `options.rpy`: `config.check_conflicting_properties` y nota sobre
+  `config.save_directory` en mods publicados.
+- El hub de Plugins valida los tipos de `metadata()`.
+- Codificación: todos los `.rpy` en UTF-8 sin BOM y LF.
+
 ## [1.2.1] - 2026-10-21
 
 ### Añadido
@@ -114,7 +145,9 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.0...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.2...HEAD
+[1.2.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.1...1.2.2
+[1.2.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/SingerRuv/DDLC-Template/releases/tag/1.0.0
