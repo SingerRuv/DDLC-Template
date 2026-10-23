@@ -128,6 +128,9 @@ docs/                     ← documentación para modders
   `wipeleft_scene`, `wiperight_scene`, `trueblack` y más.
 - **Audio:** temas `t1`–`t10` (y variantes) + efectos de sonido.
 - **Efectos:** `invert`, `tear`, `dizzy`, glitch de texto.
+- **Shaders (plugin):** scanlines, aberración cromática, glitch, viñeta y CRT
+  combinado. Se usan como transforms (`show yuri 1a at sh_scanlines`) y hay una
+  demo en el hub de Plugins. Ver `game/tools/plugins/shaders_lab/`.
 - **Menús configurables:** principal, de pausa y quick menu; sprites, logo,
   partículas y animación hover editables desde `definitions/menu_screens.rpy`.
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
