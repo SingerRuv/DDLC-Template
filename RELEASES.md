@@ -5,6 +5,17 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.2.3 — 2026-10-22
+
+### Corregido
+- **Actualización del template:** las herramientas del hub de Plugins (incluido
+  **PoseLab**) no se actualizaban al migrar desde una versión anterior. Ahora
+  están incluidas en el manifest de la release y se reemplazan correctamente.
+- Después de migrar se descarta el bytecode viejo (`.rpyc`), así los cambios se
+  aplican sin tener que borrarlos a mano.
+
+---
+
 ## 1.2.2 — 2026-10-22
 
 Plantilla para crear mods de **DDLC** sobre **Ren'Py 8**, con el look del DDLC

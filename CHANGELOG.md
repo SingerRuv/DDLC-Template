@@ -6,6 +6,15 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-10-22
+
+### Corregido
+- **Migración:** el `manifest.json` de las releases no incluía `game/tools/**`
+  (hub de Plugins + PoseLab), así que al actualizar desde una versión anterior
+  esas herramientas no se reemplazaban. Ahora se listan y se copian.
+- **Migración:** al aplicar un `.rpy` actualizado se borra su `.rpyc` viejo,
+  para que Ren'Py recompile en vez de seguir ejecutando el código anterior.
+
 ## [1.2.2] - 2026-10-22
 
 ### Añadido
@@ -145,7 +154,8 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.2...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.3...HEAD
+[1.2.3]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.2...1.2.3
 [1.2.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.1.0...1.2.0
