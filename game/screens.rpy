@@ -1,4 +1,4 @@
-﻿## screens.rpy
+## screens.rpy
 
 # Este archivo declara todas las pantallas y estilos de DDLC.
 
@@ -1521,7 +1521,6 @@ screen android_asset_setup():
                         action Function(prompt_and_extract_android)
 
                     textbutton _("Cancel"):
-                        sensitive not asset_setup_busy
                         action Function(cancel_asset_setup)
 
                     textbutton _("Quit"):
