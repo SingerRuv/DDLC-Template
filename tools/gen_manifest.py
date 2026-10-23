@@ -67,9 +67,14 @@ def _version_de_options(raiz):
 
 def generar(raiz, version, repo):
     files = {}
+    raiz_abs = os.path.abspath(raiz)
     for dirpath, dirnames, filenames in os.walk(raiz):
+        # IGNORAR_RAIZ solo aplica en la raíz: si se aplicara en todo el árbol,
+        # `tools` excluiría también `game/tools/` (el hub de Plugins + PoseLab).
+        en_raiz = os.path.abspath(dirpath) == raiz_abs
         dirnames[:] = [d for d in dirnames
-                       if d not in IGNORAR_DIRS and d not in IGNORAR_RAIZ]
+                       if d not in IGNORAR_DIRS
+                       and not (en_raiz and d in IGNORAR_RAIZ)]
         for nombre in filenames:
             abs_ = os.path.join(dirpath, nombre)
             rel = os.path.relpath(abs_, raiz).replace("\\", "/")
@@ -96,6 +101,8 @@ def selftest():
         ("README.md", "readme"),
         ("game/saves/save1.save", "x"),      # ignorado
         ("game/migracion/manifest.json", "{}"),  # no se lista
+        ("game/tools/plugins/x/tool.json", "{}"),  # SÍ se lista (game/tools)
+        ("tools/gen_manifest.py", "x"),      # ignorado (tools de la raíz)
     ):
         p = os.path.join(tmp, rel.replace("/", os.sep))
         os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -111,6 +118,8 @@ def selftest():
     assert "game/core/a.rpy" in man["files"], "incluye archivos de game/"
     assert "README.md" in man["files"], "incluye archivos de la raíz"
     assert "game/saves/save1.save" not in man["files"], "ignora saves/"
+    assert "game/tools/plugins/x/tool.json" in man["files"], "incluye game/tools"
+    assert "tools/gen_manifest.py" not in man["files"], "ignora tools de la raíz"
     assert RUTA_MANIFEST.replace("\\", "/") not in man["files"], "no se lista a sí mismo"
     print("gen_manifest selftest OK")
 

@@ -289,10 +289,20 @@ def aplicar(project, staging, plan, man_new):
     escritos = 0
     for rel in plan["copiar"]:
         origen = os.path.join(staging, rel.replace("/", os.sep))
+        dst = os.path.join(project, rel.replace("/", os.sep))
         if not os.path.isfile(origen):
             continue
-        _escribir_atomico(origen, os.path.join(project, rel.replace("/", os.sep)))
+        _escribir_atomico(origen, dst)
         escritos += 1
+        # Borra el bytecode viejo: si el .rpyc sobrevive, Ren'Py puede seguir
+        # ejecutando el código anterior aunque el .rpy ya esté actualizado.
+        if rel.endswith(".rpy"):
+            for sufijo in (".rpyc", ".rpyb"):
+                try:
+                    if os.path.isfile(dst + sufijo):
+                        os.remove(dst + sufijo)
+                except Exception:
+                    pass
     # El manifest nuevo se instala siempre (es la fuente de verdad de la version).
     origen_man = os.path.join(staging, RUTA_MANIFEST.replace("/", os.sep))
     if os.path.isfile(origen_man):
