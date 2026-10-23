@@ -78,16 +78,16 @@ init python:
 
         def update(self, st):
             # Posición absoluta calculada desde `st` (no acumulada), con gravedad
-            # para formar el arco, y vida `particleTime` (destroy + pop al expirar).
-            sindex = 0
+            # para formar el arco, y vida `particleTime` (destroy al expirar).
+            vivos = []
             for s, ySpeed, xSpeed, particleTime in self.stars:
                 if st < particleTime:
                     s.x = xSpeed * 120 * (st + 0.20)
                     s.y = ySpeed * 120 * (st + 0.20) + (self.gravity * st * st)
+                    vivos.append((s, ySpeed, xSpeed, particleTime))
                 else:
                     s.destroy()
-                    self.stars.pop(sindex)
-                sindex += 1
+            self.stars = vivos
             return 0
 
     class Piece(python_object):
@@ -111,6 +111,7 @@ init python:
             self.width, self.height = screenshot_srf_size()
             self.srf = srf if srf is not None else screenshot_srf()
             self.pieces = []
+            self._last_at = 0.0
             for i in range(number):
                 self.pieces.append(self._new_piece(i, number, offtimeMult,
                                                     ontimeMult, offsetMin, offsetMax))
@@ -127,9 +128,12 @@ init python:
             return p
 
         def render(self, width, height, st, at):
+            # `at` es tiempo absoluto: se usa el delta real entre frames.
+            dt = at - self._last_at
+            self._last_at = at
             render = renpy.Render(self.width, self.height)
             for piece in self.pieces:
-                piece.timer += at
+                piece.timer += dt
                 if piece.timer >= piece.offtime + piece.ontime:
                     piece.timer = 0.0
                     piece.targetOffset = random.randint(-50, 50)
