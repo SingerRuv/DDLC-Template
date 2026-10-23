@@ -38,6 +38,7 @@ Lo demás sigue esta regla, archivo por archivo:
 | Archivo del template que vos editaste y el template NO cambió | Se conserva el tuyo |
 | Archivo del template que vos editaste **y** el template también cambió | **Se conserva el tuyo + aviso** |
 | Archivo nuevo del template | Se agrega |
+| Archivo del template que **vos borraste** | Se respeta: no se vuelve a crear |
 | Archivo que el template ya no trae | Se deja el tuyo (aviso) |
 
 Nunca se tocan: `*.rpa`, `game/saves/`, `*.rpyc`, `game/cache/`, logs.
@@ -48,9 +49,12 @@ Nunca se tocan: `*.rpa`, `game/saves/`, `*.rpyc`, `game/cache/`, logs.
    (con caché de 24 h) y, si hay una versión nueva, muestra la ventana.
    También podés forzarlo con **Buscar actualizaciones** en el menú.
 2. Aceptás → se escribe un trabajo, se lanza `migrar.py` y el juego se cierra.
-3. `migrar.py` espera el cierre, descarga el ZIP del release, respalda **solo
-   tus archivos** en `migracion_backup/` (en la raíz del proyecto, fuera de
-   `game/`), aplica el update y **relanza** el juego.
+3. `migrar.py` espera el cierre, descarga el ZIP del release, **valida** que sea
+   un ZIP sano y más nuevo, respalda **solo tus archivos** en
+   `migracion_backup/` (en la raíz del proyecto, fuera de `game/`), aplica el
+   update (archivo por archivo, de forma atómica) y **relanza** el juego.
+   Si algo falla a mitad, **revierte** los archivos ya reemplazados y deja un
+   reporte de error. Todo queda registrado en `migracion/migracion.log`.
 4. Al reabrir, ves el **reporte** (qué se actualizó, qué se conservó, avisos y
    dónde quedó el respaldo).
 
@@ -60,6 +64,12 @@ Si el juego no arranca, podés correr el migrador a mano con el ZIP del release:
 
 ```
 python game/migracion/migrar.py --zip <ruta-al-zip> --project <ruta-del-proyecto>
+```
+
+Para ver qué haría, sin escribir nada:
+
+```
+python game/migracion/migrar.py --zip <ruta-al-zip> --project <ruta-del-proyecto> --dry-run
 ```
 
 Y para probar el algoritmo de mezcla:

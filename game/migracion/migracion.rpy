@@ -19,24 +19,35 @@ init -1 python:
     import subprocess as _mg_sub
     import threading as _mg_threading
     import time as _mg_time
+    import zipfile as _mg_zipfile
 
-    _MG_MANIFEST = "migracion/manifest.json"
+    _MG_MANIFEST_RUTA = "migracion/manifest.json"
     _MG_DIRNAME = "migracion"
     _MG_REPO_DEF = "SingerRuv/DDLC-Template"
     _MG_CACHE_SEG = 24 * 3600  # 24 h
 
     # ---- Manifest y versión del template ------------------------------------
 
-    def mg_manifest():
-        """Lee migracion/manifest.json (suelto o desde el .rpa). {} si falta."""
+    # Se lee una sola vez por proceso: `mg_vigilar` corre en cada tick y no
+    # puede parsear el manifest (potencialmente cientos de archivos) cada vez.
+    _MG_MANIFEST_CACHE = {"cargado": False, "datos": {}}
+
+    def _mg_leer_manifest():
         try:
-            with renpy.file(_MG_MANIFEST) as fh:
+            with renpy.file(_MG_MANIFEST_RUTA) as fh:
                 datos = _mg_json.loads(fh.read().decode("utf-8"))
             if isinstance(datos, _mg_builtins.dict):
                 return datos
         except Exception:
             pass
         return {}
+
+    def mg_manifest():
+        """Lee migracion/manifest.json (suelto o desde el .rpa). {} si falta."""
+        if not _MG_MANIFEST_CACHE["cargado"]:
+            _MG_MANIFEST_CACHE["datos"] = _mg_leer_manifest()
+            _MG_MANIFEST_CACHE["cargado"] = True
+        return _MG_MANIFEST_CACHE["datos"]
 
     def mg_hay_manifest():
         """True si el proyecto trae migracion/manifest.json (viene de un release).
@@ -68,7 +79,7 @@ init -1 python:
 
     _MG_LOCK = _mg_threading.Lock()
     _MG_ESTADO = {"listo": False, "en_curso": False, "version": "", "url": "",
-                  "error": "", "manual": False}
+                  "error": "", "manual": False, "ts": 0}
     _MG_AVISADO = {"version": ""}  # versión ya avisada en esta sesión
 
     def _mg_consultar():
@@ -111,15 +122,16 @@ init -1 python:
     def _mg_chequear():
         try:
             version, zip_url = _mg_consultar()
+            # Solo se toca _MG_ESTADO: `persistent` se escribe en el hilo principal
+            # (mg_vigilar), que es el único que puede hacerlo con seguridad.
             with _MG_LOCK:
                 _MG_ESTADO.update({"listo": True, "en_curso": False,
-                                   "version": version, "url": zip_url, "error": ""})
-            persistent.mg_cache = {"ts": int(_mg_time.time()),
-                                   "version": version, "url": zip_url}
+                                   "version": version, "url": zip_url, "error": "",
+                                   "ts": int(_mg_time.time())})
         except Exception as e:
             with _MG_LOCK:
                 _MG_ESTADO.update({"listo": True, "en_curso": False,
-                                   "version": "", "url": "", "error": str(e)})
+                                   "version": "", "url": "", "error": str(e), "ts": 0})
 
     def mg_iniciar(ignorar_cache=False, manual=False):
         """Arranca (o resuelve desde caché) el chequeo de versión."""
@@ -172,6 +184,11 @@ init -1 python:
             if manual:
                 renpy.show_screen("migracion_al_dia", error=estado.get("error", ""))
             return
+
+        # Persistir la caché acá (hilo principal), no desde el hilo del chequeo.
+        if estado.get("ts"):
+            persistent.mg_cache = {"ts": estado["ts"], "version": version,
+                                   "url": estado.get("url", "")}
         if mg_nueva(version) and version != persistent.mg_ignorar:
             if not manual and version == _MG_AVISADO["version"]:
                 return  # ya se avisó en esta sesión
@@ -208,6 +225,12 @@ init -1 python:
             elif url:
                 _mg_descargar(url, zip_path)
                 job["zip"] = zip_path
+            else:
+                renpy.log("migracion: la release no trae ZIP y no hay manual.zip")
+                return False
+            if not _mg_zipfile.is_zipfile(job["zip"]):
+                renpy.log("migracion: ZIP invalido: %s" % job["zip"])
+                return False
         except Exception as e:
             renpy.log("migracion: no se pudo descargar el template: %s" % e)
             return False
@@ -237,7 +260,11 @@ init -1 python:
     # ---- Post-migración (reporte) -------------------------------------------
 
     def mg_reporte_pendiente():
-        """Devuelve el reporte de la última migración si no se mostró aún."""
+        """Devuelve el reporte de la última migración si no se mostró aún.
+
+        Solo aplica a proyectos derivados de un release (con manifest)."""
+        if not mg_hay_manifest():
+            return None
         ruta = _mg_os.path.join(config.gamedir, _MG_DIRNAME, "reporte.json")
         try:
             if not _mg_os.path.isfile(ruta):
