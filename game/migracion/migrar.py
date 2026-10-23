@@ -188,6 +188,12 @@ def planificar(project, man_old, man_new):
         if rel in viejos or rel in ARCHIVOS_SISTEMA or rel.endswith(IGNORAR_EXT):
             continue
         if rel in nuevos:
+            if rel.startswith("game/tools/"):
+                # Bug de las releases <=1.2.2: el manifest no listaba game/tools,
+                # así que estos archivos del template parecían "del modder". Se
+                # respaldan y se reemplazan por los del template nuevo.
+                agregados.append(rel)
+                continue
             conservar[rel] = "agregado por el modder (colisiona con el template)"
             conflictos.append(rel)
         else:
