@@ -178,11 +178,20 @@ label splashscreen:
     # (Ver definitions/py/android_assets_ren.py y la pantalla android_asset_setup.)
     if renpy.mobile:
         if not renpy.android:
-            $ raise NotImplementedError("Los mods de DDLC no estan soportados en iOS. Usa Android o PC.")
-        if not has_installed_ddlc_assets():
+            menu:
+                "DDLC mods are not supported on iOS. Use Android or PC.":
+                    $ renpy.quit()
+
+        while not has_installed_ddlc_assets():
             call screen android_asset_setup
-        if not has_installed_ddlc_assets():
-            $ raise NotImplementedError("Se requieren los assets de DDLC para jugar. Instalalos e intenta de nuevo.")
+            if not has_installed_ddlc_assets():
+                menu:
+                    "The DDLC assets are required to play."
+
+                    "Retry":
+                        pass
+                    "Quit":
+                        $ renpy.quit()
 
     # Sistema de migración: si hay un reporte de la última migración sin ver,
     # lo muestra. (Solo relevante en modo dev.)
@@ -220,10 +229,10 @@ label splashscreen:
             if _preferences.language is None:
                 call screen choose_language
 
-        "Este es un juego de fans no oficial, no afiliado a Team Salvato ni al autor del DDLC Mod Template, Azariel Del Carmen (bronya_rand)."
-        "Está diseñado para jugarse después de haber completado la historia original, y contiene spoilers de la historia original."
-        "Se requieren los archivos del juego original para jugar. Doki Doki Literature Club es de Team Salvato y puede descargarse en {a=https://ddlc.moe}https://ddlc.moe{/a}."
-        "Hecho por Broken Dreams Studio, basado en el DDLC Mod Template de Azariel Del Carmen (bronya_rand)."
+        "This is an unofficial fan game, not affiliated with Team Salvato or the author of the DDLC Mod Template, Azariel Del Carmen (bronya_rand)."
+        "It is designed to be played after completing the original story and contains spoilers from it."
+        "The original game files are required to play. Doki Doki Literature Club is by Team Salvato and can be downloaded at {a=https://ddlc.moe}https://ddlc.moe{/a}."
+        "Made by Broken Dreams Studio, based on the DDLC Mod Template by Azariel Del Carmen (bronya_rand)."
 
         menu:
             "By playing this game you agree that you have completed the original story and accept any spoilers contained within."

@@ -1,4 +1,4 @@
-﻿# TODO: Translation updated at 2026-09-29
+# TODO: Translation updated at 2026-09-29
 
 translate spanish strings:
 
@@ -67,6 +67,24 @@ translate spanish strings:
 
     old "Press F to pay respects."
     new "Pulsa F para mostrar respeto."
+
+    old "This is an unofficial fan game, not affiliated with Team Salvato or the author of the DDLC Mod Template, Azariel Del Carmen (bronya_rand)."
+    new "Este es un juego de fans no oficial, no afiliado a Team Salvato ni al autor del DDLC Mod Template, Azariel Del Carmen (bronya_rand)."
+
+    old "It is designed to be played after completing the original story and contains spoilers from it."
+    new "Está diseñado para jugarse después de haber completado la historia original, y contiene spoilers de la historia original."
+
+    old "The original game files are required to play. Doki Doki Literature Club is by Team Salvato and can be downloaded at {a=https://ddlc.moe}https://ddlc.moe{/a}."
+    new "Se requieren los archivos del juego original para jugar. Doki Doki Literature Club es de Team Salvato y puede descargarse en {a=https://ddlc.moe}https://ddlc.moe{/a}."
+
+    old "Made by Broken Dreams Studio, based on the DDLC Mod Template by Azariel Del Carmen (bronya_rand)."
+    new "Hecho por Broken Dreams Studio, basado en el DDLC Mod Template de Azariel Del Carmen (bronya_rand)."
+
+    old "DDLC mods are not supported on iOS. Use Android or PC."
+    new "Los mods de DDLC no están soportados en iOS. Usá Android o PC."
+
+    old "The DDLC assets are required to play."
+    new "Se requieren los assets de DDLC para jugar."
 
 # game/definitions/splash.rpy:165
 translate spanish splashscreen_f490803a:
