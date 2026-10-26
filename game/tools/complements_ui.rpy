@@ -13,23 +13,23 @@ style complements_detail is frame:
     background "#ffffffcc"
     padding (28, 24)
 
-style complements_detail_title is text:
+style complements_detail_title is tool_title:
     size 34
     bold True
     color "#cc6699"
     outlines []
 
-style complements_meta is text:
+style complements_meta is tool_text:
     size 15
     color "#999999"
     outlines []
 
-style complements_detail_desc is text:
+style complements_detail_desc is tool_text:
     size 18
     color "#333333"
     outlines []
 
-style complements_section is text:
+style complements_section is tool_text:
     size 18
     bold True
     color "#666666"
@@ -50,46 +50,46 @@ style pl_search_border is frame:
     background "#d9a9c2"
     padding (2, 2)
 
-style pl_search_frame is frame:
+style pl_search_frame is tool_panel:
     background "#ffffff"
     padding (10, 6)
     xsize 400
 
-style pl_search is input:
+style pl_search is tool_input:
     color "#333333"
     size 18
     outlines []
 
-style pl_search_hint is text:
+style pl_search_hint is tool_hint:
     color "#999999"
     size 18
     outlines []
 
-style pl_hub_title is text:
+style pl_hub_title is tool_title:
     font "gui/font/RifficFree-Bold.ttf"
     size 30
     bold True
     color "#ffffff"
     outlines [(4, text_outline_color, 0, 0), (2, text_outline_color, 2, 2)]
 
-style pl_dropdown is button:
+style pl_dropdown is tool_button:
     background "#ffffff"
     hover_background "#ffeef5"
     padding (12, 6)
     xsize 220
 
-style pl_dropdown_text is text:
+style pl_dropdown_text is tool_text:
     size 17
     color "#7a3355"
     outlines []
 
-style pl_dropdown_arrow is text:
+style pl_dropdown_arrow is tool_text:
     font "DejaVuSans.ttf"
     size 14
     color "#7a3355"
     outlines []
 
-style pl_dropdown_item is button:
+style pl_dropdown_item is tool_button:
     background "#ffffff"
     hover_background "#ffeef5"
     selected_background "#f4a6c8"
@@ -97,49 +97,49 @@ style pl_dropdown_item is button:
     padding (12, 4)
     xsize 220
 
-style pl_dropdown_item_text is text:
+style pl_dropdown_item_text is tool_button_text:
     size 15
     color "#7a3355"
     outlines []
 
 # La tarjeta es un button con borde (background) que envuelve un frame blanco.
-style pl_card is button:
+style pl_card is tool_button:
     background "#d9a9c2"
     hover_background "#c07fa3"
     padding (2, 2)
     xsize 425
     ysize 128
 
-style pl_card_inner is frame:
+style pl_card_inner is tool_panel:
     background "#ffffff"
     padding (14, 10)
     xfill True
     yfill True
 
-style pl_card_thumb is frame:
+style pl_card_thumb is tool_panel:
     background "#f3e7ee"
     xysize (80, 80)
     padding (0, 0)
     xalign 0.0
     yalign 0.5
 
-style pl_card_title is text:
+style pl_card_title is tool_title:
     size 26
     bold True
     color "#cc6699"
     outlines []
 
-style pl_card_desc is text:
+style pl_card_desc is tool_text:
     size 15
     color "#444444"
     outlines []
 
-style pl_card_cat is text:
+style pl_card_cat is tool_hint:
     size 13
     color "#aa7799"
     outlines []
 
-style pl_card_open is text:
+style pl_card_open is tool_text:
     size 18
     bold True
     color "#cc6699"

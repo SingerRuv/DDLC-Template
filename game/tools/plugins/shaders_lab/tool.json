@@ -1,6 +1,6 @@
 {
   "titulo": "Shaders",
-  "descripcion": "Vista previa de los shaders incluidos: scanlines, aberración, viñeta, glitch y CRT.",
+  "descripcion": "Vista previa de los shaders y efectos incluidos, para fondo y personajes: scanlines, aberración, viñeta, glitch, CRT, contorno, silueta, palidez, flash y glitch por franjas/cuadrados (ChromaGlitch).",
   "autor": "Broken Dreams Studio",
   "version": "1.0",
   "screen": "shaders_lab",
