@@ -548,18 +548,49 @@ def main(argv):
     )
     args = parser.parse_args(argv)
 
+    # (generador, fuentes que tienen que existir). Si falta alguna fuente, la
+    # sección no se documenta: así la misma herramienta sirve en `dev` y en
+    # `main` (donde el plugin Shaders Lab todavía no vive).
+    generadores = (
+        (gen_sprites, []),
+        (gen_transforms, []),
+        (gen_audio, []),
+        (gen_efectos, []),
+        (gen_shaders, ["game/tools/plugins/shaders_lab/shaders_lab_data.rpy"]),
+        (gen_plugins, []),
+    )
+
     generados = {}
-    for generador in (
-        gen_sprites,
-        gen_transforms,
-        gen_audio,
-        gen_efectos,
-        gen_shaders,
-        gen_plugins,
-    ):
+    for generador, fuentes in generadores:
+        if any(not os.path.isfile(os.path.join(RAIZ, f)) for f in fuentes):
+            continue
         generados.update(generador())
 
     problemas = 0
+
+    # Referencia generada que ya no corresponde (por ejemplo, un plugin que no
+    # está en esta rama): se borra al regenerar y se reporta con --check.
+    carpeta = os.path.join(RAIZ, SALIDA)
+    sobrantes = []
+    if os.path.isdir(carpeta):
+        for nombre in sorted(os.listdir(carpeta)):
+            if not nombre.endswith(".md"):
+                continue
+            rel = "%s/%s" % (SALIDA, nombre)
+            if rel in generados:
+                continue
+            with io.open(os.path.join(carpeta, nombre), encoding="utf-8-sig") as f:
+                if "Generado por `tools/gen_docs.py`" not in f.read(300):
+                    continue  # escrito a mano: no se toca
+            sobrantes.append(rel)
+
+    for rel in sobrantes:
+        if args.check:
+            print("sobra      %s" % rel)
+            problemas += 1
+        else:
+            os.remove(os.path.join(RAIZ, rel))
+            print("borrado    %s" % rel)
 
     for rel, texto in generados.items():
         ruta = os.path.join(RAIZ, rel)
