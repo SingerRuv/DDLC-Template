@@ -9,6 +9,10 @@
 ## Organización: shaders_lab_data.rpy (registro y estado), shaders_lab_preview.rpy
 ## (lienzo), shaders_lab_ui.rpy (estilos y controles). Este archivo solo compone
 ## la raíz.
+##
+## Los efectos de franjas/cuadrados están vendorizados de "renpy-ChromaGlitch"
+## de Gouvernathor (https://github.com/Gouvernathor/renpy-ChromaGlitch); ver
+## glitch_slices_ren.py.
 
 screen shaders_lab():
 
