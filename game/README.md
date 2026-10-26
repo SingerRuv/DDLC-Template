@@ -1,71 +1,48 @@
-# Contenido
+# Contenido de `game/`
 
-### <u>gui</u>
+Mapa de la carpeta. Para el flujo de trabajo, ver [`docs/`](../docs/README.md).
 
-Esta carpeta contiene las imágenes de la interfaz (botones, textbox, ventanas, menú, etc.),
-las fuentes, el logo del template y los assets base (splash/avisos).
+## Carpetas
 
-### <u>core</u>
+| Carpeta | Qué contiene |
+|---|---|
+| `core/` | El motor del template: imports tempranos y funciones de ayuda. No tocar (ver `core/README.md`) |
+| `definitions/` | Definiciones: imágenes, sprites, música, efectos, transforms, menús, splash y variables persistentes (ver `definitions/README.md`) |
+| `story/` | Tu historia, un archivo por capítulo (ver `story/README.md`) |
+| `mod_assets/` | **Tus** assets: imágenes, CGs y audio (ver `mod_assets/README.md`) |
+| `tools/` | Hub de Plugins (dev-only) y herramientas: PoseLab, Shaders Lab (ver `tools/README.md`) |
+| `migracion/` | Sistema de migración de assets entre versiones del template (ver `migracion/README.md`) |
+| `tl/` | Traducciones; viene con español (ver `tl/README.md`) |
+| `gui/` | Solo los assets **propios** del template (`gui/buttons/btn_example_*`). El resto de la interfaz se resuelve desde `images.rpa` y `fonts.rpa` |
+| `saves/` | Partidas locales y persistentes. No se versiona |
 
-Esta carpeta contiene los archivos necesarios para que el template funcione. (Imports y funciones helper)
+## Archivos de la raíz de `game/`
 
-### <u>definitions</u>
+| Archivo | Qué hace |
+|---|---|
+| `script.rpy` | Punto de entrada: `label start` y `label endgame` |
+| `screens.rpy` | Pantallas base: diálogo, guardado, ajustes, historial, confirmaciones, NVL, selector de idioma y Android |
+| `gui.rpy` | Colores, fuentes, tamaños y medidas de la interfaz |
+| `options.rpy` | Nombre, versión, música del menú, carpeta de guardado y configuración del build |
+| `*.rpa` | Assets oficiales de DDLC que aporta cada modder/jugador (`images`, `fonts`, `audio`). No se versionan |
 
-Esta carpeta contiene los archivos de definición de imágenes, sprites, música, etc. (CGs, Definiciones, Efectos, Splash, Transforms)
+## Assets de DDLC
 
-### <u>images</u>
+Los `.rpa` de DDLC no se incluyen en el repo (IP Guidelines). Al colocarlos en
+`game/`, Ren'Py resuelve `images/…`, `bgm/…`, `sfx/…` y `gui/…` desde ahí.
 
-Assets del juego: sprites de las dokis (`images/<doki>/`), fondos (`images/bg/`), CGs
-(`images/cg/`) y transiciones (`images/menu/`). **No se incluyen:** provienen de los
-archivos `.rpa` de tu copia de DDLC (ver el README raíz y `docs/IP-GUIDELINES.md`).
+Prioridad de resolución de un asset:
 
-### <u>bgm</u> y <u>sfx</u>
+1. Archivo suelto en `game/`.
+2. Archivo suelto en `mod_assets/` (agregado al searchpath en `core/0imports.rpy`).
+3. Archivo dentro de un `.rpa`.
 
-Música (`bgm/`) y efectos de sonido (`sfx/`). **No se incluyen:** provienen de
-`audio.rpa` de tu copia de DDLC.
+Por eso podés pisar un asset oficial poniendo un archivo con la misma ruta en
+`mod_assets/` (por ejemplo `mod_assets/gui/window_icon.png`).
 
-### <u>mod_assets</u>
+## Reglas del proyecto
 
-Carpeta para **tus assets propios** (los oficiales de DDLC salen de los `.rpa`).
-Contiene `images/bg`, `images/cg`, `images/<personaje>` y `audio/bgm`, `audio/sfx`.
-Se referencian con la ruta completa `"mod_assets/..."` o con nombre corto
-(`"images/bg/mi_cuarto.png"`), porque `mod_assets` se agrega al searchpath en
-`core/0imports.rpy`. Ver `mod_assets/README.md`.
-
-### gui.rpy y screens.rpy — el look del template
-
-`gui.rpy`, `screens.rpy` y la carpeta `gui/` definen el look del menú y la
-interfaz. Los assets `gui/…` (menú, botones, marcos, fuentes, sonidos de la
-interfaz) **no se versionan:** se resuelven del `.rpa` del jugador
-(`images.rpa`, `fonts.rpa`, `audio.rpa`). Solo quedan versionados los assets
-propios del template (`gui/buttons/btn_example_*`).
-
-Para reemplazar cualquier asset de la interfaz por uno propio, poné el archivo
-en `mod_assets/` con la **misma ruta** (`gui/…`): los archivos sueltos tienen
-prioridad sobre el `.rpa`. La prioridad de resolución es: archivo suelto en
-`game/` > archivo suelto en `mod_assets/` > `.rpa`.
-
-Notas:
-- El `screens.rpy` se adaptó para template genérico: se limpió la lógica
-  específica de DDLC (playthrough, autoload, extras, etc.) pero se mantuvieron
-  las características del mod original: modo uncensored y nombre del jugador.
-
-Para personalizar colores de la interfaz, edita `gui.rpy` (variables
-`gui.accent_color`, `gui.hover_color`, etc.).
-
-### options.rpy
-
-Este archivo define información sobre tu juego y contiene el código necesario para compilarlo.
-
-### script.rpy
-
-Este archivo es el script principal que Ren'Py llama para iniciar la historia de tu juego.
-
-### Definición de la estructura (resumen del sistema original de DDLC)
-
-- Los **personajes** se declaran en `definitions/definitions.rpy` con `DynamicCharacter` y su nombre se define en `script.rpy` (`$ s_name = "???"`). Los sprites viven en `definitions/sprites.rpy` con `Composite` (sistema Bronya).
-- La **música** y **fondos** se declaran en `definitions/definitions.rpy` con `define audio.x` e `image bg x`.
-- Las **transiciones y animaciones** viven en `definitions/transforms.rpy`.
-- La **historia** se organiza en archivos de script por capítulos, llamados desde `script.rpy` con `call capituloX`.
-- El **código Python** se separa de los `.rpy` guardándolo en carpetas `py/` con archivos `*_ren.py`.
-- Cada subcarpeta tiene un `README.md` que documenta qué hacía cada archivo en el template original.
+- Los `.rpy` van en **UTF-8 sin BOM** y saltos **LF**.
+- Tu historia y tus assets van en `story/` y `mod_assets/`; el motor no se toca.
+- Si agregás una herramienta, va como plugin en `tools/plugins/` (ver
+  `tools/plugins/README.md`).

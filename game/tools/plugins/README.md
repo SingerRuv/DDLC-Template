@@ -51,11 +51,19 @@ game/tools/plugins/
 | `capturas`       | No          | Rutas de PNG **relativas a la carpeta** del plugin.                  |
 | `args`           | No          | Objeto con kwargs que se pasan al `Show(screen)` al abrir.           |
 | `modulo`         | No          | Nombre del módulo Python del plugin (ver abajo).                     |
-| `min_version`    | No          | Versión mínima de la API de plugins (`tools_api_version`).           |
+| `min_version`    | No          | Versión mínima de la API de plugins (hoy `"1.0"`; ver `tools_api_version` en `game/tools/complements_data.rpy`) |
 
 \* Si `tool.json` está roto o falta, o el `screen` no existe, el plugin **no**
 se muestra como plugin pero **sí** aparece en el panel **Diagnóstico** del
 hub, con el motivo. Nunca se descarta en silencio.
+
+### Capturas
+
+`icono` y `capturas` son rutas **relativas a la carpeta** del plugin y se validan
+(se avisa en Diagnóstico si no se pueden cargar). La tarjeta usa `icono`; si no
+hay, usa **la primera captura**. La miniatura se encuadra en 80×80 (`contain`),
+así que una captura 16:9 se ve con barras. No hay límite de tamaño, pero PNG de
+menos de 500 KB mantienen el hub ágil.
 
 ## Plugin en Python (`.py`)
 
@@ -93,6 +101,18 @@ rompen el hub.
 > Nota: dentro de un módulo `.py`, el `open` global está tomado por Ren'Py y
 > acepta un solo argumento. Si necesitas leer/escribir archivos, usa `io.open`.
 
+### `.py` o `*_ren.py`
+
+- `mi_modulo.py` es un **módulo**: solo se ejecuta cuando el hub lo importa.
+- `mi_modulo_ren.py` es un módulo **y** un script de Ren'Py: su cabecera
+  `"""renpy\ninit -N python:\n"""` hace que Ren'Py ejecute ese bloque al cargar.
+  Usalo si tu plugin necesita registrar algo al arrancar (shaders, transforms,
+  canales de audio) y no solo al abrirlo.
+
+En los dos casos, el nombre del archivo (sin extensión) es el que va en
+`"modulo"`. Si el archivo se llama `mi_modulo_ren.py`, el módulo se importa como
+`mi_modulo_ren`.
+
 ## El screen
 
 En tu `.rpy` define el screen que pusiste en `"screen"`. Lo más simple es usar
@@ -115,8 +135,18 @@ screen mi_plugin():
 
 ### Estilos reutilizables
 
-Para que tu plugin se vea integrado, reutiliza estos estilos definidos en
-`game/tools/complements_ui.rpy`:
+El catálogo **global** está en `game/tools/ui_styles.rpy` (namespace `tool_*`):
+textos, paneles, botones, inputs, barras, código y el dropdown. Heredá de ahí
+para que tu plugin se vea igual que el resto:
+
+```renpy
+style mi_boton is tool_button
+style mi_titulo is tool_title
+```
+
+El shell `tool_shell` y el dropdown `tool_dropdown` también viven en
+`game/tools/` (ver `game/tools/README.md`). Los estilos `complements_*` (tarjeta
+blanca del hub) siguen en `complements_ui.rpy`:
 
 - `complements_detail` — tarjeta blanca semi-opaca (panel).
 - `complements_detail_title` — título grande rosa.

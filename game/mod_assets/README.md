@@ -59,3 +59,10 @@ image mi_pj 1a = Composite((960, 960), (0, 0), "mod_assets/images/mi_pj/1l.png",
 > Prioridad de resolución: archivo suelto en `game/` > archivo suelto en
 > `mod_assets/` > `.rpa`. Por eso podés pisar un asset del `.rpa` (o de DDLC)
 > poniendo tu archivo en `mod_assets/` con la misma ruta.
+
+## Ver también
+
+- Nomenclatura y tabla de sprites: [`docs/02-referencia.md`](../../docs/02-referencia.md)
+  y [`docs/referencia/sprites.md`](../../docs/referencia/sprites.md).
+- Para armar `Composite` sin escribirlo a mano: **PoseLab** (ver
+  [`docs/03-herramientas.md`](../../docs/03-herramientas.md)).

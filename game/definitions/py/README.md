@@ -1,18 +1,26 @@
 # Contenido de la carpeta `definitions/py`
 
-## Carpetas
-- **\_\_pycache\_\_**: Contiene los archivos Python compilados para el código usado en las definiciones del juego. Normalmente no debería aparecer en tu juego ni en builds empaquetados, pero si existe, ignóralo.
-
 ## Archivos
-- **README.md**: Este archivo, que describe el contenido de la carpeta `py`.
-- **\_\_init\_\_.py**: Un archivo vacío usado con fines de prueba.
 
-## Archivos movidos (documentación del sistema original)
-En el template original, esta carpeta contenía código Python que movía lógica de los archivos `.rpy` a archivos `.py` para organizarlos:
+| Archivo | Qué hace |
+|---|---|
+| `core_ren.py` | Define `persistent` y `store` en `init -3`, para que los módulos `*_ren.py` puedan acceder al store de Ren'Py sin repetir el import |
+| `android_assets_ren.py` | Soporte Android: extrae los assets de DDLC desde el APK/XAPK que elige el jugador en el primer arranque |
+| `__init__.py` | Vacío: marca la carpeta como paquete de Python. No lo borres |
 
-- **[0core_ren.py](./0core_ren.py)**: En el original contenía el código singleton para evitar que varias instancias del juego corrieran a la vez en el PC.
-- **[core_ren.py](./core_ren.py)**: En el original contenía el código principal de todo DDLC y del template (funciones, variables, parches).
-- **[splash_ren.py](./splash_ren.py)**: En el original manejaba los checks de archivos RPA y anti-cloud.
+## Cómo escribir código acá
 
-> [!NOTE]
-> Estos archivos NO se han copiado porque contienen lógica específica de DDLC. Si tu juego necesita código Python reutilizable, crea tus propios archivos `*_ren.py` aquí siguiendo el mismo patrón de organización: lógica Python en `py/` y lógica Ren'Py en los `.rpy` de la carpeta padre.
+- Un `.py` normal es **módulo**: Ren'Py no lo ejecuta solo, hay que importarlo.
+- Un `*_ren.py` además se ejecuta como script (cabecera
+  `"""renpy\ninit -N python:\n"""`). Es el patrón que usa el template: la lógica
+  Python en `py/`, la parte Ren'Py en los `.rpy` de la carpeta padre.
+- Mantené el orden de carga explícito en la cabecera (`init -3`, `init -2`, …).
+
+## Qué NO hay acá
+
+En el template original había más código Python movido desde los `.rpy`
+(`0core_ren.py` con el lock de instancia única, `splash_ren.py` con los checks de
+RPA/anti-cloud, y un `core_ren.py` enorme con el núcleo de DDLC). No se copiaron
+porque son lógica específica de DDLC.
+
+Si tu juego necesita algo así, creá tus propios `*_ren.py` en esta carpeta.

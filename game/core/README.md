@@ -1,12 +1,32 @@
 # Contenido de la carpeta `core`
+
 > [!DANGER]
-> Los archivos y carpetas de la carpeta `core` son los que mantienen el template funcionando. No los borres ni edites a menos que sepas lo que haces.
-
-## Carpetas
-
-- **[py](./py)**: Contiene el código Python de las funcionalidades base del template.
-- **\_\_pycache\_\_**: Contiene los archivos Python compilados para el código usado en las funcionalidades base. Normalmente no debería aparecer en tu juego, pero si existe, ignóralo.
+> Los archivos de `core/` mantienen el template funcionando. No los borres ni los
+> edites salvo que sepas lo que hacés.
 
 ## Archivos
-- **[0imports.rpy](./0imports.rpy)**: Este archivo importa ciertos módulos Python tras el bootstrap pero antes del inicio del juego.
-- **[functions.rpy](./functions.rpy)**: Contiene funciones de ayuda usadas en todo el juego (borrado de guardados, detección de streaming).
+
+| Archivo | Qué hace |
+|---|---|
+| `0imports.rpy` | Imports tempranos (`init -2`) y agrega `game/mod_assets/` al searchpath de Ren'Py, para poder referenciar tus assets con nombre corto (`"images/bg/mi_cuarto.png"`) |
+| `functions.rpy` | Funciones de ayuda: `delete_all_saves()`, `get_process_list()`, `process_check()`, `is_user_streaming()` |
+| `py/` | Código Python (`.py` y `*_ren.py`) que no necesita ser un `.rpy` |
+
+## `py/`
+
+- `0imports_ren.py` — imports de bootstrap (`python early`): `math`, `subprocess`.
+- `__init__.py` — marca la carpeta como paquete de Python (así funciona
+  `from game.core.py... import ...`). No es "de prueba": no lo borres.
+- Los `*_ren.py` son módulos que además Ren'Py ejecuta como script (por la
+  cabecera `"""renpy ... """`). Ver `py/README.md`.
+
+## Qué NO hay acá
+
+El template original de Bronya traía parches de Ren'Py, checks anti-cloud y un
+lock de instancia única en `core/py/`. No se copiaron porque son lógica
+específica de DDLC. Si los necesitás, agregalos como `*_ren.py` propios.
+
+## Reglas
+
+- Los `.rpy` y `.py` van en UTF-8 sin BOM y saltos LF.
+- Para lógica nueva, preferí un archivo propio antes que editar los de acá.
