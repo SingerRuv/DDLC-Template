@@ -97,4 +97,4 @@ transfieren con `use`.
 ## Documentación relacionada
 
 - `game/tools/plugins/README.md` — manifiesto, hooks, música y estilos.
-- `docs/03-herramientas.md` — guía de uso del hub, PoseLab y Shaders Lab.
+- `docs/03-herramientas.md` — guía de uso del hub y PoseLab.

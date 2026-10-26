@@ -7,7 +7,6 @@ Guía práctica de lo que podés usar en el guion. Las tablas completas las gene
 - [`transforms.md`](referencia/transforms.md) — posiciones, animaciones y transiciones.
 - [`audio.md`](referencia/audio.md) — música y efectos.
 - [`efectos.md`](referencia/efectos.md) — displayables, screens y animaciones.
-- [`shaders.md`](referencia/shaders.md) — `sh_*` y shaders registrados.
 
 ## Sprites
 
@@ -104,26 +103,3 @@ en `mod_assets/audio/bgm/` y declaráralo ahí.
 | Recolorear un displayable | `$ mi_img = recolorize("images/bg/class.png", "#102040", "#ffffff", 0.8)` |
 
 Detalle y parámetros en [`referencia/efectos.md`](referencia/efectos.md).
-
-## Shaders
-
-Son transforms: se aplican con `at` y no requieren abrir Shaders Lab.
-
-```renpy
-show yuri 1a at sh_contorno
-show sayori 1a at sh_silueta((0.5, 0.1, 0.2, 1.0))
-show monika 1a at sh_palidez(0.8)
-show bg class at sh_crt
-show bg class at sh_aberracion(offset=0.003)
-```
-
-Un `Transform` admite **un solo** `shader`; para combinar varios:
-
-```renpy
-show expression sh_combinar("bg class", "bd.scanlines bd.vigneta",
-                            u_intensidad=0.4, u_fuerza=0.5)
-```
-
-Lista de `sh_*`, parámetros y shaders registrados en
-[`referencia/shaders.md`](referencia/shaders.md). Cómo crear uno propio:
-[`03-herramientas.md`](03-herramientas.md#shaders-lab).

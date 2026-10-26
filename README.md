@@ -98,7 +98,7 @@ game/
 ├── definitions/          ← sprites, transforms, audio, efectos, menús, splash
 ├── story/                ← tu historia, un archivo por capítulo
 ├── core/                 ← el motor del template (no tocar)
-├── tools/                ← hub de Plugins (dev): PoseLab, Shaders Lab
+├── tools/                ← hub de Plugins (dev): PoseLab
 ├── migracion/            ← sistema de migración de assets entre versiones
 ├── mod_assets/           ← tus assets propios (imágenes, CGs, audio)
 ├── tl/                   ← traducciones (viene con español)
@@ -124,16 +124,9 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
   `wipeleft_scene`, `wiperight_scene`, `trueblack` y más.
 - **Audio:** temas `t1`–`t10` (y variantes) + efectos de sonido.
 - **Efectos:** `invert`, `tear`, `dizzy`, `recolorize` y partículas.
-- **Shaders (plugin):** scanlines, aberración cromática, glitch, viñeta y CRT
-  combinado para fondos; y contorno, silueta, palidez y flash para personajes.
-  Además, glitch por **franjas y cuadrados** estilo DDLC, vendorizado de
-  [ChromaGlitch](https://github.com/Gouvernathor/renpy-ChromaGlitch) de Gouvernathor.
-  Se usan como transforms (`show yuri 1a at sh_scanlines`) y hay una demo en el
-  hub de Plugins. Ver `game/tools/plugins/shaders_lab/`.
 - **Hub de Plugins (dev):** catálogo de herramientas autocontenidas con búsqueda,
   categorías y diagnóstico; viene con **PoseLab** (arma poses leyendo los
-  sprites reales y devuelve el `show` listo) y **Shaders Lab** (vista previa de
-  todos los efectos). Ver `game/tools/README.md`.
+  sprites reales y devuelve el `show` listo). Ver `game/tools/README.md`.
 - **Menús configurables:** principal, de pausa y quick menu; sprites, logo,
   partículas y animación hover editables desde `definitions/menu_screens.rpy`.
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
@@ -159,7 +152,7 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
 - [`docs/README.md`](docs/README.md) — índice: empezar, historia, referencia,
   herramientas, publicar y créditos.
 - [`docs/referencia/`](docs/referencia/) — tablas de sprites, transforms, audio,
-  efectos, shaders y plugins (generadas desde el código).
+  efectos y plugins (generadas desde el código).
 - [`docs/IP-GUIDELINES.md`](docs/IP-GUIDELINES.md) — resumen de las IP Guidelines de Team Salvato.
 - `game/README.md` — mapa de las carpetas del proyecto.
 

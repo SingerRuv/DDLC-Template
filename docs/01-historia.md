@@ -147,4 +147,4 @@ negro, cartel de fin y espera. Se puede llamar con otra duración:
 ## Siguiente
 
 - [`02-referencia.md`](02-referencia.md) — sprites, transforms, audio, efectos.
-- [`03-herramientas.md`](03-herramientas.md) — PoseLab y Shaders Lab.
+- [`03-herramientas.md`](03-herramientas.md) — hub de Plugins y PoseLab.

@@ -69,49 +69,6 @@ backup y avisa que se aplican al reiniciar el juego.
 > El preview aplica el transform **real**, así que ves la misma animación y
 > posición que en el juego.
 
-## Shaders Lab
-
-Vista previa de los shaders del template. No requiere assets: usa `bg class` y
-un sprite de referencia.
-
-- **Aplicar a:** `Fondo` o `Personaje` (y qué doki).
-- **Efecto:** scanlines, aberración cromática, viñeta, glitch, CRT, contorno,
-  silueta, palidez, flash y los glitches de ChromaGlitch (franjas, cuadrados).
-- **Intensidad:** suave, media o fuerte (en los efectos que la admiten).
-
-Abajo muestra el código para tu historia, por ejemplo:
-
-```renpy
-show yuri 1a at sh_contorno
-show bg class at sh_crt
-```
-
-Los transforms `sh_*` están disponibles **sin abrir la herramienta** (ver
-[`02-referencia.md`](02-referencia.md) y
-[`referencia/shaders.md`](referencia/shaders.md)).
-
-### Crear un shader propio
-
-1. Registralo en un `init python` (como en
-   `game/tools/plugins/shaders_lab/shaders_lab_data.rpy`):
-   `renpy.register_shader("mi.nombre", variables=…, fragment_300=… )`.
-   En `variables` declarás los `uniform` que vas a usar; después se pueden
-   animar desde ATL (`linear 1.0 u_x 1.0`).
-2. Creá un transform que lo aplique:
-
-   ```renpy
-   transform sh_mio(fuerza=0.5):
-       mesh True
-       shader "mi.nombre"
-       u_fuerza fuerza
-   ```
-
-3. Cuidado con el **alpha premultiplicado**: multiplicá el RGB por el alpha o
-   las zonas transparentes se pintan como un rectángulo.
-4. Prioridades de los shaders de Ren'Py: `renpy.texture` = 200,
-   `renpy.matrixcolor` = 400, `renpy.alpha` = 500. El código propio va en
-   `fragment_300` para quedar entre textura y matriz de color.
-
 ## Apéndice: Discord RPC (planificado)
 
 Todavía **no está implementado**; esto es el diseño acordado para cuando se
