@@ -13,7 +13,7 @@ label start:
 ```
 
 `label start` tiene que existir **una sola vez**. Los capítulos pueden vivir en
-archivos separados dentro de `game/story/`; Ren'Py los carga solo.
+archivos separados dentro de `game/`; Ren'Py los carga solo.
 
 ## Personajes
 
@@ -25,7 +25,6 @@ Ya están definidos en `game/definitions/definitions.rpy`:
 | `m` | Monika | `m_name` |
 | `n` | Natsuki | `n_name` |
 | `y` | Yuri | `y_name` |
-| `mc` | El jugador | `player` (se pide en Ajustes) |
 | `narrator` | Narración | — |
 
 Los nombres se definen al empezar la partida:
@@ -46,7 +45,6 @@ cuando quieras. También podés cambiar los valores por defecto en
 ```renpy
     s "Hola, ¿cómo estás?"
     "Texto de narración, sin personaje."
-    mc "Mi línea."
 ```
 
 El estilo del diálogo se controla con `style.say_dialogue` (por defecto

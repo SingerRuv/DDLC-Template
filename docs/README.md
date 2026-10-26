@@ -20,7 +20,6 @@ También hay documentación pegada al código, en cada carpeta:
 - `game/README.md` — mapa completo de `game/`.
 - `game/tools/README.md` — cómo funciona el hub de Plugins y sus estilos.
 - `game/tools/plugins/README.md` — cómo escribir un plugin.
-- `game/story/README.md` — convención para organizar la historia.
 - `game/tl/README.md` — traducciones.
 - `game/migracion/README.md` — sistema de migración de assets entre versiones.
 - `tools/README.md` — scripts de mantenimiento (release y referencia).

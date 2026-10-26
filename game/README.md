@@ -8,7 +8,6 @@ Mapa de la carpeta. Para el flujo de trabajo, ver [`docs/`](../docs/README.md).
 |---|---|
 | `core/` | El motor del template: imports tempranos y funciones de ayuda. No tocar (ver `core/README.md`) |
 | `definitions/` | Definiciones: imágenes, sprites, música, efectos, transforms, menús, splash y variables persistentes (ver `definitions/README.md`) |
-| `story/` | Tu historia, un archivo por capítulo (ver `story/README.md`) |
 | `mod_assets/` | **Tus** assets: imágenes, CGs y audio (ver `mod_assets/README.md`) |
 | `tools/` | Hub de Plugins (dev-only) y herramientas: PoseLab, Shaders Lab (ver `tools/README.md`) |
 | `migracion/` | Sistema de migración de assets entre versiones del template (ver `migracion/README.md`) |
@@ -43,6 +42,6 @@ Por eso podés pisar un asset oficial poniendo un archivo con la misma ruta en
 ## Reglas del proyecto
 
 - Los `.rpy` van en **UTF-8 sin BOM** y saltos **LF**.
-- Tu historia y tus assets van en `story/` y `mod_assets/`; el motor no se toca.
+- Tu historia y tus assets van en `game/` y `mod_assets/`; el motor no se toca.
 - Si agregás una herramienta, va como plugin en `tools/plugins/` (ver
   `tools/plugins/README.md`).
