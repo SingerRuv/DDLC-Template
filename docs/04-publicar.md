@@ -101,5 +101,5 @@ los aporta en el primer arranque (ver [`00-empezar.md`](00-empezar.md)).
 
 - Guías para modders: `docs/`.
 - READMEs por carpeta: `game/README.md`, `game/tools/README.md`,
-  `game/tools/plugins/README.md`, `game/migracion/README.md`, `game/story/`, `game/tl/`.
+  `game/tools/plugins/README.md`, `game/migracion/README.md`, `game/tl/`.
 - Scripts de mantenimiento: `tools/README.md`.

@@ -84,7 +84,7 @@ Requiere los permisos de almacenamiento (ya configurados en `options.rpy`).
 5. **Launch Project** para probarlo.
 
 Para escribir tu historia podés empezar en `game/script.rpy` (`label start`) o
-usar un archivo por capítulo en `game/story/` (ver
+usar un archivo por capítulo en `game/` (ver
 [`docs/00-empezar.md`](docs/00-empezar.md)).
 
 ## Estructura
@@ -96,7 +96,6 @@ game/
 ├── gui.rpy               ← colores, fuentes y medidas de la interfaz
 ├── options.rpy           ← nombre, versión, configuración de build
 ├── definitions/          ← sprites, transforms, audio, efectos, menús, splash
-├── story/                ← tu historia, un archivo por capítulo
 ├── core/                 ← el motor del template (no tocar)
 ├── tools/                ← hub de Plugins (dev): PoseLab
 ├── migracion/            ← sistema de migración de assets entre versiones

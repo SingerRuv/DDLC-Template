@@ -52,8 +52,8 @@ Ren'Py carga **todos** los `.rpy` que estén debajo de `game/`, sin registrarlos
 ningún lado. Tenés dos formas:
 
 - **Rápida:** escribí directo en `game/script.rpy`, dentro de `label start`.
-- **Recomendada:** un archivo por capítulo en `game/story/` (por ejemplo
-  `game/story/capitulo1.rpy`) y llamalos desde `start`:
+- **Recomendada:** un archivo por capítulo en `game/` (por ejemplo
+  `game/capitulo1.rpy`) y llamalos desde `start`:
 
 ```renpy
 label start:
