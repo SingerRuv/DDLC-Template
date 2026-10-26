@@ -83,58 +83,63 @@ Requiere los permisos de almacenamiento (ya configurados en `options.rpy`).
 4. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **DDLC BrokenDreamsModTemplate**.
 5. **Launch Project** para probarlo.
 
-Para escribir tu historia, editá `game/script.rpy`.
+Para escribir tu historia podés empezar en `game/script.rpy` (`label start`) o
+usar un archivo por capítulo en `game/story/` (ver
+[`docs/00-empezar.md`](docs/00-empezar.md)).
 
 ## Estructura
 
 ```
 game/
-├── script.rpy            ← tu historia empieza acá (label start)
+├── script.rpy            ← punto de entrada (label start / endgame)
 ├── screens.rpy           ← pantallas base (diálogo, guardado, ajustes...)
 ├── gui.rpy               ← colores, fuentes y medidas de la interfaz
 ├── options.rpy           ← nombre, versión, configuración de build
-├── definitions/
-│   ├── definitions.rpy   ← fondos (bg), personajes y variables
-│   ├── sprites.rpy       ← todos los sprites de las dokis (Composite)
-│   ├── transforms.rpy    ← posiciones, animaciones y transiciones
-│   ├── music.rpy         ← música y efectos de sonido
-│   ├── effects.rpy       ← efectos visuales especiales
-│   ├── menu_screens.rpy  ← menús configurables
-│   ├── cgs.rpy           ← tus CGs (imágenes de evento)
-│   ├── persistent.rpy    ← variables que se guardan entre partidas
-│   └── splash.rpy        ← splash, aviso legal y anti-cheat
+├── definitions/          ← sprites, transforms, audio, efectos, menús, splash
+├── story/                ← tu historia, un archivo por capítulo
 ├── core/                 ← el motor del template (no tocar)
-├── gui/                  ← interfaz, fuentes y logo del template
-├── images/               ← sprites, fondos y CGs (desde images.rpa)
-├── bgm/                  ← música (desde audio.rpa)
-├── sfx/                  ← efectos de sonido (desde audio.rpa)
-├── mod_assets/           ← tus assets propios (fondos, CGs, audio, sprites)
+├── tools/                ← hub de Plugins (dev): PoseLab, Shaders Lab
 ├── migracion/            ← sistema de migración de assets entre versiones
-└── tl/                   ← traducciones (ej: tl/spanish)
+├── mod_assets/           ← tus assets propios (imágenes, CGs, audio)
+├── tl/                   ← traducciones (viene con español)
+├── gui/                  ← solo los assets propios del template
+└── *.rpa                 ← assets oficiales de DDLC (los aportás vos)
 
-docs/                     ← documentación para modders
+docs/                     ← guías para modders (empezá por docs/README.md)
+tools/                    ← scripts de mantenimiento (no se distribuyen)
 ```
 
-> Las carpetas `images/`, `bgm/` y `sfx/` se llenan al colocar los `.rpa` de DDLC.
-> Tus propios assets van en `mod_assets/` (ver `game/mod_assets/README.md`).
+> Las carpetas `images/`, `bgm/`, `sfx/` y casi todo `gui/` **no están en el
+> repo**: se resuelven desde los `.rpa` de DDLC. Tus propios assets van en
+> `mod_assets/` (ver `game/mod_assets/README.md`).
 
 ## Features
 
-- **Sprites estilo Bronya** (`Composite`): ~100 poses por personaje con
-  notación compacta, ej. `show sayori 2b at t41`.
+- **Sprites estilo Bronya** (`Composite`): cientos de variantes por doki (más de
+  700 en total) con notación compacta, ej. `show sayori 2b at t41`. Tabla
+  completa en [`docs/referencia/sprites.md`](docs/referencia/sprites.md).
 - **Transforms de posición:** `t11`–`t44`, focus `f*`, entradas laterales `l*`/`r*`,
   animaciones `hop`/`dip`, salidas `lhide`/`rhide`.
 - **Transiciones:** `dissolve`, `dissolve_cg`, `close_eyes`, `open_eyes`,
   `wipeleft_scene`, `wiperight_scene`, `trueblack` y más.
 - **Audio:** temas `t1`–`t10` (y variantes) + efectos de sonido.
-- **Efectos:** `invert`, `tear`, `dizzy`, glitch de texto.
+- **Efectos:** `invert`, `tear`, `dizzy`, `recolorize` y partículas.
 - **Shaders (plugin):** scanlines, aberración cromática, glitch, viñeta y CRT
-  combinado. Se usan como transforms (`show yuri 1a at sh_scanlines`) y hay una
-  demo en el hub de Plugins. Ver `game/tools/plugins/shaders_lab/`.
+  combinado para fondos; y contorno, silueta, palidez y flash para personajes.
+  Además, glitch por **franjas y cuadrados** estilo DDLC, vendorizado de
+  [ChromaGlitch](https://github.com/Gouvernathor/renpy-ChromaGlitch) de Gouvernathor.
+  Se usan como transforms (`show yuri 1a at sh_scanlines`) y hay una demo en el
+  hub de Plugins. Ver `game/tools/plugins/shaders_lab/`.
+- **Hub de Plugins (dev):** catálogo de herramientas autocontenidas con búsqueda,
+  categorías y diagnóstico; viene con **PoseLab** (arma poses leyendo los
+  sprites reales y devuelve el `show` listo) y **Shaders Lab** (vista previa de
+  todos los efectos). Ver `game/tools/README.md`.
 - **Menús configurables:** principal, de pausa y quick menu; sprites, logo,
   partículas y animación hover editables desde `definitions/menu_screens.rpy`.
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
   animaciones del menú y partículas, cambiar su nombre y borrar todos los datos.
+- **Traducciones:** español incluido; el jugador cambia de idioma desde Ajustes.
+  Ver `game/tl/README.md`.
 - **Splash + anti-cheat:** aviso legal al primer arranque, autoload y chequeo de partidas.
 - **Controles táctiles + accesibilidad:** gestos (deslizar) para Atrás/Historial/Menú,
   quick menu agrandado y reposicionable en móvil, y acceso a la pantalla de
@@ -146,9 +151,15 @@ docs/                     ← documentación para modders
 - **Migración de assets:** cuando sale una versión nueva del template, el juego te
   avisa y actualiza el template **conservando tus assets** (mod_assets, tu historia,
   tus `definitions` y `gui`). Ver `game/migracion/README.md`.
+- **Discord RPC (planificado):** la interfaz de Ajustes ya existe; falta el motor.
+  El diseño está en [`docs/03-herramientas.md`](docs/03-herramientas.md).
 
 ## Documentación
 
+- [`docs/README.md`](docs/README.md) — índice: empezar, historia, referencia,
+  herramientas, publicar y créditos.
+- [`docs/referencia/`](docs/referencia/) — tablas de sprites, transforms, audio,
+  efectos, shaders y plugins (generadas desde el código).
 - [`docs/IP-GUIDELINES.md`](docs/IP-GUIDELINES.md) — resumen de las IP Guidelines de Team Salvato.
 - `game/README.md` — mapa de las carpetas del proyecto.
 

@@ -35,6 +35,9 @@ Desktop.ini
 # La config de editor vive solo en la raíz; ignora duplicados dentro de game/.
 game/.vscode/
 
+# --- Instrucciones locales para agentes (solo en tu copia, no se versiona) ---
+AGENTS.md
+
 # --- Empaquetado ---
 /dist/
 
