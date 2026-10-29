@@ -1,11 +1,11 @@
 {
   "titulo": "Shaders",
-  "descripcion": "Vista previa de shaders para fondo y personaje: scanlines, aberración, viñeta, glitch, CRT, contorno, silueta, palidez, flash y glitch por franjas/cuadrados (ChromaGlitch). El énfasis del texto del diálogo vive en Diálogo.",
+  "descripcion": "Vista previa de shaders para fondos: scanlines, aberración, viñeta, glitch, CRT y glitch por franjas/cuadrados (ChromaGlitch). El énfasis del texto del diálogo vive en Diálogo.",
   "autor": "Broken Dreams Studio",
   "version": "1.0",
   "screen": "shaders_lab",
   "categoria": "Herramientas",
   "orden": 20,
-  "palabras_clave": ["shaders", "efectos", "crt", "glitch", "viñeta", "personaje"],
+  "palabras_clave": ["shaders", "efectos", "crt", "glitch", "viñeta", "fondo"],
   "capturas": []
 }

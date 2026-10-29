@@ -10,18 +10,11 @@
 ##
 ## Uso desde la historia (no requiere abrir la herramienta):
 ##
-##     show yuri 1a at sh_scanlines
+##     show bg class at sh_scanlines
 ##     show bg class at sh_aberracion(offset=0.003)
-##     show sayori 2b at sh_glitch
-##     show monika 1a at sh_vigneta(fuerza=0.6)
-##     show yuri 1a at sh_crt              # combinado (scanlines + aberración + viñeta)
-##
-## Efectos pensados para personajes:
-##
-##     show yuri 1a at sh_contorno                        # borde blanco
-##     show sayori 1a at sh_silueta((0.5, 0.1, 0.2, 1.0)) # silueta roja
-##     show monika 1a at sh_palidez(0.8)                  # pálida
-##     show natsuki 1a at sh_flash(0.9)                   # destello
+##     show bg bedroom at sh_glitch
+##     show bg bedroom at sh_vigneta(fuerza=0.6)
+##     show bg class at sh_crt              # combinado (scanlines + aberración + viñeta)
 ##
 ## Para combinar otros: `sh_combinar` (un Transform solo admite un `shader`).
 ##
@@ -123,61 +116,6 @@ init -1 python:
         gl_FragColor = vec4(bd_col * gl_FragColor.a, gl_FragColor.a);
     """)
 
-    # ---- Efectos pensados para PERSONAJES ----------------------------------
-
-    # Silueta: pinta todo el sprite de un color plano (mantiene la forma).
-    # Ojo: Ren'Py usa alpha premultiplicado; el RGB se multiplica por el alpha
-    # para no pintar el espacio transparente que rodea al sprite.
-    renpy.register_shader("bd.silueta", variables="""
-        uniform sampler2D tex0;
-        varying vec2 v_tex_coord;
-        uniform vec4 u_color;
-    """, fragment_300="""
-        vec4 bd_c = texture2D(tex0, v_tex_coord);
-        float bd_a = bd_c.a * u_color.a;
-        gl_FragColor = vec4(u_color.rgb * bd_a, bd_a);
-    """)
-
-    # Contorno: dibuja un borde del color elegido alrededor del sprite.
-    renpy.register_shader("bd.contorno", variables="""
-        uniform sampler2D tex0;
-        varying vec2 v_tex_coord;
-        uniform vec4 u_color;
-        uniform float u_paso;
-    """, fragment_300="""
-        vec4 bd_c = texture2D(tex0, v_tex_coord);
-        float bd_borde = 0.0;
-        bd_borde = max(bd_borde, texture2D(tex0, v_tex_coord + vec2(u_paso, 0.0)).a);
-        bd_borde = max(bd_borde, texture2D(tex0, v_tex_coord - vec2(u_paso, 0.0)).a);
-        bd_borde = max(bd_borde, texture2D(tex0, v_tex_coord + vec2(0.0, u_paso)).a);
-        bd_borde = max(bd_borde, texture2D(tex0, v_tex_coord - vec2(0.0, u_paso)).a);
-        float bd_cont = clamp(bd_borde - bd_c.a, 0.0, 1.0) * u_color.a;
-        float bd_a = max(bd_c.a, bd_cont);
-        gl_FragColor = vec4(mix(bd_c.rgb, u_color.rgb * bd_a, bd_cont), bd_a);
-    """)
-
-    # Palidez: desatura y aclara un poco (susto, recuerdo, fantasma).
-    renpy.register_shader("bd.palidez", variables="""
-        uniform sampler2D tex0;
-        varying vec2 v_tex_coord;
-        uniform float u_fuerza;
-    """, fragment_300="""
-        float bd_a = gl_FragColor.a;
-        float bd_luma = dot(gl_FragColor.rgb, vec3(0.299, 0.587, 0.114));
-        vec3 bd_gris = vec3(bd_luma) + vec3(0.12 * bd_a);
-        gl_FragColor.rgb = mix(gl_FragColor.rgb, bd_gris, u_fuerza);
-    """)
-
-    # Flash: mezcla el sprite hacia blanco (golpe, revelación).
-    renpy.register_shader("bd.flash", variables="""
-        uniform sampler2D tex0;
-        varying vec2 v_tex_coord;
-        uniform float u_fuerza;
-    """, fragment_300="""
-        gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(gl_FragColor.a), u_fuerza);
-    """)
-
-
 transform sh_scanlines(intensidad=0.35, lineas=240.0):
     mesh True
     shader "bd.scanlines"
@@ -210,30 +148,6 @@ transform sh_crt(intensidad=0.30, offset=0.002, fuerza=0.45):
     u_intensidad intensidad
     u_lineas 240.0
     u_offset offset
-    u_fuerza fuerza
-
-
-# ---- Transforms para personajes -------------------------------------------
-
-transform sh_silueta(color=(0.55, 0.10, 0.15, 1.0)):
-    mesh True
-    shader "bd.silueta"
-    u_color color
-
-transform sh_contorno(color=(1.0, 1.0, 1.0, 1.0), paso=0.0015):
-    mesh True
-    shader "bd.contorno"
-    u_color color
-    u_paso paso
-
-transform sh_palidez(fuerza=0.7):
-    mesh True
-    shader "bd.palidez"
-    u_fuerza fuerza
-
-transform sh_flash(fuerza=0.8):
-    mesh True
-    shader "bd.flash"
     u_fuerza fuerza
 
 
