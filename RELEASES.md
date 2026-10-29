@@ -12,8 +12,8 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
   (Copiar, Copiar en…, Reiniciar, Abrir carpeta, Volver).
 - **Copiar en…:** el snippet se puede insertar directamente en un `.rpy` del
   guion, con copia de seguridad y deshacer.
-- **Shaders Lab:** vista previa de los shaders de fondo y de personaje, con
-  glitch por franjas y cuadrados estilo DDLC.
+- **Shaders Lab:** vista previa de los shaders de fondo, con glitch por franjas y
+  cuadrados estilo DDLC.
 - **Diálogo:** énfasis en el texto del diálogo (negrita, itálica, subrayado,
   tachado, color y tamaño) sobre la frase que marques, con vista previa del
   textbox del juego.

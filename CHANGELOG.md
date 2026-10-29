@@ -13,9 +13,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   Reiniciar, Abrir carpeta, Volver) para todas las herramientas.
 - **Copiar en…:** panel que escribe el snippet en un `.rpy` del guion, con copia
   de seguridad y deshacer.
-- **Shaders Lab (plugin):** vista previa de los shaders de fondo y de personaje
-  (scanlines, aberración cromática, glitch, viñeta, CRT, contorno, silueta, palidez
-  y flash), con glitch por franjas y cuadrados estilo DDLC.
+- **Shaders Lab (plugin):** vista previa de los shaders de fondo (scanlines,
+  aberración cromática, viñeta, glitch y CRT), con glitch por franjas y cuadrados
+  estilo DDLC.
 - **Diálogo (plugin):** arma líneas de diálogo con énfasis (negrita, itálica,
   subrayado, tachado, color y tamaño) sobre la frase que marques, con vista previa
   del textbox del juego y la línea lista para copiar o insertar en el guion.
