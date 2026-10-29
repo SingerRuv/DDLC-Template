@@ -14,6 +14,7 @@ splash y variables persistentes). Los archivos de assets van en `mod_assets/`.
 | `splash.rpy` | Splash, aviso legal, autoload y chequeo anti-cheat | Arranque del juego |
 | `persistent.rpy` | Variables persistentes (`persistent.playthrough`, preferencias del template) | Todo el juego |
 | `cgs.rpy` | CGs (imágenes de evento) | `scene cg nombre` |
+| `textshaders.rpy` | Text shaders propios (`ts_glitch`) para el diálogo (dev) | `what_textshader="ts_glitch:0.6"` |
 | `py/` | Código Python de soporte (`core_ren.py`, `android_assets_ren.py`) | Ver `py/README.md` |
 
 ## Referencia generada

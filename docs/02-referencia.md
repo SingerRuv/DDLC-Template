@@ -7,6 +7,9 @@ Guía práctica de lo que podés usar en el guion. Las tablas completas las gene
 - [`transforms.md`](referencia/transforms.md) — posiciones, animaciones y transiciones.
 - [`audio.md`](referencia/audio.md) — música y efectos.
 - [`efectos.md`](referencia/efectos.md) — displayables, screens y animaciones.
+- [`shaders.md`](referencia/shaders.md) — `sh_*` y shaders registrados.
+- [`textshaders.md`](referencia/textshaders.md) — text shaders propios (`ts_*`).
+- [`dialogo.md`](referencia/dialogo.md) — efectos de texto del diálogo (plugin Diálogo).
 
 ## Sprites
 
@@ -103,3 +106,82 @@ en `mod_assets/audio/bgm/` y declaráralo ahí.
 | Recolorear un displayable | `$ mi_img = recolorize("images/bg/class.png", "#102040", "#ffffff", 0.8)` |
 
 Detalle y parámetros en [`referencia/efectos.md`](referencia/efectos.md).
+
+## Shaders
+
+Son transforms: se aplican con `at` y no requieren abrir Shaders Lab.
+
+```renpy
+show yuri 1a at sh_contorno
+show sayori 1a at sh_silueta((0.5, 0.1, 0.2, 1.0))
+show monika 1a at sh_palidez(0.8)
+show bg class at sh_crt
+show bg class at sh_aberracion(offset=0.003)
+```
+
+Un `Transform` admite **un solo** `shader`; para combinar varios:
+
+```renpy
+show expression sh_combinar("bg class", "bd.scanlines bd.vigneta",
+                            u_intensidad=0.4, u_fuerza=0.5)
+```
+
+Lista de `sh_*`, parámetros y shaders registrados en
+[`referencia/shaders.md`](referencia/shaders.md). Cómo crear uno propio:
+[`03-herramientas.md`](03-herramientas.md#shaders-lab).
+
+## Text shaders (dev)
+
+Los text shaders cambian cómo se dibuja el **texto** (diálogo), no los sprites.
+Requieren Model-Based Rendering (GL2, el default de Ren'Py 8) y, por ahora,
+viven solo en `dev`.
+
+Se aplican por personaje, por estilo o en un bloque de texto:
+
+```renpy
+define yuri_glitch = Character("Yuri", what_textshader="ts_glitch:0.6")
+
+style mi_texto:
+    textshader "ts_glitch:0.6"
+
+text "No..." textshader "ts_glitch:0.6"
+```
+
+- **Built-ins:** `dissolve`, `flip`, `jitter`, `linetexture`, `offset`,
+  `slowalpha`, `texture`, `typewriter`, `wave`, `zoom`.
+- **Del template:** `ts_glitch` (sacude cada glifo y separa los canales RGB).
+  Ver [`referencia/textshaders.md`](referencia/textshaders.md).
+- Los parámetros se pasan como string: `"wave:6"`, `"jitter:4, 4"`,
+  `"ts_glitch:0.6"`; se combinan con `|` (`"jitter:3, 3|wave"`).
+- Los effects de texto lento (`dissolve`, `typewriter`, `zoom`, `flip`,
+  `slowalpha`) necesitan texto lento: `slow_cps 20` o `{cps=20}`.
+- **No se mezclan** dentro del mismo bloque: el texto usa text shaders o no.
+- El glitch de texto (`ts_glitch`) se aplica a mano, por personaje o por
+  estilo; la herramienta **Diálogo** es de otro tipo (ver abajo).
+
+## Énfasis en el diálogo (Diálogo)
+
+El énfasis tipográfico del texto del diálogo se hace con **tags de Ren'Py**,
+que son markup nativo: no hay motor ni plugin que instalar.
+
+```renpy
+y "Esto no {b}debería{/b} estar pasando."
+```
+
+| Tag | Qué hace |
+|---|---|
+| `{b}…{/b}` | Negrita |
+| `{i}…{/i}` | Itálica |
+| `{u}…{/u}` | Subrayado |
+| `{s}…{/s}` | Tachado |
+| `{color=#ff8acc}…{/color}` | Color (hexadecimal o nombre) |
+| `{size=+2}…{/size}` | Tamaño relativo al estilo |
+
+La negrita y la itálica son sintéticas: Ren'Py las enguesa e inclina aunque la
+fuente no tenga esas variantes (la del template es `Aller_Rg.ttf`).
+
+La herramienta **Diálogo** (dev) arma esas líneas por vos: escribís el
+diálogo, marcás la frase y te deja la línea lista para copiar o insertar en el
+guion, con la vista previa del textbox del juego. Tabla completa:
+[`referencia/dialogo.md`](referencia/dialogo.md). Cómo se usa desde el hub:
+[`03-herramientas.md`](03-herramientas.md).

@@ -26,8 +26,8 @@ python tools/gen_manifest.py --selftest
 ## `gen_docs.py`
 
 Genera la referencia de `docs/referencia/` a partir del código (sprites,
-transforms, audio, efectos y plugins) y valida los enlaces relativos de toda la
-documentación.
+transforms, audio, efectos, shaders y plugins) y valida los enlaces relativos de
+toda la documentación.
 
 ```
 python tools/gen_docs.py            # regenera los .md

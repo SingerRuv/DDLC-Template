@@ -33,10 +33,13 @@ Cumplí siempre las [IP Guidelines](IP-GUIDELINES.md) (resumen en
 | Componente | Autor | Licencia / permiso |
 |---|---|---|
 | DDLC Mod Template 2.0 (base) | Azariel "Bronya Rand" Del Carmen | Copyright del autor; atribución obligatoria |
+| renpy-ChromaGlitch (glitch por franjas/cuadrados) | [Gouvernathor](https://github.com/Gouvernathor/renpy-ChromaGlitch) | Uso libre; el autor pide nombrarlo en los créditos con un link |
 | pypresence (Discord RPC, **pendiente**) | qwertyquerty y colaboradores | MIT |
 
-Cuando se implemente el Discord RPC, se va a vendorizar pypresence junto con su
-archivo `LICENSE`.
+El código de ChromaGlitch está vendorizado en
+`game/tools/plugins/shaders_lab/glitch_slices_ren.py`, con la nota de autoría en
+su cabecera. Cuando se implemente el Discord RPC, se va a vendorizar pypresence
+junto con su archivo `LICENSE`.
 
 ## Licencia de este template
 
@@ -49,5 +52,6 @@ autores originales (bronya_rand / Team Salvato) y conservan sus condiciones.
 Como mínimo:
 
 1. La línea de bronya_rand de arriba (en créditos o en el splash).
-2. Si usás Discord RPC (cuando esté): pypresence es MIT, la nota de licencia
+2. Si usás los efectos de ChromaGlitch: nombre + link a su repo.
+3. Si usás Discord RPC (cuando esté): pypresence es MIT, la nota de licencia
    alcanza, pero se agradece el crédito.

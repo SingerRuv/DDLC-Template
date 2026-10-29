@@ -361,3 +361,12 @@ translate spanish strings:
     old "Please enter your name"
     new "Por favor introduce tu nombre"
 
+    old "Unexpected error"
+    new "Error inesperado"
+
+    old "An unexpected error occurred."
+    new "Ocurrió un error inesperado."
+
+    old "Close"
+    new "Cerrar"
+

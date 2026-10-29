@@ -207,7 +207,7 @@ init -1 python:
         zip_path = _mg_os.path.join(dir_mig, ".template.zip")
         zip_manual = _mg_os.path.join(dir_mig, "manual.zip")
         if not _mg_os.path.isfile(script):
-            renpy.log("migracion: no existe %s" % script)
+            print("migracion: no existe %s" % script)
             return False
         job = {
             "pid": _mg_os.getpid(),
@@ -226,13 +226,13 @@ init -1 python:
                 _mg_descargar(url, zip_path)
                 job["zip"] = zip_path
             else:
-                renpy.log("migracion: la release no trae ZIP y no hay manual.zip")
+                print("migracion: la release no trae ZIP y no hay manual.zip")
                 return False
             if not _mg_zipfile.is_zipfile(job["zip"]):
-                renpy.log("migracion: ZIP invalido: %s" % job["zip"])
+                print("migracion: ZIP invalido: %s" % job["zip"])
                 return False
         except Exception as e:
-            renpy.log("migracion: no se pudo descargar el template: %s" % e)
+            print("migracion: no se pudo descargar el template: %s" % e)
             return False
         try:
             with _mg_io.open(job_path, "w", encoding="utf-8") as f:
@@ -245,7 +245,7 @@ init -1 python:
             _mg_sub.Popen([_mg_sys.executable, script, job_path],
                           close_fds=True, **kwargs)
         except Exception as e:
-            renpy.log("migracion: no se pudo lanzar el migrador: %s" % e)
+            print("migracion: no se pudo lanzar el migrador: %s" % e)
             return False
         return True
 

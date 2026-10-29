@@ -10,7 +10,7 @@ español y asume Ren'Py 8.5.x.
 | Instalar el template y ver algo en pantalla | [`00-empezar.md`](00-empezar.md) |
 | Escribir la historia: labels, capítulos, personajes | [`01-historia.md`](01-historia.md) |
 | Saber qué sprite/transform/audio/efecto usar | [`02-referencia.md`](02-referencia.md) |
-| Usar el hub de Plugins y PoseLab | [`03-herramientas.md`](03-herramientas.md) |
+| Usar el hub de Plugins, PoseLab y Shaders Lab | [`03-herramientas.md`](03-herramientas.md) |
 | Publicar una versión del template (mantenedores) | [`04-publicar.md`](04-publicar.md) |
 | Ver créditos, licencias y qué acreditar en tu mod | [`05-creditos.md`](05-creditos.md) |
 | Cumplir las IP Guidelines de Team Salvato | [`IP-GUIDELINES.md`](IP-GUIDELINES.md) |
@@ -26,7 +26,7 @@ También hay documentación pegada al código, en cada carpeta:
 
 ## Referencia generada
 
-Las tablas de sprites, transforms, audio, efectos y plugins **no se
+Las tablas de sprites, transforms, audio, efectos, shaders, text shaders y plugins **no se
 escriben a mano**: las genera `tools/gen_docs.py` leyendo el código.
 
 ```
@@ -35,6 +35,9 @@ docs/referencia/
   transforms.md   familias de transforms y transiciones
   audio.md        música y efectos de sonido
   efectos.md      displayables, screens y animaciones
+  shaders.md      transforms sh_* y shaders registrados
+  textshaders.md  text shaders propios (ts_*)
+  dialogo.md      efectos de texto del diálogo (plugin Diálogo)
   plugins.md      plugins que descubre el hub
 ```
 

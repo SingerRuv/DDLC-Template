@@ -101,6 +101,9 @@ rompen el hub.
 > Nota: dentro de un módulo `.py`, el `open` global está tomado por Ren'Py y
 > acepta un solo argumento. Si necesitas leer/escribir archivos, usa `io.open`.
 
+El plugin **`_example/`** usa esta API completa (`ejemplo_modulo.py`): es a la
+vez la plantilla para copiar y el test de que los hooks funcionan.
+
 ### `.py` o `*_ren.py`
 
 - `mi_modulo.py` es un **módulo**: solo se ejecuta cuando el hub lo importa.
