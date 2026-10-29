@@ -14,7 +14,9 @@ de desarrollo, autocontenidas, que el template descubre solo.
 | `complements.rpy` | Screen raíz del hub (`complements`): grilla de tarjetas, búsqueda, filtro y panel de diagnóstico |
 | `complements_data.rpy` | Lógica sin UI: descubre plugins, lee y valida `tool.json`, busca, y carga los módulos `.py` con sus hooks |
 | `complements_ui.rpy` | Piezas visuales del hub: la tarjeta (`pl_card`), el shell `tool_shell` y los estilos `complements_*`/`pl_*` |
-| `ui_styles.rpy` | Catálogo **global** `tool_*` (textos, paneles, botones, inputs, barras) y los componentes `tool_dropdown` / `tool_shell` |
+| `inserter.rpy` | Panel **Insertar en…** compartido: escribe un snippet en un `.rpy` del guion (lo usan PoseLab y Diálogo) |
+| `toolbar.rpy` | **Barra de herramientas** compartida por las herramientas dev: Copiar/Copiar en…, Reiniciar, Abrir carpeta y Volver |
+| `ui_styles.rpy` | Catálogo **global** `tool_*` (textos, paneles, botones, inputs, barras) y los componentes `tool_dropdown` / `tool_barra` / `tool_shell` |
 | `plugins/` | Un directorio por plugin (ver `plugins/README.md`) |
 
 ## Cómo descubre los plugins
@@ -70,12 +72,91 @@ use tool_dropdown(
     [("Fondo", "Fondo"), ("Personaje", "Personaje")],  # (valor, etiqueta)
     shl_state,                         # dict donde se guarda el valor
     "sujeto",                          # clave dentro del dict
-    despues=[Function(shl_reset_efecto)])  # acciones extra al elegir (opcional)
+    despues=[Function(shl_reset_efecto)],  # acciones extra al elegir (opcional)
+    columnas=1)                        # cómo se acomodan las opciones (opcional)
 )
 ```
 
+`columnas` decide cómo se listan las opciones: `1` (default) una por fila, `2`
+en dos columnas, `0` todas en una sola fila.
+
 El estado vive en `tool_dd_state`, en el store, así funciona también dentro de
 un `use` (no usa `SetScreenVariable`).
+
+### `tool_toast` / `tool_copiar`
+
+Aviso flotante (arriba, 2 segundos) y copia al portapapeles del sistema. Los
+dos están en `ui_styles.rpy`, así ningún plugin reimplementa el toast:
+
+```python
+tool_toast("Código insertado")
+tool_copiar("texto a copiar")           # avisa solo
+```
+
+### `tool_codigo_rico`
+
+Resaltado de código para **mostrar** (no para copiar): devuelve el código con
+tags de color de Ren'Py. El texto que se copia va plano.
+
+```renpy
+text "[tool_codigo_rico(txt)]" style "tool_code"
+```
+
+Colorea palabras clave (`show`, `at`, `as`, `expression`…), nombres, funciones,
+números y cadenas. Si el código trae `[` o `]`, el `text` va con
+`substitute False` y se pasa el string ya coloreado.
+
+### `tool_barra` + ventanas flotantes
+
+Barra de título reutilizable (zona para arrastrar + "Fijar" / "Restablecer") y
+helpers de posición persistente. Cada plugin usa su prefijo para no chocar en
+`persistent` y registra sus ventanas con `tool_ventanas_defecto`.
+
+```python
+# en el init del plugin (init 10: corre después de los bloques normales)
+SHL_PREFIJO = "shl"
+tool_ventanas_defecto({"code": (24, 400)}, SHL_PREFIJO)
+```
+
+```renpy
+use tool_barra("Código", "code", SHL_PREFIJO, "shaders_lab")
+
+draggroup:
+    drag:
+        id "shl_drag_code"              # convención: <prefijo>_drag_<nombre>
+        drag_name "shl_code"
+        draggable (not tool_ventana_fija("code", SHL_PREFIJO))
+        drag_handle (0, 0, 1.0, 40)
+        xpos tool_ventana_pos("code", SHL_PREFIJO)[0]
+        ypos tool_ventana_pos("code", SHL_PREFIJO)[1]
+        dragged tool_drag_mover("code", SHL_PREFIJO)
+        use shl_code(txt)
+```
+
+La posición se guarda en `persistent.<prefijo>_pos_<nombre>` y sobrevive entre
+sesiones. `Restablecer` la devuelve a la posición por defecto.
+
+### `tool_toolbar`
+
+Barra fija arriba, siempre visible, que comparten las herramientas dev
+(PoseLab, Shaders Lab, Diálogo). Reusa los estilos del catálogo (`tool_panel`,
+`tool_button`, `tool_title`): no define estilos propios.
+
+```renpy
+use tool_toolbar(
+    titulo="PoseLab",              # nombre de la herramienta
+    texto=txt_show,                # el código que copian "Copiar"/"Copiar en…"
+    estado=pl_state,               # dict de la herramienta (lo usa "Copiar en…")
+    marcador="poselab",            # línea que habilita un .rpy como destino
+    sufijo=".poselab.bak",         # nombre del backup
+    acciones=[                     # acciones propias de la herramienta
+        ("Ocultar panel", Function(pl_alternar_panel)),
+        ("Reiniciar", Function(pl_reset)),
+    ])
+```
+
+Aporta además **Abrir carpeta** (abre la carpeta del proyecto en el
+explorador del sistema).
 
 ### `tool_shell`
 

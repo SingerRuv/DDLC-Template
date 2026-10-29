@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ## gen_docs.py
 ## Genera la referencia de `docs/referencia/` a partir del código del template:
-## sprites, transforms, audio, efectos, shaders y plugins del hub.
+## sprites, transforms, audio, efectos, shaders, text shaders y plugins del hub.
 ##
 ## La referencia va commiteada (se distribuye en el release) y el generador es
 ## dev-only (`/tools/` está en export-ignore), así que se corre a mano:
@@ -13,6 +13,7 @@
 ## repo apunten a algo que exista. Pensado para el checklist de release.
 
 import argparse
+import ast
 import io
 import json
 import os
@@ -459,6 +460,82 @@ def gen_shaders():
 
 
 # ---------------------------------------------------------------------------
+# Text shaders
+# ---------------------------------------------------------------------------
+
+def gen_textshaders():
+    rel = "game/definitions/textshaders.rpy"
+    texto = leer(rel)
+
+    filas = []
+    for m in re.finditer(r'renpy\.register_textshader\(\s*"(\w+)"', texto):
+        bloque = texto[m.end():]
+        fin = re.search(r"\n\s*\)", bloque)
+        bloque = bloque[: fin.start()] if fin else bloque
+
+        uniforms = []
+        for nombre in re.findall(r"uniform\s+\w+\s+(u__\w+)\s*;", bloque):
+            default = re.search(r"\b%s\s*=\s*([^,\n]+)" % re.escape(nombre), bloque)
+            if default:
+                valor = default.group(1).strip().rstrip(")").strip()
+                uniforms.append("`%s` = `%s`" % (nombre, valor))
+            else:
+                uniforms.append("`%s`" % nombre)
+
+        doc = ""
+        md = re.search(r'doc\s*=\s*"""(.*?)"""', bloque, re.S)
+        if md:
+            lineas = [l.strip() for l in md.group(1).strip().splitlines() if l.strip()]
+            doc = " ".join(lineas[:2])
+
+        filas.append(["`%s`" % m.group(1), ", ".join(uniforms) or "—", doc or "—"])
+
+    partes = [
+        cabecera("Text shaders", rel),
+        "Text shaders propios del template. Los que trae Ren'Py (dissolve, flip, "
+        "jitter, linetexture, offset, slowalpha, texture, typewriter, wave, zoom) "
+        "se usan igual y están explicados en la guía "
+        "[`02-referencia.md`](../02-referencia.md).\n",
+        tabla(["Text shader", "Uniforms", "Qué hace"], filas),
+    ]
+    return {"docs/referencia/textshaders.md": final("\n".join(partes))}
+
+
+# ---------------------------------------------------------------------------
+# Diálogo (plugin)
+# ---------------------------------------------------------------------------
+
+def gen_dialogo():
+    rel = "game/tools/plugins/dialogo_lab/dialogo_doc.py"
+    datos = None
+    for nodo in ast.parse(leer(rel)).body:
+        if not isinstance(nodo, ast.Assign):
+            continue
+        for destino in nodo.targets:
+            if isinstance(destino, ast.Name) and destino.id == "DIALOGO_DOC":
+                datos = ast.literal_eval(nodo.value)
+    if datos is None:
+        raise RuntimeError("No se encontró DIALOGO_DOC en %s" % rel)
+
+    partes = [
+        cabecera("Estilo de diálogo (Diálogo)", rel),
+        "Plugin **Diálogo** (`game/tools/plugins/dialogo_lab/`). Arma líneas de "
+        "diálogo con énfasis (negrita, itálica, subrayado, tachado, color y "
+        "tamaño) sobre la frase que marques, y deja la línea lista para copiar o "
+        "insertar en el guion.\n\nNo hay motor: el efecto se aplica con los tags "
+        "de Ren'Py, que son markup nativo. Ver "
+        "[`03-herramientas.md`](../03-herramientas.md).\n",
+        "## Efectos\n",
+        tabla(["Efecto", "Qué hace", "Tag", "Default"], datos["efectos"]),
+        "\n## Campos\n",
+        tabla(["Campo", "Qué hace"], datos["campos"]),
+        "\n## Tags de Ren'Py\n",
+        tabla(["Tag", "Qué hace"], datos["tags"]),
+    ]
+    return {"docs/referencia/dialogo.md": final("\n".join(partes))}
+
+
+# ---------------------------------------------------------------------------
 # Plugins del hub
 # ---------------------------------------------------------------------------
 
@@ -557,6 +634,8 @@ def main(argv):
         (gen_audio, []),
         (gen_efectos, []),
         (gen_shaders, ["game/tools/plugins/shaders_lab/shaders_lab_data.rpy"]),
+        (gen_textshaders, ["game/definitions/textshaders.rpy"]),
+        (gen_dialogo, ["game/tools/plugins/dialogo_lab/dialogo_doc.py"]),
         (gen_plugins, []),
     )
 

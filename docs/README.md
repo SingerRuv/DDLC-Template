@@ -26,7 +26,7 @@ También hay documentación pegada al código, en cada carpeta:
 
 ## Referencia generada
 
-Las tablas de sprites, transforms, audio, efectos, shaders y plugins **no se
+Las tablas de sprites, transforms, audio, efectos, shaders, text shaders y plugins **no se
 escriben a mano**: las genera `tools/gen_docs.py` leyendo el código.
 
 ```
@@ -36,6 +36,8 @@ docs/referencia/
   audio.md        música y efectos de sonido
   efectos.md      displayables, screens y animaciones
   shaders.md      transforms sh_* y shaders registrados
+  textshaders.md  text shaders propios (ts_*)
+  dialogo.md      efectos de texto del diálogo (plugin Diálogo)
   plugins.md      plugins que descubre el hub
 ```
 

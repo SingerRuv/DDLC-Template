@@ -53,7 +53,7 @@ init python:
                 with renpy.file(f) as fh:
                     datos = _pl_json.loads(fh.read().decode("utf-8"))
             except Exception as e:
-                renpy.log("%s: tool.json ilegible en %s: %s" % (_PL_PLUGINS_LOG, f, e))
+                print("%s: tool.json ilegible en %s: %s" % (_PL_PLUGINS_LOG, f, e))
                 _pl_diag(diagnosticos, carpeta, f, "JSON ilegible: %s" % e)
                 continue
 
@@ -187,7 +187,7 @@ init python:
                 renpy.add_python_directory("%s%s/" % (_PL_PLUGINS_DIR, tool["dir"]))
                 mod = _pl_importlib.import_module(nombre)
             except Exception as e:
-                renpy.log("%s: no se pudo importar '%s' (%s): %s" % (_PL_PLUGINS_LOG, nombre, id_, e))
+                print("%s: no se pudo importar '%s' (%s): %s" % (_PL_PLUGINS_LOG, nombre, id_, e))
         _PL_PLUGIN_MODULOS[id_] = mod
         return mod
 
@@ -200,7 +200,7 @@ init python:
             md = getattr(mod, "metadata", None)
             md = md() if callable(md) else md
         except Exception as ex:
-            renpy.log("%s: metadata() de '%s' fallo: %s" % (_PL_PLUGINS_LOG, e["id"], ex))
+            print("%s: metadata() de '%s' fallo: %s" % (_PL_PLUGINS_LOG, e["id"], ex))
             return
         if isinstance(md, _pl_builtins.dict):
             for k in ("titulo", "descripcion", "autor", "version", "categoria"):
@@ -222,7 +222,7 @@ init python:
             try:
                 hook(*args)
             except Exception as e:
-                renpy.log("%s: %s.%s() fallo: %s" % (_PL_PLUGINS_LOG, getattr(mod, "__name__", "?"), nombre, e))
+                print("%s: %s.%s() fallo: %s" % (_PL_PLUGINS_LOG, getattr(mod, "__name__", "?"), nombre, e))
 
     def _pl_llamar_cierre():
         global _PL_TOOL_ABIERTA

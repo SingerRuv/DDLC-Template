@@ -8,7 +8,6 @@
 init python:
     import re as _pl_re
     import os as _pl_os
-    import pygame as _pl_pygame
 
     # Registro de todas las cachés de PoseLab (para poder limpiarlas con el
     # botón "Reescanear"). Ver `pl_limpiar_cache`.
@@ -544,6 +543,18 @@ init python:
             return tag      # yuri_sleepy, tal cual
         return "%s (custom)" % tag if pl_es_custom(tag) else tag
 
+    # Fondos que no sirven para armar una pose: efectos de DDLC (bsod, eyes,
+    # veinmask, vignette, warning), los glitches de color, las pantallas de
+    # poema/notebook y los splashes. Los que agrega el modder en
+    # images/bg/ siguen apareciendo.
+    _PL_FONDOS_EXCLUIDOS = {
+        "bsod", "eyes", "glitch-blue", "glitch-green", "glitch-red",
+        "notebook", "notebook-glitch", "poem", "poem-glitch", "poem-glitch1",
+        "poem-glitch2", "splash", "splash-glitch", "splash-glitch2",
+        "splash-white", "veinmask", "veinmaskb", "vignette", "warning",
+        "warning2",
+    }
+
     @_pl_cacheado
     def pl_fondos():
         """Nombres (sin .png) de los fondos en images/bg/."""
@@ -552,7 +563,9 @@ init python:
             partes = f.split("/")
             if len(partes) == 3 and partes[0] == "images" and partes[1] == "bg":
                 if partes[2].lower().endswith(".png"):
-                    fondos.append(partes[2][:-4])
+                    nombre = partes[2][:-4]
+                    if nombre not in _PL_FONDOS_EXCLUIDOS:
+                        fondos.append(nombre)
         return sorted(fondos)
 
     def pl_tag(tag):
@@ -573,15 +586,6 @@ init python:
         """Línea `show ...` para el panel "Código" ('' si no hay pose)."""
         return pl_show(r["doki"], r["nombre"], r["trans"], r["zorder"])
 
-    def pl_codigo_rico(r):
-        """Igual que `pl_codigo` pero con colores: solo para mostrar, no copiar."""
-        if not r["nombre"]:
-            return ""
-        return ("{color=#4a5160}›{/color}  "
-                "{color=#7fb0ff}show{/color}  {color=#ffd479}%s %s{/color}  "
-                "{color=#c792ea}at %s{/color}  {color=#8a8f98}zorder %d{/color}"
-                % (pl_tag(r["doki"]), r["nombre"], r["trans"], r["zorder"]))
-
     # ======================================================================
     # Estado de la herramienta. Vive en el store (no en variables de screen)
     # para que los sub-screens puedan leerlo/escribirlo vía SetDict.
@@ -590,6 +594,7 @@ init python:
     pl_state = {
         "doki": "", "cuerpo": "", "outfit": "", "pose": 0,
         "cara": "", "trans": "t11", "variante": "Normal", "zorder": 2, "fondo": "class", "open": "",
+        "panel": True,
         # "Copiar en…": archivo destino, línea elegida y texto a insertar.
         "destino_archivo": "", "destino_linea": 0, "destino_texto": "",
         "destinos": [],
@@ -609,6 +614,21 @@ init python:
             fondo=("class" if "class" in fondos else (fondos[0] if fondos else "")),
             open="")
         pl_initialized = True
+
+    def pl_alternar_panel():
+        """Muestra u oculta el panel de controles."""
+        pl_state["panel"] = not pl_state.get("panel", True)
+        renpy.restart_interaction()
+
+    def pl_reset():
+        """Vuelve la herramienta a su estado inicial (y las ventanas a su sitio)."""
+        global pl_initialized
+        pl_initialized = False
+        pl_ensure_init()
+        pl_state["panel"] = True
+        tool_ventana_reiniciar("controls", PL_PREFIJO, "pose_lab")
+        tool_ventana_reiniciar("code", PL_PREFIJO, "pose_lab")
+        tool_toast("PoseLab reiniciado")
 
     def pl_resuelto():
         """Resuelve la selección efectiva (cascada) y devuelve un dict con la
@@ -737,52 +757,18 @@ init python:
         return menus
 
     # ======================================================================
-    # Ventanas flotantes: posición y estado "fijada", persistentes entre
-    # sesiones (global; no depende de los saves). Es dev-only.
+    # Ventanas flotantes: las posiciones, el arrastre y el estado "fijada"
+    # los maneja el hub (game/tools/ui_styles.rpy). Cada plugin usa su
+    # prefijo para no chocar en `persistent`. Es dev-only.
     # ======================================================================
 
-    _PL_VENTANAS = {"controls": (24, 24), "code": (790, 24)}
-
-    def pl_ventana_pos(nombre):
-        # `persistent` devuelve None para atributos no definidos (no AttributeError).
-        pos = getattr(persistent, "pl_pos_" + nombre, None)
-        return pos if pos is not None else _PL_VENTANAS[nombre]
-
-    _PL_FIJAS = {}   # ventanas fijadas en esta sesión (no persistente)
-
-    def pl_ventana_fija(nombre):
-        return bool(_PL_FIJAS.get(nombre, False))
-
-    def pl_ventana_mover(nombre, x, y):
-        setattr(persistent, "pl_pos_" + nombre, (int(x), int(y)))
-
-    def pl_ventana_alternar_fija(nombre):
-        _PL_FIJAS[nombre] = not pl_ventana_fija(nombre)
-        renpy.restart_interaction()
-
-    def pl_drag_mover(nombre):
-        """Callback para `dragged`: guarda dónde quedó la ventana al soltarla."""
-        def cb(drags, drop):
-            if drags:
-                pl_ventana_mover(nombre, drags[0].x, drags[0].y)
-        return cb
-
-    def pl_ventana_reiniciar(nombre):
-        """Devuelve la ventana a su posición por defecto (persistente + snap)."""
-        x, y = _PL_VENTANAS[nombre]
-        setattr(persistent, "pl_pos_" + nombre, (x, y))
-        d = renpy.get_displayable("pose_lab", "pl_drag_" + nombre)
-        if d is not None:
-            d.snap(x, y, delay=0.2)
+    PL_PREFIJO = "pl"
+    # Las ventanas arrancan bajo la barra de herramientas (arriba, ~40 px).
+    _PL_VENTANAS = {"controls": (24, 64), "code": (790, 64)}
 
     # ======================================================================
     # Utilidades.
     # ======================================================================
-
-    def pl_toast(mensaje):
-        """Toast propio (animado) de la herramienta. Ver `screen pl_notify`."""
-        renpy.hide_screen("pl_notify")
-        renpy.show_screen("pl_notify", message=mensaje)
 
     def pl_limpiar_cache():
         """Limpia todas las cachés de lectura (definiciones de sprites/carpetas)."""
@@ -802,7 +788,7 @@ init python:
         if nuevos:
             msg += " · nuevo: " + ", ".join(nuevos)
         persistent.pl_personajes_visto = list(tags)
-        pl_toast(msg)
+        tool_toast(msg)
 
     # ======================================================================
     # Definiciones para personajes custom (carpetas sin `image`).
@@ -893,7 +879,7 @@ init python:
             with open(ruta + ".poselab.bak", "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(texto)
         except Exception as e:
-            renpy.log("pose_lab: no se pudo respaldar sprites.rpy: %s" % e)
+            print("pose_lab: no se pudo respaldar sprites.rpy: %s" % e)
             return 0
 
         total = 0
@@ -930,7 +916,7 @@ init python:
                 fh.write(texto)
             _pl_os.replace(tmp, ruta)
         except Exception as e:
-            renpy.log("pose_lab: no se pudo escribir sprites.rpy: %s" % e)
+            print("pose_lab: no se pudo escribir sprites.rpy: %s" % e)
             return 0
         _PL_DEFINIDOS.update(hechos)
         return total
@@ -939,10 +925,10 @@ init python:
         """Acción "Crear": escribe las definiciones y avisa."""
         n = pl_escribir_definiciones(tags)
         if n:
-            pl_toast("%d definición%s escrita%s. Se aplican al reiniciar el juego."
+            tool_toast("%d definición%s escrita%s. Se aplican al reiniciar el juego."
                      % (n, "" if n == 1 else "es", "" if n == 1 else "s"))
         else:
-            pl_toast("No se pudo escribir definitions/sprites.rpy.")
+            tool_toast("No se pudo escribir definitions/sprites.rpy.")
 
     def pl_ofrecer_definiciones():
         """Muestra el prompt de definiciones (una vez por sesión)."""
@@ -960,133 +946,13 @@ init python:
         pl_limpiar_cache()
         pl_resuelto()  # re-resuelve la selección con las listas nuevas
         tags = pl_personajes()
-        pl_toast("Reescaneado: %d personaje%s"
+        tool_toast("Reescaneado: %d personaje%s"
                  % (len(tags), "" if len(tags) == 1 else "s"))
 
-    def pl_copiar(texto):
-        if not texto:
-            return
-        try:
-            _pl_pygame.scrap.put(_pl_pygame.scrap.SCRAP_TEXT, texto.encode("utf-8"))
-            pl_toast("¡Código copiado!")
-            renpy.restart_interaction()
-        except Exception:
-            pl_toast("No se pudo copiar")
 
-    # ======================================================================
-    # "Copiar en…": escribir la definición dentro de un .rpy del guion.
-    #   Un .rpy es destino si tiene el marcador `# poselab` en una línea.
-    #   Solo se escribe en archivos físicos (no dentro de un .rpa).
-    # ======================================================================
+# Las posiciones por defecto se registran después de que el hub defina sus
+# helpers (init 10 corre después de los bloques `init` normales).
+init 10 python:
 
-    _PL_MARCADOR_RE = _pl_re.compile(r"^\s*#\s*poselab\b", _pl_re.MULTILINE)
-    _PL_SALTAR = ("tools/", "tl/")
+    tool_ventanas_defecto(_PL_VENTANAS, PL_PREFIJO)
 
-    def _pl_objetivo_abs(rel):
-        """Ruta física de un .rpy del proyecto (relativa a game/)."""
-        return _pl_os.path.join(config.gamedir, rel.replace("/", _pl_os.sep))
-
-    def pl_objetivos():
-        """Rutas (relativas, con '/') de los .rpy ofrecidos como destino.
-
-        Deben contener el marcador `# poselab` y existir como archivo físico:
-        los .rpy empaquetados dentro de un .rpa no se pueden escribir.
-        No se cachea: Ren'Py predice el screen al arrancar (con la lista de
-        archivos todavia incompleta) y ademas el modder puede agregar el
-        marcador a otro .rpy durante la sesion."""
-        res = []
-        for f in renpy.list_files():
-            if not f.endswith(".rpy") or f.startswith(_PL_SALTAR):
-                continue
-            if not _pl_os.path.isfile(_pl_objetivo_abs(f)):
-                continue
-            try:
-                with renpy.file(f) as fh:
-                    texto = fh.read().decode("utf-8-sig")
-            except Exception:
-                continue
-            if _PL_MARCADOR_RE.search(texto):
-                res.append(f)
-        return sorted(res)
-
-    def pl_leer_objetivo(rel):
-        """Líneas del archivo destino (se lee del disco en cada llamada, así el
-        preview refleja lo escrito)."""
-        if not rel:
-            return []
-        try:
-            with open(_pl_objetivo_abs(rel), "r", encoding="utf-8", newline="") as fh:
-                texto = fh.read()
-            return texto.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        except Exception:
-            return []
-
-    def pl_insertar(rel, idx, texto, sangria="    "):
-        """Inserta `texto` con sangría de 4 espacios (columna 5) tras la línea
-        `idx` (0-based). Guarda un backup antes de escribir. Deja el archivo en LF."""
-        ruta = _pl_objetivo_abs(rel)
-        try:
-            with open(ruta, "r", encoding="utf-8", newline="") as fh:
-                original = fh.read()
-            lineas = original.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-            lineas.insert(idx + 1, (sangria + texto) if texto else "")
-            with open(ruta + ".poselab.bak", "w", encoding="utf-8", newline="") as fh:
-                fh.write(original)
-            with open(ruta, "w", encoding="utf-8", newline="\n") as fh:
-                fh.write("\n".join(lineas))
-            return True
-        except Exception:
-            return False
-
-    def pl_deshacer(rel):
-        """Restaura el archivo desde su backup (un nivel), tal cual estaba."""
-        ruta = _pl_objetivo_abs(rel)
-        bak = ruta + ".poselab.bak"
-        if not _pl_os.path.isfile(bak):
-            return False
-        try:
-            with open(bak, "r", encoding="utf-8", newline="") as fh:
-                original = fh.read()
-            with open(ruta, "w", encoding="utf-8", newline="") as fh:
-                fh.write(original)
-            return True
-        except Exception:
-            return False
-
-    def pl_abrir_objetivo(rel, linea=0):
-        """Abre el .rpy destino en el editor del sistema (best-effort)."""
-        if rel:
-            renpy.launch_editor([_pl_objetivo_abs(rel)], line=linea + 1)
-
-    def pl_destino_init(texto):
-        """Prepara el estado de "Copiar en…" al abrir el panel.
-
-        La lista de destinos se calcula una vez por apertura (evita escanear
-        todos los .rpy en cada evaluación del screen)."""
-        objs = pl_objetivos()
-        pl_state["destinos"] = objs
-        pl_state["destino_archivo"] = objs[0] if objs else ""
-        pl_state["destino_linea"] = 0
-        pl_state["destino_texto"] = texto
-
-    def pl_escribir_destino():
-        rel = pl_state["destino_archivo"]
-        if not rel:
-            return
-        idx = pl_state["destino_linea"]
-        if pl_insertar(rel, idx, pl_state["destino_texto"]):
-            pl_state["destino_linea"] = idx + 1
-            pl_toast("Código insertado")
-        else:
-            pl_toast("No se pudo escribir")
-        renpy.restart_interaction()
-
-    def pl_deshacer_destino():
-        if pl_deshacer(pl_state["destino_archivo"]):
-            pl_toast("Cambios deshechos")
-        else:
-            pl_toast("No hay nada que deshacer")
-        renpy.restart_interaction()
-
-    def pl_abrir_destino():
-        pl_abrir_objetivo(pl_state["destino_archivo"], pl_state["destino_linea"])

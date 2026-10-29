@@ -1,0 +1,11 @@
+{
+  "titulo": "Diálogo",
+  "descripcion": "Arma líneas de diálogo con énfasis: negrita, itálica, subrayado, tachado, color y tamaño sobre la frase que marques. Vista previa con el textbox del juego y salida lista para copiar.",
+  "autor": "Broken Dreams Studio",
+  "version": "1.0",
+  "screen": "dialogo_lab",
+  "categoria": "Herramientas",
+  "orden": 30,
+  "palabras_clave": ["diálogo", "texto", "negrita", "itálica", "subrayado", "tachado", "color", "tamaño", "estilo", "tags"],
+  "capturas": []
+}

@@ -1,11 +1,12 @@
 {
   "titulo": "Ejemplo",
-  "descripcion": "Plugin de ejemplo. Copia esta carpeta, renombrala y edita este archivo para crear el tuyo.",
+  "descripcion": "Plugin de ejemplo. Copia esta carpeta, renombrala y edita este archivo para crear el tuyo. También muestra un módulo Python con los hooks setup/open/close.",
   "autor": "Tu nombre",
   "version": "1.0",
   "screen": "example_tool",
+  "modulo": "ejemplo_modulo",
   "categoria": "Ejemplos",
   "orden": 100,
-  "palabras_clave": ["ejemplo", "plantilla"],
+  "palabras_clave": ["ejemplo", "plantilla", "modulo"],
   "capturas": []
 }

@@ -30,5 +30,3 @@
 | Lista | Valores |
 |---|---|
 | `_SHL_EFECTOS` | Ninguno, Scanlines, Aberración, Viñeta, Glitch, CRT, Cuadros |
-| `_SHL_EFECTOS_PJ` | Ninguno, Contorno, Silueta, Palidez, Flash, Glitch, Scanlines, Glitch (slices), Glitch animado |
-| `_SHL_DOKIS` | sayori, natsuki, yuri, monika |

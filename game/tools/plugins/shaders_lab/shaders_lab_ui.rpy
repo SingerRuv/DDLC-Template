@@ -11,53 +11,75 @@ style shl_boton is tool_button
 style shl_boton_text is tool_button_text
 
 
+# Ventana flotante de controles (se arrastra por la barra de título, que
+# también tiene "Fijar" y "Restablecer").
 screen shl_controles():
 
-    $ _shl_sujeto = shl_state["sujeto"]
-
     frame:
-        style "tool_panel"
-        xpos 24
-        ypos 24
+        style "tool_window"
         xsize 330
 
         vbox:
-            spacing 6
+            spacing 0
 
-            text "Shaders" style "tool_title"
-            text "Vista previa de los efectos incluidos." style "tool_hint"
+            use tool_barra("Shaders", "controls", SHL_PREFIJO, "shaders_lab")
 
-            null height 4
+            frame:
+                background None
+                padding (14, 12)
 
-            use tool_dropdown("sujeto", "Aplicar a", _shl_sujeto,
-                              [("Fondo", "Fondo"), ("Personaje", "Personaje")],
-                              shl_state, "sujeto",
-                              despues=[Function(shl_reset_efecto)])
+                vbox:
+                    spacing 6
 
-            if _shl_sujeto == "Personaje":
-                use tool_dropdown("doki", "Personaje", shl_state["doki"],
-                                  [(d, d.capitalize()) for d in _SHL_DOKIS],
-                                  shl_state, "doki")
+                    text "Vista previa de shaders para el fondo." style "tool_hint"
 
-            if _shl_sujeto == "Fondo":
-                use tool_dropdown("efecto", "Efecto", shl_state["efecto"],
-                                  [(e, e) for e in _SHL_EFECTOS],
-                                  shl_state, "efecto")
-            else:
-                use tool_dropdown("efecto", "Efecto", shl_state["efecto"],
-                                  [(e, e) for e in _SHL_EFECTOS_PJ],
-                                  shl_state, "efecto")
+                    null height 4
 
-            use tool_dropdown("intensidad", "Intensidad", shl_state["intensidad"],
-                              [(0.2, "Suave"), (0.5, "Media"), (0.8, "Fuerte")],
-                              shl_state, "intensidad")
+                    use tool_dropdown("fondo", "Fondo", shl_state["fondo"],
+                                      [(f, f) for f in shl_fondos()],
+                                      shl_state, "fondo", columnas=2)
 
-            null height 6
-            text "En tu historia:" style "tool_caption"
-            if _shl_sujeto == "Fondo":
-                text "show bg class at sh_crt" style "tool_hint"
-            else:
-                text "show yuri 1a at sh_contorno\nshow sayori 1a at sh_palidez(0.8)" style "tool_hint"
+                    use tool_dropdown("efecto", "Efecto", shl_state["efecto"],
+                                      [(e, e) for e in _SHL_EFECTOS],
+                                      shl_state, "efecto", columnas=2)
 
-            null height 4
-            text "ESC para volver a Plugins." style "tool_hint"
+                    use tool_dropdown("intensidad", "Intensidad", shl_state["intensidad"],
+                                      [(0.2, "Suave"), (0.5, "Media"), (0.8, "Fuerte")],
+                                      shl_state, "intensidad", columnas=0)
+
+                    null height 4
+                    text "Texto del diálogo → plugin Diálogo." style "tool_hint"
+
+
+# Ventana flotante con el código del efecto elegido (se arrastra por la barra
+# de título). Es la de PoseLab, con los estilos del hub.
+screen shl_code(txt):
+
+    frame:
+        style "tool_window"
+        xsize 460
+
+        vbox:
+            spacing 0
+
+            use tool_barra("Código", "code", SHL_PREFIJO, "shaders_lab")
+
+            frame:
+                background None
+                padding (14, 14)
+                xfill True
+
+                vbox:
+                    spacing 8
+
+                    if txt:
+                        # El color es solo visual: lo que se copia es `txt` plano.
+                        frame:
+                            style "tool_code_box"
+                            text "[tool_codigo_rico(txt)]" style "tool_code" xmaximum 395
+
+                        # Copiar y "Copiar en…" viven en la barra de
+                        # herramientas; acá solo queda el atajo.
+                        text "Ctrl+C" style "tool_hint"
+                    else:
+                        text "Elegí un efecto." style "tool_hint"

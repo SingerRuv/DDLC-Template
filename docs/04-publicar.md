@@ -29,6 +29,12 @@ En la rama `dev`, `config.version` se deja en `"0.0.0"`.
 Un **plugin en desarrollo vive solo en `dev`**: no pasa a `main` hasta que esté
 listo.
 
+Cuando un plugin pasa a `main`, van con él **sus documentos**: el generador
+borra `docs/referencia/<plugin>.md` si el código del plugin no está (la
+sección se saltea) y los links desde `docs/02-referencia.md` quedan rotos, así
+que `gen_docs.py --check` falla. Subí el plugin y su referencia en el mismo
+commit, o sacá los links.
+
 Para sincronizar: commit en `dev` → push → `checkout main` → **cherry-pick** →
 push → volver a `dev`. Antes de cambiar de rama, dejá sin commitear los archivos
 locales (por ejemplo los sprites propios) o guardalos con `stash`.
@@ -45,7 +51,9 @@ locales (por ejemplo los sprites propios) o guardalos con `stash`.
 
    Si falla, corré `python tools/gen_docs.py` y commiteá el resultado. Hacelo
    **en la rama que se publica**, porque la tabla de sprites depende de lo que
-   esté commiteado.
+   esté commiteado. Si el fallo es `sobra docs/referencia/<plugin>.md`, el
+   plugin todavía no llegó a esta rama: subilo con su referencia o sacá los
+   links.
 4. **Manifest**: lo genera el workflow con `tools/gen_manifest.py`; no se
    commitea (`game/migracion/manifest.json` está en `.gitignore`).
 5. **Pruebas**:

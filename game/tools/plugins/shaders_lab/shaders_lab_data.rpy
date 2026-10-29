@@ -1,6 +1,9 @@
 ## shaders_lab_data.rpy
 ## Shaders Lab — Lógica: registro de los shaders (bd.*), transforms listos para
-## el modder (sh_*), el helper `sh_combinar` y el estado de la demo.
+## el modder (sh_*) y el helper `sh_combinar`.
+##
+## El énfasis del TEXTO del diálogo vive en el plugin Diálogo
+## (`game/tools/plugins/dialogo_lab/`).
 ##
 ## La interfaz vive en shaders_lab_ui.rpy, el lienzo en shaders_lab_preview.rpy
 ## y el screen raíz (shaders_lab) en shaders_lab.rpy.
@@ -254,16 +257,51 @@ init python:
 
     # Estado de la demo (en el store: así los `use` pueden leerlo/escribirlo).
     shl_state = {
-        "sujeto": "Fondo",      # "Fondo" | "Personaje"
         "efecto": "Scanlines",
         "intensidad": 0.5,
-        "doki": "yuri",
+        "fondo": "class",
+        "panel": True,
     }
     _SHL_EFECTOS = ["Ninguno", "Scanlines", "Aberración", "Viñeta", "Glitch", "CRT",
                     "Cuadros"]
-    _SHL_EFECTOS_PJ = ["Ninguno", "Contorno", "Silueta", "Palidez", "Flash",
-                       "Glitch", "Scanlines", "Glitch (slices)", "Glitch animado"]
-    _SHL_DOKIS = ["sayori", "natsuki", "yuri", "monika"]
+
+    # Fondos del juego: los definidos como `image bg <nombre>`.
+    #
+    # El nombre del archivo no siempre coincide con el de la imagen
+    # (club.png -> "bg club_day"), así que la lista sale de las imágenes
+    # definidas: el snippet que genera la herramienta siempre es válido.
+    _SHL_FONDOS = None
+
+    def shl_fondos():
+        """Nombres de los fondos (`bg <nombre>`) definidos en el juego."""
+        global _SHL_FONDOS
+        if _SHL_FONDOS is None:
+            _SHL_FONDOS = sorted({n[3:] for n in renpy.list_images()
+                                  if n.startswith("bg ")})
+            # El fondo por defecto tiene que existir: si el juego no lo tiene,
+            # se usa el primero disponible.
+            if _SHL_FONDOS and shl_state["fondo"] not in _SHL_FONDOS:
+                shl_state["fondo"] = _SHL_FONDOS[0]
+        return _SHL_FONDOS
+
+    # Ventana flotante del código: prefijo (para `persistent`) y posición
+    # por defecto. El hub registra las posiciones (ver `init 10` abajo).
+    SHL_PREFIJO = "shl"
+    # Las ventanas arrancan bajo la barra de herramientas (arriba, ~40 px).
+    _SHL_VENTANAS = {"controls": (24, 64), "code": (24, 440)}
+
+    def shl_alternar_panel():
+        """Muestra u oculta el panel de controles."""
+        shl_state["panel"] = not shl_state.get("panel", True)
+        renpy.restart_interaction()
+
+    def shl_reset():
+        """Vuelve la herramienta a su estado inicial (y las ventanas a su sitio)."""
+        shl_state.update(efecto="Scanlines", intensidad=0.5, fondo="class",
+                         panel=True)
+        tool_ventana_reiniciar("controls", SHL_PREFIJO, "shaders_lab")
+        tool_ventana_reiniciar("code", SHL_PREFIJO, "shaders_lab")
+        tool_toast("Shaders Lab reiniciado")
 
     # ---- Helpers de los efectos por slices (ChromaGlitch, vendorizado) ------
 
@@ -280,6 +318,11 @@ init python:
                                timeout_vanilla=timeout_vanilla, offset=offset,
                                chroma=chroma, randomkey=randomkey)
 
+    def sh_glitch_continuo(d, offset=30, chroma=True, randomkey="shl_continuo"):
+        """Glitch que nunca deja la imagen limpia: el patrón cambia cada 0.1 s."""
+        return animated_glitch(d, timeout_base=0.1, timeout_vanilla=False,
+                               offset=offset, chroma=chroma, randomkey=randomkey)
+
     def sh_glitch_squares(d, squareside=20, chroma=0.25, permutes=None,
                           randomkey="shl_cuadros"):
         """Corta la imagen en cuadrados y los permuta."""
@@ -292,13 +335,11 @@ init python:
             return sh_glitch_slices(d, offset=int(10 + 50 * intensidad))
         if efecto == "Glitch animado":
             return sh_glitch_animado(d, offset=int(10 + 50 * intensidad))
+        if efecto == "Glitch continuo":
+            return sh_glitch_continuo(d, offset=int(10 + 50 * intensidad))
         if efecto == "Cuadros":
             return sh_glitch_squares(d, squareside=int(round(40 - 28 * intensidad)))
         return None
-
-    def shl_reset_efecto():
-        """Al cambiar de sujeto, el efecto anterior puede no existir en la otra lista."""
-        shl_state["efecto"] = "Ninguno"
 
     def shl_transform(efecto, intensidad):
         """Transform del efecto elegido. None para 'Ninguno'."""
@@ -312,13 +353,39 @@ init python:
             return sh_glitch(intensidad, 24.0, 0.35)
         if efecto == "CRT":
             return sh_crt(intensidad)
-        # Personajes
-        if efecto == "Contorno":
-            return sh_contorno(paso=0.0010 + 0.0015 * intensidad)
-        if efecto == "Silueta":
-            return sh_silueta()
-        if efecto == "Palidez":
-            return sh_palidez(0.2 + intensidad)
-        if efecto == "Flash":
-            return sh_flash(intensidad)
         return None
+
+    # ======================================================================
+    # Código para la historia.
+    #
+    # Los efectos de malla son transforms (`show bg class at sh_glitch(...)`);
+    # los de franjas/cuadrados envuelven el displayable (`show expression
+    # squares_glitch("bg class", squareside=26) as bg`).
+    # ======================================================================
+
+    def shl_snippet():
+        """Línea de código para el efecto y el fondo elegidos."""
+        efecto = shl_state["efecto"]
+        intensidad = shl_state["intensidad"]
+        bg = "bg %s" % shl_state["fondo"]
+        if efecto == "Glitch":
+            return "show %s at sh_glitch(%.2f)" % (bg, intensidad)
+        if efecto == "Aberración":
+            return "show %s at sh_aberracion(%.4f)" % (bg, 0.002 + 0.012 * intensidad)
+        if efecto == "Viñeta":
+            return "show %s at sh_vigneta(%.2f)" % (bg, 0.2 + intensidad)
+        if efecto == "Scanlines":
+            return "show %s at sh_scanlines(%.2f)" % (bg, intensidad)
+        if efecto == "CRT":
+            return "show %s at sh_crt(%.2f)" % (bg, intensidad)
+        if efecto == "Cuadros":
+            lado = int(round(40 - 28 * intensidad))
+            return 'show expression squares_glitch("%s", squareside=%d) as bg' % (bg, lado)
+        return ""
+
+
+# Posiciones por defecto de las ventanas flotantes del plugin (las registra
+# el hub; ver game/tools/ui_styles.rpy).
+init 10 python:
+
+    tool_ventanas_defecto(_SHL_VENTANAS, SHL_PREFIJO)

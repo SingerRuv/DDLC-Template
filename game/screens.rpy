@@ -217,6 +217,7 @@ style say_dialogue:
 
     text_align gui.text_xalign
     layout ("subtitle" if gui.text_xalign else "tex")
+    outlines [(2, "#000", 0, 0)]
 
 image ctc:
     xalign 0.81 yalign 0.98 xoffset -5 alpha 0.0 subpixel True
