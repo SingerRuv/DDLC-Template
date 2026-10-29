@@ -5,6 +5,28 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.3.0 — 2026-10-28
+
+### Añadido
+- **Hub de Plugins:** todas las herramientas comparten la misma barra
+  (Copiar, Copiar en…, Reiniciar, Abrir carpeta, Volver).
+- **Copiar en…:** el snippet se puede insertar directamente en un `.rpy` del
+  guion, con copia de seguridad y deshacer.
+- **Shaders Lab:** vista previa de los shaders de fondo y de personaje, con
+  glitch por franjas y cuadrados estilo DDLC.
+- **Diálogo:** énfasis en el texto del diálogo (negrita, itálica, subrayado,
+  tachado, color y tamaño) sobre la frase que marques, con vista previa del
+  textbox del juego.
+- **Text shaders:** `ts_glitch` para diálogo glitcheado.
+- **Docs reorganizadas** y referencia generada desde el código.
+
+### Corregido
+- El texto del `say` lleva contorno, para leerse sobre cualquier fondo.
+- Se traducen al español los mensajes de error del motor.
+- Se quita el personaje `mc` del template.
+
+---
+
 ## 1.2.3 — 2026-10-22
 
 ### Corregido

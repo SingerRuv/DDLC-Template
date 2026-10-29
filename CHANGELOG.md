@@ -6,6 +6,34 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-28
+
+### Añadido
+- **Hub de Plugins:** barra de herramientas compartida (Copiar, Copiar en…,
+  Reiniciar, Abrir carpeta, Volver) para todas las herramientas.
+- **Copiar en…:** panel que escribe el snippet en un `.rpy` del guion, con copia
+  de seguridad y deshacer.
+- **Shaders Lab (plugin):** vista previa de los shaders de fondo y de personaje
+  (scanlines, aberración cromática, glitch, viñeta, CRT, contorno, silueta, palidez
+  y flash), con glitch por franjas y cuadrados estilo DDLC.
+- **Diálogo (plugin):** arma líneas de diálogo con énfasis (negrita, itálica,
+  subrayado, tachado, color y tamaño) sobre la frase que marques, con vista previa
+  del textbox del juego y la línea lista para copiar o insertar en el guion.
+- **Text shaders:** `ts_glitch` para diálogo glitcheado, junto con los text shaders
+  que trae Ren'Py (wave, jitter, dissolve, typewriter…).
+- **Estilos:** catálogo global `tool_*` compartido por el hub y los plugins.
+- **Plugins:** pueden traer lógica en Python (módulos con hooks `setup`, `open`
+  y `close`) además de sus screens.
+- **Docs:** guías reorganizadas y referencia generada desde el código
+  (`docs/referencia/`), con `python tools/gen_docs.py --check` para validarla.
+
+### Corregido
+- **Diálogo:** el texto del `say` lleva un contorno, así se lee sobre cualquier
+  fondo.
+- **Interfaz:** se traducen al español los mensajes de error del motor.
+- **Migración:** los avisos se muestran en la consola (antes solo iban al log).
+- **Personaje MC:** se quita el personaje `mc` del template.
+
 ## [1.2.3] - 2026-10-22
 
 ### Corregido
