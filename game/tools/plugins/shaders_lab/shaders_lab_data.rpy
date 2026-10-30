@@ -204,6 +204,11 @@ init python:
     # Las ventanas arrancan bajo la barra de herramientas (arriba, ~40 px).
     _SHL_VENTANAS = {"controls": (24, 64), "code": (24, 440)}
 
+    def shl_limpiar_cache():
+        """Olvida la lista de fondos (la vuelve a leer al pedirla)."""
+        global _SHL_FONDOS
+        _SHL_FONDOS = None
+
     def shl_alternar_panel():
         """Muestra u oculta el panel de controles."""
         shl_state["panel"] = not shl_state.get("panel", True)
@@ -303,3 +308,7 @@ init python:
 init 10 python:
 
     tool_ventanas_defecto(_SHL_VENTANAS, SHL_PREFIJO)
+
+    # El refresco del hub limpia también la lista de fondos (ver
+    # `tool_refrescar` en game/tools/complements_data.rpy).
+    TOOL_REFRESCO_FNS.append(shl_limpiar_cache)

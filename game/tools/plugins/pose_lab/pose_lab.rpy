@@ -20,7 +20,7 @@ screen pose_lab():
     # personajes detectó (y si hay alguno nuevo respecto a la sesión anterior).
     # Un timer en vez de `on "show"`: el hub (mismo `tag menu`) reemplaza la
     # pantalla y el evento "show" no se dispara.
-    timer 0.15 action [Function(pl_ensure_init), Function(pl_avisar_deteccion), Function(pl_ofrecer_definiciones)]
+    timer 0.15 action [Function(pl_ensure_init), Function(pl_avisar_deteccion), Function(pl_ofrecer_definiciones), Function(pl_ofrecer_huerfanas)]
 
     # --- Resolución de la selección efectiva (cascada) ---
     $ r = pl_resuelto()

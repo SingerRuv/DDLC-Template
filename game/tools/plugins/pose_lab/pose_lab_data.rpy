@@ -99,6 +99,9 @@ init python:
 
     _PL_RUTAS_RE = _pl_re.compile(r"""["']([^"']+\.png)["']""")
 
+    # Marcador del bloque que escribe PoseLab en definitions/sprites.rpy.
+    _PL_MARCA_RE = _pl_re.compile(r"^# === PoseLab: (\S+) \(auto\) ===$", _pl_re.M)
+
     def _pl_agregar_sprites(datos, item):
         """Registra un `image tag nombre = ...` si referencia algún .png."""
         rutas = _PL_RUTAS_RE.findall(item[2])
@@ -108,7 +111,7 @@ init python:
         datos.setdefault(item[0].lower(), {})[item[1]] = capas
 
     @_pl_cacheado
-    def _pl_sprites():
+    def _pl_sprites_todo():
         """{tag: {nombre: [capas]}} de todos los .rpy (excluye tl/ y tools/)."""
         datos = {}
         for f in renpy.list_files():
@@ -174,6 +177,50 @@ init python:
                     if rutas:
                         datos.setdefault(m.group(1).lower(), {})[m.group(2)] = rutas
         return datos
+
+    def _pl_existe(ruta):
+        """True si el .png está en disco (o dentro de un .rpa).
+
+        Se mira el disco primero: `renpy.loadable` cachea y, si borraste la
+        carpeta con el juego abierto, sigue diciendo que el archivo existe."""
+        if _pl_os.path.exists(_pl_os.path.join(config.gamedir, ruta)):
+            return True
+        return renpy.loadable(ruta)
+
+    @_pl_cacheado
+    def _pl_defs_huerfanas():
+        """{tag: [rutas]} de definiciones que se quedaron sin ninguna PNG.
+
+        Pasa cuando borrás la carpeta de un personaje y su bloque `image`
+        sigue en el .rpy. Si falta alguna capa pero otras siguen existiendo
+        (borraste una expresión), el personaje se mantiene."""
+        res = {}
+        for tag, defs in _pl_sprites_rutas().items():
+            rutas = [r for capas in defs.values() for r in capas]
+            if rutas and not any(_pl_existe(r) for r in rutas):
+                res[tag] = sorted(set(rutas))
+        return res
+
+    @_pl_cacheado
+    def _pl_tags_auto():
+        """Tags cuyas definiciones escribió PoseLab (bloque con marcador)."""
+        res = set()
+        for f in renpy.list_files():
+            if not f.endswith(".rpy"):
+                continue
+            try:
+                with renpy.file(f) as fh:
+                    texto = fh.read().decode("utf-8-sig")
+            except Exception:
+                continue
+            res.update(_PL_MARCA_RE.findall(texto))
+        return res
+
+    @_pl_cacheado
+    def _pl_sprites():
+        """Como `_pl_sprites_todo` sin los personajes que quedaron huérfanos."""
+        huerfanas = _pl_defs_huerfanas()
+        return {t: d for t, d in _pl_sprites_todo().items() if t not in huerfanas}
 
     def _pl_capas_normales(capas):
         """(izq, der, cara) si las capas son una pose normal; si no, None."""
@@ -801,6 +848,7 @@ init python:
 
     _PL_DEFINIDOS = set()       # tags resueltos en esta sesión
     _PL_PROMPT_VISTO = False    # el prompt se ofrece una vez por sesión
+    _PL_HUERFANAS_VISTO = False  # el aviso de huérfanas, una vez por sesión
     _PL_AVISADO = False         # el toast de detección, una vez por sesión
 
     def pl_custom_sin_defs():
@@ -866,11 +914,16 @@ init python:
                         % (pl_tag(tag), v["nombre"], v["izq"], v["der"], v["cara"]))
         return lineas
 
-    def pl_escribir_definiciones(tags):
-        """Escribe/reemplaza la sección de cada tag en definitions/sprites.rpy."""
+    def _pl_editar_sprites(fn):
+        """Aplica `fn(texto)` a definitions/sprites.rpy (backup + escritura atómica).
+
+        Devuelve el texto nuevo, o None si no se pudo. Al escribir se avisa al
+        watcher con `add_auto(force=True)` (el idiom de renpy/scriptedit.py):
+        si no, Ren'Py ve el .rpy cambiado y a los ~1,5 s recarga el guion,
+        guardando y recargando la partida en curso."""
         ruta = _pl_os.path.join(config.gamedir, "definitions", "sprites.rpy")
         if not _pl_os.path.isfile(ruta):
-            return 0
+            return None
 
         try:
             with open(ruta, "r", encoding="utf-8", newline="") as fh:
@@ -880,55 +933,129 @@ init python:
                 fh.write(texto)
         except Exception as e:
             print("pose_lab: no se pudo respaldar sprites.rpy: %s" % e)
-            return 0
+            return None
 
-        total = 0
-        hechos = set()
-        for tag in tags:
-            lineas = pl_definiciones_texto(tag)
-            if not lineas:
-                continue
-            ini = "# === PoseLab: %s (auto) ===" % tag
-            fin = "# === fin PoseLab: %s ===" % tag
-            bloque = "\n".join([ini] + lineas + [fin]) + "\n"
-            if ini in texto:
-                a = texto.index(ini)
-                if fin in texto:
-                    b = texto.index(fin) + len(fin)
-                else:
-                    # Bloque huérfano (sin marcador de fin): se reemplaza hasta
-                    # el próximo bloque PoseLab o el final del archivo.
-                    sig = texto.find("# === ", a + len(ini))
-                    b = sig if sig != -1 else len(texto)
-                if texto[b:b + 1] == "\n":
-                    b += 1
-                texto = texto[:a] + bloque + texto[b:]
-            else:
-                if not texto.endswith("\n"):
-                    texto += "\n"
-                texto += "\n" + bloque
-            hechos.add(tag)
-            total += len(lineas)
-
+        nuevo = fn(texto)
         try:
-            tmp = ruta + ".poselab.tmp"
-            with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
-                fh.write(texto)
-            _pl_os.replace(tmp, ruta)
+            with renpy.loader.auto_lock:
+                tmp = ruta + ".poselab.tmp"
+                with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
+                    fh.write(nuevo)
+                _pl_os.replace(tmp, ruta)
+                renpy.loader.add_auto(ruta, force=True)
         except Exception as e:
             print("pose_lab: no se pudo escribir sprites.rpy: %s" % e)
+            return None
+        return nuevo
+
+    def pl_escribir_definiciones(tags):
+        """Escribe/reemplaza la sección de cada tag en definitions/sprites.rpy."""
+        textos = {}
+        for tag in tags:
+            lineas = pl_definiciones_texto(tag)
+            if lineas:
+                textos[tag] = lineas
+        if not textos:
             return 0
-        _PL_DEFINIDOS.update(hechos)
-        return total
+
+        def aplicar(texto):
+            for tag, lineas in textos.items():
+                ini = "# === PoseLab: %s (auto) ===" % tag
+                fin = "# === fin PoseLab: %s ===" % tag
+                bloque = "\n".join([ini] + lineas + [fin]) + "\n"
+                if ini in texto:
+                    a = texto.index(ini)
+                    if fin in texto:
+                        b = texto.index(fin) + len(fin)
+                    else:
+                        # Bloque huérfano (sin marcador de fin): se reemplaza
+                        # hasta el próximo bloque PoseLab o el final.
+                        sig = texto.find("# === ", a + len(ini))
+                        b = sig if sig != -1 else len(texto)
+                    if texto[b:b + 1] == "\n":
+                        b += 1
+                    texto = texto[:a] + bloque + texto[b:]
+                else:
+                    if not texto.endswith("\n"):
+                        texto += "\n"
+                    texto += "\n" + bloque
+            return texto
+
+        if _pl_editar_sprites(aplicar) is None:
+            return 0
+        _PL_DEFINIDOS.update(textos)
+        return sum(len(l) for l in textos.values())
+
+    def _pl_cargar_definiciones(tags):
+        """Registra las definiciones ya, sin reiniciar: corre su `init`."""
+        lineas = []
+        for tag in tags:
+            lineas.extend(pl_definiciones_texto(tag))
+        if not lineas:
+            return 0
+        codigo = "init:\n" + "".join("    %s\n" % l for l in lineas)
+        try:
+            renpy.load_string(codigo, filename="<poselab>")
+        except Exception as e:
+            print("pose_lab: no se pudieron aplicar las definiciones en caliente: %s" % e)
+            return 0
+        return len(lineas)
 
     def pl_crear_definiciones(tags):
-        """Acción "Crear": escribe las definiciones y avisa."""
+        """Acción "Crear": escribe las definiciones y las aplica al toque."""
         n = pl_escribir_definiciones(tags)
-        if n:
-            tool_toast("%d definición%s escrita%s. Se aplican al reiniciar el juego."
-                     % (n, "" if n == 1 else "es", "" if n == 1 else "s"))
-        else:
+        if not n:
             tool_toast("No se pudo escribir definitions/sprites.rpy.")
+            return
+        _pl_cargar_definiciones(tags)
+        pl_limpiar_cache()
+        tool_toast("%d definición%s escrita%s y aplicada%s."
+                 % (n, "" if n == 1 else "es", "" if n == 1 else "s",
+                    "" if n == 1 else "s"))
+
+    def pl_defs_auto_huerfanas():
+        """Tags con bloque de PoseLab cuyas definiciones perdieron sus PNGs."""
+        auto = _pl_tags_auto()
+        return sorted(t for t in _pl_defs_huerfanas() if t in auto)
+
+    def pl_diag_defs():
+        """Diagnóstico del hub: definiciones manuales que apuntan a PNGs borrados."""
+        auto = _pl_tags_auto()
+        return [
+            {"id": tag, "ruta": "", "fatal": False,
+             "motivo": "sus definiciones apuntan a archivos que ya no existen (%s)"
+                       % rutas[0]}
+            for tag, rutas in sorted(_pl_defs_huerfanas().items())
+            if tag not in auto
+        ]
+
+    def pl_quitar_defs_huerfanas(tags):
+        """Borra los bloques PoseLab de esos tags (con backup)."""
+        if not tags:
+            return
+
+        def aplicar(texto):
+            for tag in tags:
+                ini = "# === PoseLab: %s (auto) ===" % tag
+                fin = "# === fin PoseLab: %s ===" % tag
+                while ini in texto:
+                    a = texto.index(ini)
+                    fin_pos = texto.find(fin, a)
+                    if fin_pos != -1:
+                        b = fin_pos + len(fin)
+                    else:
+                        sig = texto.find("# === ", a + len(ini))
+                        b = sig if sig != -1 else len(texto)
+                    while b < len(texto) and texto[b] in "\r\n":
+                        b += 1
+                    texto = texto[:a] + texto[b:]
+            return texto
+
+        if _pl_editar_sprites(aplicar) is None:
+            tool_toast("No se pudo escribir definitions/sprites.rpy.")
+            return
+        pl_limpiar_cache()
+        tool_toast("Definiciones borradas: %s" % ", ".join(tags))
 
     def pl_ofrecer_definiciones():
         """Muestra el prompt de definiciones (una vez por sesión)."""
@@ -941,13 +1068,35 @@ init python:
         renpy.show_screen("pl_definir", tags=pendientes)
         _PL_PROMPT_VISTO = True
 
+    def pl_ofrecer_huerfanas():
+        """Muestra el aviso de definiciones huérfanas (una vez por sesión)."""
+        global _PL_HUERFANAS_VISTO
+        if _PL_HUERFANAS_VISTO:
+            return
+        tags = pl_defs_auto_huerfanas()
+        if not tags:
+            return
+        renpy.show_screen("pl_huerfanas", tags=tags)
+        _PL_HUERFANAS_VISTO = True
+
     def pl_reescanear():
-        """Vuelve a leer las definiciones/carpetas (limpia las cachés)."""
+        """Vuelve a listar los archivos y a leer definiciones/carpetas.
+
+        Sin esto, la lista de archivos es la del arranque: una carpeta nueva no
+        aparece hasta reiniciar el juego."""
+        global _PL_PROMPT_VISTO, _PL_HUERFANAS_VISTO
+        tool_refrescar()
         pl_limpiar_cache()
+        _PL_PROMPT_VISTO = False
+        _PL_HUERFANAS_VISTO = False
         pl_resuelto()  # re-resuelve la selección con las listas nuevas
         tags = pl_personajes()
         tool_toast("Reescaneado: %d personaje%s"
                  % (len(tags), "" if len(tags) == 1 else "s"))
+        if pl_custom_sin_defs():
+            pl_ofrecer_definiciones()
+        else:
+            pl_ofrecer_huerfanas()
 
 
 # Las posiciones por defecto se registran después de que el hub defina sus
@@ -955,4 +1104,10 @@ init python:
 init 10 python:
 
     tool_ventanas_defecto(_PL_VENTANAS, PL_PREFIJO)
+
+    # El hub "Reescanear" limpia también las cachés de PoseLab, y su
+    # Diagnóstico muestra las definiciones manuales que apuntan a PNGs
+    # borrados. Ver `tool_refrescar` en game/tools/complements_data.rpy.
+    TOOL_REFRESCO_FNS.append(pl_limpiar_cache)
+    TOOL_DIAG_FNS.append(pl_diag_defs)
 

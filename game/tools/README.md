@@ -34,6 +34,38 @@ plugin puede exigir una mínima con `"min_version"`.
 
 Para escribir uno: `game/tools/plugins/README.md`.
 
+## Refrescar sin reiniciar
+
+`renpy.list_files()` es una foto del arranque: una carpeta nueva no aparece y
+una borrada sigue estando. `tool_refrescar()` (en `complements_data.rpy`) vuelve
+a listar los archivos con `renpy.loader.index_files()` y limpia las cachés de
+`loadable` y de imágenes. Con eso, un plugin que lee archivos ve los cambios sin
+cerrar la herramienta ni reiniciar el juego.
+
+Un plugin se engancha con dos listas:
+
+- `TOOL_REFRESCO_FNS` — funciones sin argumentos que limpian sus cachés
+  (PoseLab registra `pl_limpiar_cache`).
+- `TOOL_DIAG_FNS` — funciones que devuelven una lista de
+  `{"id", "ruta", "motivo", "fatal"}` para el **Diagnóstico** del hub
+  (PoseLab avisa ahí de definiciones que apuntan a `.png` borrados).
+
+```python
+init 10 python:
+    TOOL_REFRESCO_FNS.append(mi_limpiar_cache)
+    TOOL_DIAG_FNS.append(mi_diagnostico)
+```
+
+Escribir un `.rpy` es otro caso: el archivo cambia de fecha y el autoreload de
+Ren'Py corre `reload_script()` a los ~1,5 s (guarda y recarga la partida). Por
+eso `inserter.rpy` (y las definiciones de PoseLab) escriben con `auto_lock` +
+`renpy.loader.add_auto(ruta, force=True)`, el mismo idiom de
+`renpy/scriptedit.py`: el watcher toma ese mtime como referencia y no recarga.
+
+Solo PoseLab necesita el *Reescanear* del disco. Shaders Lab lee
+`renpy.list_images()` (imágenes ya registradas) y Diálogo usa sus propias
+tablas: refrescarles el disco no mostraría nada nuevo.
+
 ## Estilos globales (`ui_styles.rpy`)
 
 Namespace `tool_*`, pensado para que el hub y los plugins se vean igual sin

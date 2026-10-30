@@ -182,3 +182,6 @@ def close(tool):
 2. Arranca el template y abre **Plugins** en el menú principal.
 3. Tu plugin aparece como una tarjeta en el hub (con búsqueda y filtro por
    categoría).
+4. Si agregás archivos con el juego abierto, el botón **Reescanear** de la
+   herramienta los ve sin reiniciar (ver "Refrescar sin reiniciar" en
+   `game/tools/README.md`).

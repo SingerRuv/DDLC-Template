@@ -13,6 +13,8 @@
 ##   - Si el .rpy quedaría inválido, no se escribe nada.
 ##   - Se respeta el fin de línea del archivo (LF o CRLF).
 ##   - Antes de escribir se guarda un backup con el sufijo indicado.
+##   - Al escribir se avisa al watcher (`add_auto`): si no, Ren'Py recarga el
+##     script a los ~1,5 s y te saca de la herramienta.
 
 init python:
 
@@ -26,6 +28,19 @@ init python:
     def ins_ruta(rel):
         """Ruta física de un .rpy del proyecto (relativa a game/)."""
         return _ins_os.path.join(config.gamedir, rel.replace("/", _ins_os.sep))
+
+    def _ins_escribir(ruta, texto):
+        """Escribe `texto` en `ruta` sin que el autoreload recargue el script.
+
+        Escribir un .rpy con el juego abierto cambia su mtime y a los ~1,5 s
+        Ren'Py corre `reload_script()` (guarda y recarga la partida en curso:
+        te tira al guion). `add_auto(force=True)` fija el mtime de referencia;
+        es el mismo idiom que `renpy/scriptedit.py`. El lock evita que el hilo
+        de vigilancia vea el archivo a mitad de la escritura."""
+        with renpy.loader.auto_lock:
+            with _ins_io.open(ruta, "w", encoding="utf-8", newline="") as fh:
+                fh.write(texto)
+            renpy.loader.add_auto(ruta, force=True)
 
     def ins_marcador(marcador):
         """Regex de las líneas que habilitan un archivo como destino."""
@@ -134,8 +149,7 @@ init python:
 
             with _ins_io.open(ruta + sufijo, "w", encoding="utf-8", newline="") as fh:
                 fh.write(original)
-            with _ins_io.open(ruta, "w", encoding="utf-8", newline="") as fh:
-                fh.write(nuevo)
+            _ins_escribir(ruta, nuevo)
             return True
         except Exception:
             return False
@@ -149,8 +163,7 @@ init python:
         try:
             with _ins_io.open(bak, encoding="utf-8", newline="") as fh:
                 original = fh.read()
-            with _ins_io.open(ruta, "w", encoding="utf-8", newline="") as fh:
-                fh.write(original)
+            _ins_escribir(ruta, original)
             return True
         except Exception:
             return False

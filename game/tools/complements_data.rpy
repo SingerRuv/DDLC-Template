@@ -27,6 +27,37 @@ init python:
         diagnosticos.append({
             "id": id_, "ruta": ruta, "motivo": motivo, "fatal": fatal})
 
+    # ======================================================================
+    # Registros que llenan los plugins:
+    #   TOOL_REFRESCO_FNS -> limpiar cachés al re-escanear (tool_refrescar).
+    #   TOOL_DIAG_FNS     -> problemas extra que el hub muestra en Diagnóstico.
+    # ======================================================================
+    TOOL_REFRESCO_FNS = []
+    TOOL_DIAG_FNS = []
+
+    def tool_refrescar():
+        """Vuelve a listar los archivos del juego (sin reiniciar).
+
+        `renpy.list_files()` es una foto del arranque: sin esto, una carpeta
+        nueva no aparece y una borrada sigue estando. `scandirfiles()` solo
+        agrega (duplica e ignora lo que ya no existe), así que hay que usar
+        `index_files()`, que vacía y re-escanea. Después se limpian las cachés
+        de `loadable` (si no, un archivo borrado sigue dando True) y de
+        imágenes, y la de cada plugin."""
+        try:
+            renpy.loader.index_files()
+            renpy.loader.loadable_cache.clear()
+            renpy.display.im.cache.clear()
+        except Exception as e:
+            print("%s: no se pudo refrescar la lista de archivos: %s"
+                  % (_PL_PLUGINS_LOG, e))
+
+        for fn in list(TOOL_REFRESCO_FNS):
+            try:
+                fn()
+            except Exception as e:
+                print("%s: fallo el refresco de un plugin: %s" % (_PL_PLUGINS_LOG, e))
+
     def pl_plugins():
         """Descubre los plugins en tools/plugins/ y devuelve
         (plugins, diagnosticos).
@@ -136,6 +167,17 @@ init python:
         for e in plugins:
             _pl_aplicar_metadata(e)
         plugins.sort(key=lambda d: (d["orden"], d["titulo"].lower()))
+
+        # Problemas que detectan los plugins (p. ej. definiciones de sprites
+        # que apuntan a archivos borrados). Cada función devuelve una lista
+        # de dicts como los de `_pl_diag`.
+        for fn in list(TOOL_DIAG_FNS):
+            try:
+                diagnosticos.extend(fn())
+            except Exception as e:
+                print("%s: fallo el diagnóstico de un plugin: %s"
+                      % (_PL_PLUGINS_LOG, e))
+
         return plugins, diagnosticos
 
     # ======================================================================

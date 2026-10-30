@@ -293,3 +293,44 @@ screen pl_definir(tags=[]):
                 textbutton "Ahora no":
                     style "pl_copy"
                     action Hide("pl_definir")
+
+
+# Aviso: la carpeta del personaje ya no está, pero quedaron sus definiciones.
+screen pl_huerfanas(tags=[]):
+    modal True
+    zorder 300
+    key "K_ESCAPE" action Hide("pl_huerfanas")
+
+    add Solid("#00000099")
+
+    frame:
+        style "pl_destino_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 560
+
+        vbox:
+            spacing 12
+
+            text "CARPETA ELIMINADA" style "pl_destino_title"
+
+            if len(tags) == 1:
+                text "La carpeta de este personaje ya no está, pero sus definiciones siguen en sprites.rpy. ¿Las borro?" style "pl_text"
+            else:
+                text "La carpeta de estos personajes ya no está, pero sus definiciones siguen en sprites.rpy. ¿Las borro?" style "pl_text"
+
+            vbox:
+                spacing 2
+                for t in tags:
+                    text ("• " + t) style "pl_hint"
+
+            text "Se borran solo los bloques que escribió PoseLab; queda un backup en sprites.rpy.poselab.bak." style "pl_hint"
+
+            hbox:
+                spacing 10
+                textbutton "Quitar":
+                    style "pl_button"
+                    action [Function(pl_quitar_defs_huerfanas, tags), Hide("pl_huerfanas")]
+                textbutton "Ahora no":
+                    style "pl_copy"
+                    action Hide("pl_huerfanas")

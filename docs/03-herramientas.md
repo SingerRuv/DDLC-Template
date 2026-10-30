@@ -59,12 +59,19 @@ show sayori 1a at t21 zorder 2
 ```
 
 Botones útiles: **Copiar** (portapapeles), **Copiar en…** (inserta la línea en
-un `.rpy` del proyecto, con backup y deshacer), **Reescanear** (si agregaste
-sprites nuevos) y **Fijar** (deja la ventana de controles abierta).
+un `.rpy` del proyecto, con backup y deshacer), **Reescanear** (vuelve a listar
+los archivos del juego: las carpetas nuevas o borradas se ven sin cerrar la
+herramienta ni reiniciar) y **Fijar** (deja la ventana de controles abierta).
 
 Si encuentra carpetas de sprites propias **sin** definiciones (`image … =
 Composite(…)`), ofrece crearlas: las escribe en `definitions/sprites.rpy` con
-backup y avisa que se aplican al reiniciar el juego.
+backup y las aplica al toque (no hace falta reiniciar).
+
+Si borraste la carpeta de un personaje y sus definiciones quedaron en
+`sprites.rpy`, el personaje deja de aparecer en la lista y PoseLab ofrece
+borrar esos bloques (solo los que escribió él; el backup queda en
+`sprites.rpy.poselab.bak`). Las definiciones escritas a mano que apuntan a
+`.png` inexistentes se avisan en el **Diagnóstico** del hub, sin tocarlas.
 
 > El preview aplica el transform **real**, así que ves la misma animación y
 > posición que en el juego.
