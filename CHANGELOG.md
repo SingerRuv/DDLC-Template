@@ -6,6 +6,27 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-30
+
+### Añadido
+- **PoseLab:** el botón **Reescanear** vuelve a listar los archivos del juego, así
+  las carpetas de sprites nuevas o borradas se ven sin cerrar la herramienta ni
+  reiniciar.
+- **PoseLab:** si borrás la carpeta de un personaje y sus definiciones quedan en
+  `sprites.rpy`, deja de listarlo y ofrece borrar esos bloques (solo los que
+  escribió PoseLab, con backup `.poselab.bak`). Las definiciones escritas a mano
+  que apuntan a `.png` inexistentes se avisan en el **Diagnóstico** del hub.
+- **PoseLab:** las definiciones que crea para personajes propios se aplican al
+  instante (`renpy.load_string`), sin reiniciar el juego.
+- **Hub:** `tool_refrescar()` y los registros `TOOL_REFRESCO_FNS` /
+  `TOOL_DIAG_FNS`, para que los plugins refresquen sus cachés y aporten avisos al
+  Diagnóstico.
+
+### Corregido
+- **Copiar en… / Deshacer:** escribir un `.rpy` ya no dispara el autoreload de
+  Ren'Py a los ~1,5 s, que guardaba y recargaba la partida y te sacaba de la
+  herramienta.
+
 ## [1.3.0] - 2026-10-28
 
 ### Añadido

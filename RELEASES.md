@@ -5,6 +5,21 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.3.1 — 2026-10-30
+
+### Añadido
+- **PoseLab:** **Reescanear** relee los archivos del juego (carpetas nuevas o
+  borradas) sin reiniciar, y si borraste la carpeta de un personaje avisa y
+  ofrece borrar las definiciones que quedaron sin sus imágenes.
+- **PoseLab:** las definiciones que crea para personajes propios se aplican al
+  instante.
+
+### Corregido
+- **Copiar en… / Deshacer:** ya no recargan el script (y con eso la partida) a
+  los ~1,5 s de escribir el `.rpy`.
+
+---
+
 ## 1.3.0 — 2026-10-28
 
 ### Añadido
