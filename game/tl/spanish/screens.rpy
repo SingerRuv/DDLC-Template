@@ -370,3 +370,11 @@ translate spanish strings:
     old "Close"
     new "Cerrar"
 
+    # game/screens.rpy:1515
+    old "PC"
+    new "PC"
+
+    # game/screens.rpy:1519
+    old "Android"
+    new "Android"
+

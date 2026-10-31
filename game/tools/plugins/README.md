@@ -104,6 +104,18 @@ rompen el hub.
 El plugin **`_example/`** usa esta API completa (`ejemplo_modulo.py`): es a la
 vez la plantilla para copiar y el test de que los hooks funcionan.
 
+### Qué Python tenés
+
+Todo el `.rpy` (incluidos los bloques `init python`) y los `.py` del plugin
+corren con **Python 3.12**: stdlib completa (`json`, `re`, `subprocess`,
+`zipfile`, `zlib`, `array`…) más la API de Ren'Py (`renpy.*`, `config`,
+`persistent`, `store`).
+
+No vienen numpy, scipy, matplotlib ni PIL: si necesitás una librería de terceros,
+solo es portable si es **Python puro** (copiala dentro de la carpeta del plugin y
+agregala al `sys.path` en `setup()` o en un `init python`). Las que traen
+extensiones compiladas no se pueden distribuir con el template.
+
 ### `.py` o `*_ren.py`
 
 - `mi_modulo.py` es un **módulo**: solo se ejecuta cuando el hub lo importa.

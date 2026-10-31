@@ -10,6 +10,13 @@ game/tl/spanish/
   definitions/
     menu_screens.rpy    menús principal/pausa
     splash.rpy          splash y avisos
+  core/
+    discord_rpc.rpy     estados del Rich Presence
+  migracion/
+    migracion_ui.rpy    ventanas de migración (dev; entradas identidad)
+  tools/
+    complements.rpy     hub de Plugins (dev; entradas identidad)
+    complements_ui.rpy  shell de Plugins (dev; entradas identidad)
 ```
 
 El jugador cambia de idioma desde **Ajustes → Language** (screen
