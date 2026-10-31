@@ -53,5 +53,6 @@ apunten a archivos que existan.
 
 ## Estado
 
-- El **Discord RPC** está planificado pero todavía no implementado. El diseño y
-  los requisitos están en el apéndice de [`03-herramientas.md`](03-herramientas.md).
+- El **Discord RPC** está implementado (`game/core/discord_rpc.rpy`, apagado por
+  defecto). Cómo activarlo y configurarlo: apéndice de
+  [`03-herramientas.md`](03-herramientas.md).

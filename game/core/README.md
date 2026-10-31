@@ -10,6 +10,7 @@
 |---|---|
 | `0imports.rpy` | Imports tempranos (`init -2`) y agrega `game/mod_assets/` al searchpath de Ren'Py, para poder referenciar tus assets con nombre corto (`"images/bg/mi_cuarto.png"`) |
 | `functions.rpy` | Funciones de ayuda: `delete_all_saves()`, `get_process_list()`, `process_check()`, `is_user_streaming()` |
+| `discord_rpc.rpy` | Motor del Rich Presence de Discord (hilo aparte + `RPC`). La configuración va en `definitions/discord.rpy` |
 | `py/` | Código Python (`.py` y `*_ren.py`) que no necesita ser un `.rpy` |
 
 ## `py/`

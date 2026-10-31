@@ -159,8 +159,10 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
 - **Migración de assets:** cuando sale una versión nueva del template, el juego te
   avisa y actualiza el template **conservando tus assets** (mod_assets, tu historia,
   tus `definitions` y `gui`). Ver `game/migracion/README.md`.
-- **Discord RPC (planificado):** la interfaz de Ajustes ya existe; falta el motor.
-  El diseño está en [`docs/03-herramientas.md`](docs/03-herramientas.md).
+- **Discord Rich Presence:** muestra en tu perfil de Discord que estás jugando,
+  con el capítulo actual y el tiempo jugado. Apagado por defecto; se activa en
+  Ajustes › Discord RPC y se configura en `game/definitions/discord.rpy`. Ver
+  [`docs/03-herramientas.md`](docs/03-herramientas.md).
 
 ## Documentación
 

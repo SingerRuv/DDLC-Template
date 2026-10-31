@@ -6,12 +6,13 @@ Mapa de la carpeta. Para el flujo de trabajo, ver [`docs/`](../docs/README.md).
 
 | Carpeta | Qué contiene |
 |---|---|
-| `core/` | El motor del template: imports tempranos y funciones de ayuda. No tocar (ver `core/README.md`) |
+| `core/` | El motor del template: imports tempranos, funciones de ayuda y Discord RPC. No tocar (ver `core/README.md`) |
 | `definitions/` | Definiciones: imágenes, sprites, música, efectos, transforms, menús, splash y variables persistentes (ver `definitions/README.md`) |
 | `mod_assets/` | **Tus** assets: imágenes, CGs y audio (ver `mod_assets/README.md`) |
 | `tools/` | Hub de Plugins (dev-only) y herramientas: PoseLab, Shaders Lab, Diálogo (ver `tools/README.md`) |
 | `migracion/` | Sistema de migración de assets entre versiones del template (ver `migracion/README.md`) |
 | `tl/` | Traducciones; viene con español (ver `tl/README.md`) |
+| `python-packages/` | Librerías de Python de terceros (hoy solo `pypresence` 4.2.1, MIT). Ren'Py agrega la carpeta al `sys.path` sola |
 | `gui/` | Solo los assets **propios** del template (`gui/buttons/btn_example_*`). El resto de la interfaz se resuelve desde `images.rpa` y `fonts.rpa` |
 | `saves/` | Partidas locales y persistentes. No se versiona |
 

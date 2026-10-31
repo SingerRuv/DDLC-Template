@@ -179,26 +179,44 @@ Los tags se pueden escribir a mano: la herramienta solo los arma, los muestra y
 te deja ver el resultado antes de pegarlo. Tabla completa de efectos y tags:
 [`referencia/dialogo.md`](referencia/dialogo.md).
 
-## Apéndice: Discord RPC (planificado)
+## Apéndice: Discord RPC
 
-Todavía **no está implementado**; esto es el diseño acordado para cuando se
-haga. La interfaz ya existe en `screens.rpy` (Ajustes → Discord RPC: estado,
-Enable/Disable, Reconnect) y las traducciones también; falta el motor.
+El Rich Presence está implementado en `game/core/discord_rpc.rpy` y se
+configura desde `game/definitions/discord.rpy`. Muestra en el perfil de Discord
+que estás jugando al mod: nombre del template, menú o capítulo actual y tiempo
+jugado. Está **apagado por defecto** y el jugador lo activa desde
+**Ajustes › Discord RPC**; en Android la sección no aparece.
 
-Qué se va a agregar:
+### Activarlo en tu mod
 
-- `game/python-packages/pypresence/` (versión 4.2.1, licencia MIT) + su LICENSE.
-- `game/core/discord.rpy` con la clase `DiscordRPC` (hereda de `NoRollback`, así
-  no se guarda en los saves) y el objeto global `RPC` que espera la UI.
-- `define discord_client_id = ""`: vacío = módulo inerte. Cada mod debe crear su
-  propia *application* en el Developer Portal de Discord, subir las imágenes y
-  poner ahí su ID.
-- Actualizaciones con **throttle de 15 s** (límite de Discord) y todo envuelto en
-  `try/except`: sin librería, sin Discord abierto o con Discord cerrado a mitad
-  de partida, la UI queda "Desconectado" sin traceback.
-- **Apagado por defecto** (`persistent.enable_discord = False`) y sin datos
-  personales: solo textos del mod y arte subido a la aplicación.
-- En Android la sección no se muestra.
+1. Creá una *application* en el
+   [Developer Portal de Discord](https://discord.com/developers/applications).
+2. Subí dos imágenes en **Rich Presence › Art Assets** (por ejemplo `mod_logo` y
+   `mod_icon`).
+3. En `game/definitions/discord.rpy` poné el **Application ID** en
+   `discord_client_id` y, si cambiaste los nombres, ajustá `discord_image_logo`
+   y `discord_image_icon`. Sin ID el módulo queda inerte.
 
-Pendiente al implementarlo: elegir las imágenes del *presence* y decidir si el
-estado cambia solo por capítulo o solo mediante un helper que llame el guion.
+### Cómo funciona
+
+- `DiscordRPC` hereda de `NoRollback` y el objeto se crea con `define RPC`, así
+  que nunca termina en los saves.
+- Toda la comunicación con Discord corre en un **hilo aparte**: el hilo principal
+  solo encola operaciones y lee resultados desde un *periodic callback*. Si
+  Discord no responde, el juego no se congela.
+- `discord_activity()` (en `core/discord_rpc.rpy`) arma la actividad:
+  `details` = `config.name`, `state` = `"In the main menu"` o `"Chapter N"`
+  (variable `chapter`, la que ya actualiza `script.rpy`), imágenes y contador de
+  tiempo desde que abriste el juego. Todo el texto pasa por `_()`, así que
+  respeta el idioma elegido.
+- Se envía solo cuando la actividad cambia (mínimo `discord_update_interval`,
+  15 s) con un refresco cada `discord_refresh_interval` (60 s) para detectar que
+  Discord se cerró, y se reintenta conectar cada `discord_retry_interval` (30 s).
+- `game/python-packages/pypresence/` es **pypresence 4.2.1** (MIT), con su
+  licencia en `game/python-packages/pypresence-LICENSE.txt`.
+- Se manda solo texto del mod, versión y capítulo: nada del jugador.
+
+Si querés un estado propio (por ejemplo, el nombre de la escena), por ahora se
+cambia `discord_activity()`. No hay helper `presence_set()`: agregalo cuando tu
+historia lo necesite.
+
