@@ -80,7 +80,6 @@ init -1 python:
     _MG_LOCK = _mg_threading.Lock()
     _MG_ESTADO = {"listo": False, "en_curso": False, "version": "", "url": "",
                   "error": "", "manual": False, "ts": 0}
-    _MG_AVISADO = {"version": ""}  # versión ya avisada en esta sesión
 
     def _mg_consultar():
         """Consulta la última release. Devuelve (version, url_del_zip)."""
@@ -134,8 +133,11 @@ init -1 python:
                                    "version": "", "url": "", "error": str(e), "ts": 0})
 
     def mg_iniciar(ignorar_cache=False, manual=False):
-        """Arranca (o resuelve desde caché) el chequeo de versión."""
-        if not mg_hay_manifest():
+        """Arranca (o resuelve desde caché) el chequeo de versión.
+
+        Solo corre en modo dev y en proyectos que traen manifest: el sistema es
+        para el modder, no para los jugadores del mod."""
+        if not config.developer or not mg_hay_manifest():
             return
         cache = persistent.mg_cache
         fresco = (not ignorar_cache and isinstance(cache, _mg_builtins.dict)
@@ -155,14 +157,43 @@ init -1 python:
 
     def mg_buscar_manual():
         """Fuerza un chequeo (botón de Ajustes). El resultado lo muestra el vigilante."""
-        if not mg_hay_manifest():
+        if not config.developer or not mg_hay_manifest():
             return
         mg_iniciar(ignorar_cache=True, manual=True)
+
+    # ---- Disponibilidad para el menú principal (sin red) --------------------
+
+    def mg_disponible():
+        """(version, url) si hay una actualización para avisar; si no, ("", "").
+
+        No consulta nada: usa el resultado del chequeo o la caché de 24 h. El
+        menú principal lo llama en cada render para mostrar el indicador."""
+        if not config.developer or not mg_hay_manifest():
+            return "", ""
+
+        version, url = "", ""
+        with _MG_LOCK:
+            if _MG_ESTADO.get("version"):
+                version = _MG_ESTADO["version"]
+                url = _MG_ESTADO.get("url", "")
+
+        cache = persistent.mg_cache
+        if not version and isinstance(cache, _mg_builtins.dict):
+            version = cache.get("version", "")
+            url = cache.get("url", "")
+
+        if version and mg_nueva(version) and version != persistent.mg_ignorar:
+            return version, url
+        return "", ""
 
     # ---- Vigilante (se ejecuta como periodic callback) ----------------------
 
     def mg_vigilar():
-        """Si el chequeo terminó, muestra la ventana correspondiente (una vez)."""
+        """Publica el resultado del chequeo.
+
+        Si el chequeo fue automático, el aviso es el indicador del menú
+        principal (ver `mg_disponible`): acá solo se refresca la pantalla. Si
+        fue manual (botón de Ajustes), se muestra la ventana."""
         if not config.developer or not mg_hay_manifest():
             return
         if renpy.get_screen("migracion_aviso") or \
@@ -183,19 +214,34 @@ init -1 python:
         if not version:
             if manual:
                 renpy.show_screen("migracion_al_dia", error=estado.get("error", ""))
+                renpy.restart_interaction()
             return
 
         # Persistir la caché acá (hilo principal), no desde el hilo del chequeo.
         if estado.get("ts"):
             persistent.mg_cache = {"ts": estado["ts"], "version": version,
                                    "url": estado.get("url", "")}
-        if mg_nueva(version) and version != persistent.mg_ignorar:
-            if not manual and version == _MG_AVISADO["version"]:
-                return  # ya se avisó en esta sesión
-            _MG_AVISADO["version"] = version
-            renpy.show_screen("migracion_aviso", version=version, url=estado.get("url", ""))
-        elif manual:
+
+        nueva = mg_nueva(version)
+        ignorada = (version == persistent.mg_ignorar)
+
+        if not manual:
+            # El indicador del menú se dibuja al refrescar la interacción.
+            if nueva and not ignorada:
+                renpy.restart_interaction()
+            return
+
+        if nueva and not ignorada:
+            renpy.show_screen("migracion_aviso", version=version,
+                              url=estado.get("url", ""))
+        elif nueva:
+            renpy.show_screen(
+                "migracion_al_dia",
+                mensaje="Hay una versión nueva (v%s), pero la marcaste como "
+                        "ignorada." % version)
+        else:
             renpy.show_screen("migracion_al_dia")
+        renpy.restart_interaction()
 
     # ---- Preparar y lanzar el script externo --------------------------------
 

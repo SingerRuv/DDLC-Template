@@ -14,3 +14,11 @@ translate spanish strings:
     old "Q.Load"
     new "C.Rápida"
 
+    # game/definitions/menu_screens.rpy:161
+    old "Update v[_mg_version]"
+    new "Actualizar v[_mg_version]"
+
+    # game/definitions/menu_screens.rpy:278
+    old "Plugins"
+    new "Plugins"
+

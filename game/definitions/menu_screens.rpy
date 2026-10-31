@@ -119,6 +119,16 @@ transform nav_button_anim:
         easein nav_hover_time xoffset (nav_hover_offset if persistent.menu_nav_anim else 0)
 
 
+# Latido del aviso de actualización: crece apenas y vuelve, en bucle.
+# Se combina con nav_button_anim ( at nav_button_anim, mg_pulse ).
+transform mg_pulse:
+    subpixel True
+    block:
+        easein 0.9 zoom 1.08
+        easeout 0.9 zoom 1.0
+        repeat
+
+
 # ============================================================================
 # NAVEGACIÓN DEL MENÚ PRINCIPAL
 # ============================================================================
@@ -137,6 +147,18 @@ screen main_navigation():
             yalign 0.8
 
             spacing gui.navigation_spacing
+
+            # Aviso de actualización del template (solo dev y proyectos con
+            # manifest; ver game/migracion/README.md). No consulta la red: usa
+            # el resultado del chequeo que corre al arrancar. Va arriba de
+            # "Nueva Partida", con un latido para que se note.
+            $ _mg_version, _mg_url = mg_disponible()
+            if _mg_version:
+                textbutton _("Update v[_mg_version]"):
+                    action Show("migracion_aviso", version=_mg_version, url=_mg_url)
+                    at nav_button_anim, mg_pulse
+
+                null height 14
 
             # --- Ejemplo: botón de texto -----------------------------------
             textbutton _("New Game") action If(persistent.playername, true=Start(), false=Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName))) at nav_button_anim

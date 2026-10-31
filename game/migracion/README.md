@@ -5,8 +5,9 @@ Cuando sale una versión nueva, el juego te avisa y, si aceptás, respalda tus
 archivos, reemplaza el template y devuelve tus cosas.
 
 > El sistema se activa **solo si el proyecto tiene `game/migracion/manifest.json`**
-> (es decir, si viene de un ZIP de release). El repo fuente del template no lo
-> tiene, así que ahí **no pregunta ni muestra** el botón de actualizaciones.
+> (es decir, si viene de un ZIP de release) **y** corre en modo dev (el modder).
+> El repo fuente del template no lo tiene, así que ahí **no pregunta ni muestra**
+> el aviso ni el botón de actualizaciones.
 
 ## Por qué un script externo
 
@@ -45,9 +46,12 @@ Nunca se tocan: `*.rpa`, `game/saves/`, `*.rpyc`, `game/cache/`, logs.
 
 ## Flujo
 
-1. Al arrancar (modo dev), el juego consulta la última release de GitHub
-   (con caché de 24 h) y, si hay una versión nueva, muestra la ventana.
-   También podés forzarlo con **Buscar actualizaciones** en el menú.
+1. Al arrancar (**modo dev**), el juego consulta la última release de GitHub
+   (con caché de 24 h). Si hay una versión nueva, el **menú principal** muestra
+   `Actualizar vX.Y.Z` arriba de Nueva Partida (con un latido); al tocarlo se abre la
+   ventana para migrar. No hay ventanas automáticas: el aviso queda visible
+   hasta que migrás o elegís "No volver a preguntar por esta versión". También
+   podés forzar el chequeo con **Buscar actualizaciones** en Ajustes.
 2. Aceptás → se escribe un trabajo, se lanza `migrar.py` y el juego se cierra.
 3. `migrar.py` espera el cierre, descarga el ZIP del release, **valida** que sea
    un ZIP sano y más nuevo, respalda **solo tus archivos** en

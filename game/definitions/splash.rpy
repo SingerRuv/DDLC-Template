@@ -174,6 +174,10 @@ init python:
 label splashscreen:
     $ quick_menu = False
 
+    # Chequeo de versión del template en segundo plano (solo dev y proyectos
+    # con manifest). El resultado aparece como indicador en el menú principal.
+    $ mg_iniciar()
+
     # Android: por IP Guidelines, el jugador debe extraer los assets de DDLC.
     # (Ver definitions/py/android_assets_ren.py y la pantalla android_asset_setup.)
     if renpy.mobile:
@@ -322,9 +326,6 @@ label autoload:
 
 label before_main_menu:
     $ config.main_menu_music = audio.t1
-    # Arranca el chequeo de versión del template (solo en modo dev/modder).
-    if config.developer:
-        $ mg_iniciar()
     return
 
 # Se ejecuta al entrar al menu de pausa, antes de que el motor reproduzca

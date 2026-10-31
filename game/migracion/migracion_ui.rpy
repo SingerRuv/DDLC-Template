@@ -115,7 +115,7 @@ screen migracion_confirmar(version, url):
                     action Hide("migracion_confirmar")
 
 
-screen migracion_al_dia(error=""):
+screen migracion_al_dia(error="", mensaje=""):
 
     zorder 300
     modal True
@@ -130,6 +130,9 @@ screen migracion_al_dia(error=""):
                 text _("No se pudo comprobar si hay actualizaciones."):
                     style "migracion_titulo"
                 text "[error]":
+                    style "migracion_texto"
+            elif mensaje:
+                text "[mensaje]":
                     style "migracion_texto"
             else:
                 text _("Estás en la última versión del template."):

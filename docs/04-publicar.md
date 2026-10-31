@@ -91,7 +91,9 @@ modder), y `game/migracion/` con el manifest generado.
 
 El sistema de migración compara el manifest viejo con el nuevo: lo que el
 modder no tocó se actualiza, lo que tocó se conserva, y lo agregado se respalda.
-Detalles en `game/migracion/README.md`.
+El aviso vive en el menú principal (`Actualizar vX.Y.Z`) y solo
+aparece en modo dev; el jugador final nunca lo ve. Detalles en
+`game/migracion/README.md`.
 
 Consecuencia para el release: **todo archivo del template tiene que estar en el
 manifest**. Si agregás algo fuera de `game/` que el manifiesto no liste (por

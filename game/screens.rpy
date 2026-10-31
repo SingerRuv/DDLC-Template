@@ -714,9 +714,8 @@ screen template_preferences():
                 text_style "navigation_button_text"
 
     # La sección de actualizaciones solo aplica a proyectos que traen el
-    # manifest del template (un mod derivado de un release). El repo fuente
-    # del template no lo tiene, así que ahí no se muestra.
-    if mg_hay_manifest():
+    # manifest del template (un mod derivado de un release) y en modo dev.
+    if mg_hay_manifest() and config.developer:
         null height (2 * gui.pref_spacing)
 
         hbox:
