@@ -9,7 +9,7 @@ define config.name = "DDLC BrokenDreamsModTemplate"
 define gui.show_name = True
 
 # Esto controla el numero de version de tu juego.
-define config.version = "1.3.1"
+define config.version = "1.4.0"
 
 # Esto controla el nombre del build al empaquetar tu juego
 # en el Launcher de Ren'Py.

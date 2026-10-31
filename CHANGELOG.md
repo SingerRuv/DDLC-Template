@@ -6,6 +6,19 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-31
+
+### Añadido
+- **Discord Rich Presence:** muestra en Discord que estás jugando al mod, con el
+  nombre del template, el menú o el capítulo actual y el tiempo jugado. Está
+  **apagado por defecto** y se activa desde Ajustes › Discord RPC. Configurás tu
+  Application ID y las imágenes en `game/definitions/discord.rpy`; sin ID el
+  módulo queda inerte y en Android la sección no aparece.
+- Toda la comunicación con Discord corre en un hilo aparte (`game/core/discord_rpc.rpy`):
+  si Discord no está abierto o se cierra a mitad de partida, el juego sigue
+  normal y la UI muestra "Disconnected".
+- `game/python-packages/` con **pypresence 4.2.1** (MIT) y su `LICENSE`.
+
 ## [1.3.1] - 2026-10-30
 
 ### Añadido
