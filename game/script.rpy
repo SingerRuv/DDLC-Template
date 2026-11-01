@@ -47,13 +47,11 @@ label start:
     # 'persistent.playthrough' controla el número de partida en el que está el jugador
     # (es decir, Acto 1, 2, 3, 4).
 
+    # BORRÁ ESTA LÍNEA CUANDO TENGAS TU HISTORIA ESCRITA Y LLAMADA ACÁ.
     # Escribe el guion en cualquier archivo .rpy dentro de game/ (Ren'Py los carga
     # automáticamente) y llámalo aquí con:
     #     call nombre_de_tu_label
-    #
-    # Atajo: si creás un label llamado "story", el template lo llama solo.
-    if renpy.has_label("story"):
-        call expression "story"
+    call screen dialog(message="Este es un template, no un juego real: todavía no hay historia que jugar.\n\nEscribe tu historia en un archivo .rpy dentro de la carpeta game/ (Ren'Py lo carga automáticamente) y llámala desde 'script.rpy' con:\n\n    call nombre_de_tu_label\n\nDespués, borra esta línea.", ok_action=MainMenu(confirm=False))
 
     ## Ejemplo de cómo el template original de DDLC llamaba a sus capítulos:
     # Nota: el template original organizaba la historia en "chapters" (capitulos).

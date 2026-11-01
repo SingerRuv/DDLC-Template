@@ -43,9 +43,9 @@ carpeta escribible del juego. No hay que hacer nada más: la pantalla está en
 2. Elegí el proyecto **DDLC BrokenDreamsModTemplate**.
 3. **Launch Project**.
 
-Con un proyecto recién clonado, `label start` (en `game/script.rpy`) no tiene
-historia: al empezar una partida volvés al menú principal. Si creás un label
-llamado `story`, el template lo llama solo (ver abajo).
+Con un proyecto recién clonado, `label start` (en `game/script.rpy`) muestra un
+diálogo avisando que todavía no hay historia. Eso es lo normal: borrá esa línea
+cuando llames a tu historia.
 
 ## 4. Dónde va tu historia
 
@@ -60,14 +60,6 @@ ningún lado. Tenés dos formas:
 label start:
     call capitulo1
     call capitulo2
-    return
-```
-
-Atajo: si tu punto de entrada se llama `story`, `start` ya se encarga:
-
-```renpy
-label story:
-    call capitulo1
     return
 ```
 

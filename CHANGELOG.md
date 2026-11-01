@@ -15,10 +15,6 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - **Manifest local:** el que genera `tools/gen_manifest.py` en el proyecto ahora
   coincide con el del release (respeta `.gitignore` y los `export-ignore` de
   `.gitattributes`), así el reporte no marca archivos del repo como eliminados.
-- **Aviso de template:** al empezar una partida ya no aparece la ventana que
-  bloqueaba el juego. Si existe un label `story`, el template lo llama solo; las
-  instrucciones para escribir la historia quedan en los comentarios de
-  `script.rpy`.
 - El chequeo de actualizaciones del template vuelve a consultar al menos una vez
   por hora cuando no hay versiones nuevas (antes podía quedarse hasta 24 h con
   una versión vieja en caché).
