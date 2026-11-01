@@ -22,7 +22,7 @@ jobs:
           # git archive respeta export-ignore (excluye .github, CHANGELOG, tools, etc.)
           git archive --format=tar HEAD | tar -x -C "build/${DEST}"
           # Genera game/migracion/manifest.json dentro del árbol que se empaqueta.
-          python3 tools/gen_manifest.py "build/${DEST}" --version "${VER}" \
+          python3 .github/scripts/gen_manifest.py "build/${DEST}" --version "${VER}" \
             --repo "${{ github.repository }}"
           (cd build && zip -r "../ZIPs/${DEST}.zip" "${DEST}")
 

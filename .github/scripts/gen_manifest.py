@@ -8,8 +8,8 @@
 ## template. Se corre en el workflow de release (ver .github/workflows/).
 ##
 ## Uso:
-##   python3 tools/gen_manifest.py <raiz> --version 1.2.0 [--repo owner/repo]
-##   python3 tools/gen_manifest.py --selftest
+##   python3 .github/scripts/gen_manifest.py <raiz> --version 1.2.0 [--repo owner/repo]
+##   python3 .github/scripts/gen_manifest.py --selftest
 
 import hashlib
 import json

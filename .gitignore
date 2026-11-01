@@ -41,6 +41,9 @@ AGENTS.md
 # --- Empaquetado ---
 /dist/
 
+# --- Herramientas locales del autor (no se versionan) ---
+/tools/
+
 # --- Sistema de migración de assets ---
 # El manifest se genera en cada release (no se commitea).
 game/migracion/manifest.json
