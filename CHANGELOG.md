@@ -9,6 +9,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 ## [1.4.1] - 2026-10-31
 
 ### Corregido
+- **Reporte de migración:** la ventana ya no te deja atrapado cuando la lista es
+  larga. Ahora tiene scroll, el botón **Entendido** queda siempre visible y
+  ESC / clic derecho también la cierran.
+- **Manifest local:** el que genera `tools/gen_manifest.py` en el proyecto ahora
+  coincide con el del release (respeta `.gitignore` y los `export-ignore` de
+  `.gitattributes`), así el reporte no marca archivos del repo como eliminados.
 - Al empezar una partida nueva, el aviso de que el template todavía no tiene
   historia ya no devuelve al menú principal: al tocar **OK** el juego sigue el
   guion, así la historia que agregues debajo se ejecuta.

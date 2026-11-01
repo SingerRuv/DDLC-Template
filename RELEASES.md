@@ -8,6 +8,9 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 ## 1.4.1 — 2026-10-31
 
 ### Corregido
+- **Reporte de migración:** la ventana ya no te deja atrapado cuando la lista es
+  larga: tiene scroll, el botón **Entendido** queda siempre visible y ESC / clic
+  derecho también la cierran.
 - Al empezar una partida nueva, el aviso de que el template todavía no tiene
   historia ya no te devuelve al menú principal: al tocar **OK** el juego sigue el
   guion, así podés agregar tu historia justo debajo y probarla.

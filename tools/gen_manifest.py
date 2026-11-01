@@ -14,6 +14,7 @@
 import hashlib
 import json
 import os
+import subprocess
 import sys
 import tempfile
 
@@ -65,8 +66,9 @@ def _version_de_options(raiz):
     return "0.0.0"
 
 
-def generar(raiz, version, repo):
-    files = {}
+def _recorrer(raiz):
+    """Recorre el árbol y devuelve rutas relativas (modo sin git)."""
+    rels = []
     raiz_abs = os.path.abspath(raiz)
     for dirpath, dirnames, filenames in os.walk(raiz):
         # IGNORAR_RAIZ solo aplica en la raíz: si se aplicara en todo el árbol,
@@ -76,11 +78,64 @@ def generar(raiz, version, repo):
                        if d not in IGNORAR_DIRS
                        and not (en_raiz and d in IGNORAR_RAIZ)]
         for nombre in filenames:
-            abs_ = os.path.join(dirpath, nombre)
-            rel = os.path.relpath(abs_, raiz).replace("\\", "/")
-            if _ignorar(rel):
-                continue
-            files[rel] = _sha256(abs_)
+            rels.append(os.path.relpath(os.path.join(dirpath, nombre), raiz).replace("\\", "/"))
+    return rels
+
+
+def _rels_git(raiz):
+    """Archivos versionados según git (excluye lo gitignored). None si falla."""
+    try:
+        res = subprocess.run(["git", "-C", raiz, "ls-files", "-z"],
+                             capture_output=True, check=True)
+    except Exception:
+        return None
+    salida = res.stdout.decode("utf-8", "surrogateescape")
+    return [r for r in salida.split("\0") if r]
+
+
+def _export_ignorados(raiz):
+    """Patrones con export-ignore en .gitattributes (lo que no va en el ZIP)."""
+    patrones = []
+    try:
+        with open(os.path.join(raiz, ".gitattributes"), "r", encoding="utf-8") as f:
+            for linea in f:
+                linea = linea.split("#", 1)[0].strip()
+                if not linea or "export-ignore" not in linea:
+                    continue
+                patron = linea.split()[0].strip("/")
+                if patron:
+                    patrones.append(patron)
+    except Exception:
+        pass
+    return patrones
+
+
+def _export_ignorado(rel, patrones):
+    rel = rel.replace("\\", "/")
+    for p in patrones:
+        if rel == p or rel.startswith(p + "/"):
+            return True
+    return False
+
+
+def generar(raiz, version, repo):
+    files = {}
+    raiz_abs = os.path.abspath(raiz)
+
+    # Con .git/ se listan los archivos versionados (git ls-files), así el
+    # manifest coincide con lo que arma `git archive` en el release. Sin git
+    # (p. ej. el árbol ya extraído en CI) se recorre el directorio.
+    rels = None
+    if os.path.isdir(os.path.join(raiz_abs, ".git")):
+        rels = _rels_git(raiz_abs)
+    if rels is None:
+        rels = _recorrer(raiz_abs)
+
+    exportados = _export_ignorados(raiz_abs)
+    for rel in rels:
+        if _ignorar(rel) or _export_ignorado(rel, exportados):
+            continue
+        files[rel] = _sha256(os.path.join(raiz_abs, rel))
     manifest = {
         "template_version": version,
         "repo": repo,
@@ -103,6 +158,10 @@ def selftest():
         ("game/migracion/manifest.json", "{}"),  # no se lista
         ("game/tools/plugins/x/tool.json", "{}"),  # SÍ se lista (game/tools)
         ("tools/gen_manifest.py", "x"),      # ignorado (tools de la raíz)
+        (".gitattributes",
+         ".gitattributes export-ignore\nCHANGELOG.md export-ignore\ndocs/ export-ignore\n"),
+        ("CHANGELOG.md", "no va en el ZIP"),   # export-ignore
+        ("docs/guia.md", "no va en el ZIP"),   # export-ignore (carpeta)
     ):
         p = os.path.join(tmp, rel.replace("/", os.sep))
         os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -120,6 +179,9 @@ def selftest():
     assert "game/saves/save1.save" not in man["files"], "ignora saves/"
     assert "game/tools/plugins/x/tool.json" in man["files"], "incluye game/tools"
     assert "tools/gen_manifest.py" not in man["files"], "ignora tools de la raíz"
+    assert "CHANGELOG.md" not in man["files"], "respeta export-ignore (archivo)"
+    assert "docs/guia.md" not in man["files"], "respeta export-ignore (carpeta)"
+    assert ".gitattributes" not in man["files"], "respeta export-ignore (él mismo)"
     assert RUTA_MANIFEST.replace("\\", "/") not in man["files"], "no se lista a sí mismo"
     print("gen_manifest selftest OK")
 

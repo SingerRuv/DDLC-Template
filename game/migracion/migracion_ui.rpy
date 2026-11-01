@@ -26,8 +26,10 @@ init -1 python:
                 lineas.append(_("Se conservaron %d archivos tuyos.") % len(reporte["conservados"]))
             if reporte.get("conflictos"):
                 lineas.append(_("¡Atención! Estos archivos tuyos también cambiaron en el template (se conservó tu versión):"))
-                for r in reporte["conflictos"]:
+                for r in reporte["conflictos"][:8]:
                     lineas.append("    • " + r)
+                if len(reporte["conflictos"]) > 8:
+                    lineas.append("    …")
             if reporte.get("backup"):
                 lineas.append(_("Respaldo de tus archivos: %s") % reporte["backup"])
         else:
@@ -151,6 +153,10 @@ screen migracion_reporte(reporte):
     modal True
     style_prefix "migracion"
 
+    # ESC / clic derecho también cierran: el botón puede quedar fuera de
+    # pantalla si el reporte trae muchas líneas.
+    key "dismiss" action Return()
+
     use migracion_panel:
 
         vbox:
@@ -160,9 +166,17 @@ screen migracion_reporte(reporte):
                   else _("Migración de assets fallida")):
                 style "migracion_titulo"
 
-            for linea in mg_resumen(reporte):
-                text "[linea]":
-                    style "migracion_texto"
+            viewport:
+                mousewheel True
+                scrollbars "vertical"
+                ysize 440
+
+                vbox:
+                    spacing 8
+
+                    for linea in mg_resumen(reporte):
+                        text "[linea]":
+                            style "migracion_texto"
 
             textbutton _("Entendido"):
                 style "navigation_button"
