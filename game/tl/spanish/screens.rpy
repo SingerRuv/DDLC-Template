@@ -118,6 +118,10 @@ translate spanish strings:
     old "Discord RPC"
     new "Discord RPC"
 
+    # game/screens.rpy:748
+    old "Discord Presence"
+    new "Discord Presence"
+
     # game/screens.rpy:1224
     old "Disconnected"
     new "Desconectado"
@@ -125,6 +129,10 @@ translate spanish strings:
     # game/screens.rpy:1226
     old "Disabled"
     new "Desactivado"
+
+    # game/screens.rpy:1226
+    old "Enabled"
+    new "Activado"
 
     # game/screens.rpy:1228
     old "Connected"

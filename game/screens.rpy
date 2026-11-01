@@ -625,12 +625,19 @@ screen ddlc_preferences():
 
     use touch_preferences
 
+## Las tres columnas de cada fila comparten ancho fijo: así los títulos quedan
+## alineados en vertical aunque falte alguna sección (manifest, idiomas, etc.).
+define TP_COL_A = 295
+define TP_COL_B = 335
+define TP_COL_C = 275
+
 screen template_preferences():
     hbox:
         box_wrap True
 
         if extra_settings:
             vbox:
+                xsize TP_COL_A
                 style_prefix "check"
                 label _("Game Modes")
                 textbutton _("Uncensored Mode") action If(persistent.uncensored_mode,
@@ -639,16 +646,19 @@ screen template_preferences():
                         yes_action=[Hide("confirm"), ToggleField(persistent, "uncensored_mode")],
                         no_action=Hide("confirm")
                     ))
+        else:
+            null width TP_COL_A
 
         vbox:
             style_prefix "check"
-            xsize 340
-            label _("Interface")
+            xsize TP_COL_B
+            label _("Interface") xalign 0.5
             textbutton _("Quick Menu") action ToggleField(persistent, "show_quick_menu")
             textbutton _("Menu Animations") action ToggleField(persistent, "menu_nav_anim")
             textbutton _("Menu Particles") action ToggleField(persistent, "menu_particles")
 
         vbox:
+            xsize TP_COL_C
             style_prefix "name"
             label _("Player Name")
 
@@ -662,47 +672,13 @@ screen template_preferences():
             textbutton _("Change Name") action Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName, launchGame=False)):
                 text_style "navigation_button_text"
 
-        python:
-            has_discord_module = True
-            try:
-                RPC
-            except NameError:
-                has_discord_module = False
-
-        if not renpy.android and has_discord_module:
-            vbox:
-                style_prefix "name"
-                label _("Discord RPC")
-
-                python:
-                    connect_status = _("Disconnected")
-                    if not persistent.enable_discord:
-                        connect_status = _("Disabled")
-                    if RPC.rpc_connected:
-                        connect_status = _("Connected")
-
-                null height 3
-
-                text "[connect_status]" xalign 0.5
-
-                python:
-                    enable_text = _("Enable")
-                    if persistent.enable_discord:
-                        enable_text = _("Disable")
-
-                textbutton enable_text action [ToggleField(persistent, "enable_discord"),
-                    If(persistent.enable_discord, Function(RPC.disconnect), Function(RPC.connect))]:
-                    text_style "navigation_button_text"
-                if persistent.enable_discord and not RPC.rpc_connected:
-                    textbutton _("Reconnect") action Function(RPC.connect):
-                        text_style "navigation_button_text"
-
     null height (2 * gui.pref_spacing)
 
     hbox:
         box_wrap True
 
         vbox:
+            xsize TP_COL_A
             style_prefix "name"
             label _("Data")
 
@@ -713,15 +689,11 @@ screen template_preferences():
                 no_action=Hide("confirm")):
                 text_style "navigation_button_text"
 
-    # La sección de actualizaciones solo aplica a proyectos que traen el
-    # manifest del template (un mod derivado de un release) y en modo dev.
-    if mg_hay_manifest() and config.developer:
-        null height (2 * gui.pref_spacing)
-
-        hbox:
-            box_wrap True
-
+        # La sección de actualizaciones solo aplica a proyectos que traen el
+        # manifest del template (un mod derivado de un release) y en modo dev.
+        if mg_hay_manifest() and config.developer:
             vbox:
+                xsize TP_COL_B
                 style_prefix "name"
                 label _("Updates")
 
@@ -738,6 +710,7 @@ screen template_preferences():
 
         if enable_languages and translations:
             vbox:
+                xsize TP_COL_A
                 style_prefix "radio"
                 label _("Language")
                 hbox:
@@ -752,6 +725,37 @@ screen template_preferences():
                                 for tlid, tlname in tran:
                                     textbutton tlname:
                                         action Language(tlid)
+        else:
+            null width TP_COL_A
+
+        python:
+            has_discord_module = True
+            try:
+                RPC
+            except NameError:
+                has_discord_module = False
+
+        if not renpy.android and has_discord_module:
+            vbox:
+                xsize TP_COL_B
+                style_prefix "name"
+                label _("Discord Presence")
+
+                null height 3
+
+                # El estado es el propio botón: mismo estilo que las demás
+                # acciones y, al tocarlo, activa o desactiva la presencia.
+                # (Ramificado con literales para que el texto se traduzca.)
+                if persistent.enable_discord:
+                    textbutton _("Enabled") action [ToggleField(persistent, "enable_discord"), Function(RPC.disconnect)]:
+                        text_style "navigation_button_text"
+                else:
+                    textbutton _("Disabled") action [ToggleField(persistent, "enable_discord"), Function(RPC.connect)]:
+                        text_style "navigation_button_text"
+
+                if persistent.enable_discord and not RPC.rpc_connected:
+                    textbutton _("Reconnect") action Function(RPC.connect):
+                        text_style "navigation_button_text"
 
 ## Pantalla preferences ##########################################################
 ##

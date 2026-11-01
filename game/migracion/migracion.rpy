@@ -24,7 +24,10 @@ init -1 python:
     _MG_MANIFEST_RUTA = "migracion/manifest.json"
     _MG_DIRNAME = "migracion"
     _MG_REPO_DEF = "SingerRuv/DDLC-Template"
-    _MG_CACHE_SEG = 24 * 3600  # 24 h
+    _MG_CACHE_SEG = 24 * 3600  # 24 h si el resultado fue "hay versión nueva"
+    # Si el resultado fue "estás al día", se vuelve a preguntar antes: si no,
+    # un release recién subido puede tardar un día en verse.
+    _MG_CACHE_AL_DIA_SEG = 3600  # 1 h
 
     # ---- Manifest y versión del template ------------------------------------
 
@@ -140,8 +143,11 @@ init -1 python:
         if not config.developer or not mg_hay_manifest():
             return
         cache = persistent.mg_cache
+        vigencia = _MG_CACHE_SEG
+        if isinstance(cache, _mg_builtins.dict) and not mg_nueva(cache.get("version", "")):
+            vigencia = _MG_CACHE_AL_DIA_SEG
         fresco = (not ignorar_cache and isinstance(cache, _mg_builtins.dict)
-                  and _mg_time.time() - cache.get("ts", 0) < _MG_CACHE_SEG)
+                  and _mg_time.time() - cache.get("ts", 0) < vigencia)
         with _MG_LOCK:
             if _MG_ESTADO.get("en_curso"):
                 return

@@ -5,6 +5,23 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.4.1 — 2026-10-31
+
+### Corregido
+- Al empezar una partida nueva, el aviso de que el template todavía no tiene
+  historia ya no te devuelve al menú principal: al tocar **OK** el juego sigue el
+  guion, así podés agregar tu historia justo debajo y probarla.
+- El chequeo de actualizaciones vuelve a consultar al menos una vez por hora
+  cuando no hay novedades (antes podía quedarse hasta 24 h mostrando una versión
+  vieja).
+
+### Cambiado
+- **Ajustes del Template** quedó ordenado en tres columnas alineadas.
+- En **Discord Presence** el estado es ahora el propio botón (**Activado** /
+  **Desactivado**), y la lista de idiomas está a su lado.
+
+---
+
 ## 1.3.1 — 2026-10-30
 
 ### Añadido

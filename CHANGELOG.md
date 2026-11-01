@@ -6,6 +6,21 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-31
+
+### Corregido
+- Al empezar una partida nueva, el aviso de que el template todavía no tiene
+  historia ya no devuelve al menú principal: al tocar **OK** el juego sigue el
+  guion, así la historia que agregues debajo se ejecuta.
+- El chequeo de actualizaciones del template vuelve a consultar al menos una vez
+  por hora cuando no hay versiones nuevas (antes podía quedarse hasta 24 h con
+  una versión vieja en caché).
+
+### Cambiado
+- **Ajustes del Template** quedó ordenado en tres columnas alineadas.
+- En **Discord Presence** el estado pasó a ser el botón (**Activado** /
+  **Desactivado**), que se toca para activar o desactivar.
+
 ## [1.4.0] - 2026-10-31
 
 ### Añadido
@@ -216,7 +231,11 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.3...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.1...HEAD
+[1.4.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.0...1.4.1
+[1.4.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.3.1...1.4.0
+[1.3.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.3.0...1.3.1
+[1.3.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.3...1.3.0
 [1.2.3]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.2...1.2.3
 [1.2.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.2.0...1.2.1
