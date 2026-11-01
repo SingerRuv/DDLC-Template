@@ -11,9 +11,9 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 - **Reporte de migración:** la ventana ya no te deja atrapado cuando la lista es
   larga: tiene scroll, el botón **Entendido** queda siempre visible y ESC / clic
   derecho también la cierran.
-- Al empezar una partida nueva, el aviso de que el template todavía no tiene
-  historia ya no te devuelve al menú principal: al tocar **OK** el juego sigue el
-  guion, así podés agregar tu historia justo debajo y probarla.
+- Al empezar una partida ya no aparece la ventana de "este es un template, no un
+  juego real". Si creás un label `story`, el template lo llama solo; las
+  instrucciones quedan en los comentarios de `script.rpy`.
 - El chequeo de actualizaciones vuelve a consultar al menos una vez por hora
   cuando no hay novedades (antes podía quedarse hasta 24 h mostrando una versión
   vieja).
