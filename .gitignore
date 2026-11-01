@@ -32,14 +32,26 @@ Desktop.ini
 .DS_Store
 *.sublime-workspace
 *.sublime-project
-# La config de editor vive solo en la raíz; ignora duplicados dentro de game/.
-game/.vscode/
+*.swp
+*.swo
+*.code-workspace
+# Config del editor: es local (vale para la raíz y para game/).
+.vscode/
+.idea/
+.vs/
 
 # --- Instrucciones locales para agentes (solo en tu copia, no se versiona) ---
 AGENTS.md
 
 # --- Empaquetado ---
 /dist/
+build/
+ZIPs/
+
+# --- Varios ---
+*.log
+*.tmp
+.env
 
 # --- Herramientas locales del autor (no se versionan) ---
 /tools/
