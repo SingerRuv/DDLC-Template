@@ -5,6 +5,22 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.5.1 — 2026-11-02
+
+### Cambiado
+- **Discord RPC** ahora está en los ajustes de DDLC (no en los del template) y
+  funciona como en Bronya: muestra si está conectado y tiene un botón para
+  activarlo o desactivarlo, más **Reconectar**.
+- El modo desarrollador se declara en `True`, igual que Bronya. Para publicar tu
+  mod, poné `config.developer = False` en `game/definitions/definitions.rpy`.
+- El menú de pausa mantiene su música aunque el modo desarrollador esté apagado.
+
+### Corregido
+- El botón **Plugins** ahora se oculta siempre que `config.developer` esté en
+  `False`, sin importar en qué archivo lo hayas puesto.
+
+---
+
 ## 1.5.0 — 2026-11-02
 
 ### Agregado

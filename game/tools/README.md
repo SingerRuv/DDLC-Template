@@ -3,9 +3,10 @@
 El hub es la pantalla **Plugins** del menú principal: un catálogo de herramientas
 de desarrollo, autocontenidas, que el template descubre solo.
 
-> Es **dev-only**: el botón aparece solo con `config.developer = True` (true al
-> correr desde el launcher, false en un build publicado). Ver
-> `game/definitions/menu_screens.rpy`.
+> Es **dev-only**: el botón aparece solo con `config.developer = True`. Igual
+> que Bronya, el template lo deja en `True` en `game/definitions/definitions.rpy`;
+> cuando empaquetés tu mod, ponelo en `False` (se ocultan el hub y la pestaña
+> Template Settings). Ver `game/definitions/menu_screens.rpy`.
 
 ## Archivos
 

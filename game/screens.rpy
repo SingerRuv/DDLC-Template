@@ -624,6 +624,43 @@ screen ddlc_preferences():
 
     null height (4 * gui.pref_spacing)
 
+    # Discord RPC: ajuste del jugador, por eso vive en los ajustes de DDLC y
+    # no en los del template. Es el mismo bloque de Bronya (estado + Enable).
+    python:
+        has_discord_module = True
+        try:
+            RPC
+        except NameError:
+            has_discord_module = False
+
+    if not renpy.android and has_discord_module:
+        vbox:
+            style_prefix "name"
+            label _("Discord RPC")
+
+            python:
+                connect_status = _("Disconnected")
+                if not persistent.enable_discord:
+                    connect_status = _("Disabled")
+                if RPC.rpc_connected:
+                    connect_status = _("Connected")
+
+            null height 3
+
+            text connect_status xalign 0.5
+
+            python:
+                enable_text = _("Enable")
+                if persistent.enable_discord:
+                    enable_text = _("Disable")
+
+            textbutton enable_text action [ToggleField(persistent, "enable_discord"),
+                If(persistent.enable_discord, Function(RPC.disconnect), Function(RPC.connect))]:
+                text_style "navigation_button_text"
+            if persistent.enable_discord and not RPC.rpc_connected:
+                textbutton _("Reconnect") action Function(RPC.connect):
+                    text_style "navigation_button_text"
+
     use touch_preferences
 
 ## Las tres columnas de cada fila comparten ancho fijo: así los títulos quedan
@@ -728,35 +765,6 @@ screen template_preferences():
                                         action Language(tlid)
         else:
             null width TP_COL_A
-
-        python:
-            has_discord_module = True
-            try:
-                RPC
-            except NameError:
-                has_discord_module = False
-
-        if not renpy.android and has_discord_module:
-            vbox:
-                xsize TP_COL_B
-                style_prefix "name"
-                label _("Discord Presence")
-
-                null height 3
-
-                # El estado es el propio botón: mismo estilo que las demás
-                # acciones y, al tocarlo, activa o desactiva la presencia.
-                # (Ramificado con literales para que el texto se traduzca.)
-                if persistent.enable_discord:
-                    textbutton _("Enabled") action [ToggleField(persistent, "enable_discord"), Function(RPC.disconnect)]:
-                        text_style "navigation_button_text"
-                else:
-                    textbutton _("Disabled") action [ToggleField(persistent, "enable_discord"), Function(RPC.connect)]:
-                        text_style "navigation_button_text"
-
-                if persistent.enable_discord and not RPC.rpc_connected:
-                    textbutton _("Reconnect") action Function(RPC.connect):
-                        text_style "navigation_button_text"
 
 ## Pantalla preferences ##########################################################
 ##

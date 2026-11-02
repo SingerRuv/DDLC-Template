@@ -6,6 +6,23 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-02
+
+### Cambiado
+- **Discord RPC** se mudó a **Ajustes de DDLC** y quedó igual que en Bronya:
+  estado de la conexión (Conectado / Desconectado / Desactivado), botón
+  **Activar/Desactivar** y **Reconectar**.
+- `config.developer` se declara en `True` como en Bronya
+  (`game/definitions/definitions.rpy`): es el único lugar que lo define, así que
+  ponerlo en `False` ahí alcanza para ocultar el hub de Plugins y la pestaña del
+  template.
+- El menú de pausa conserva su música también con `config.developer = False`.
+
+### Corregido
+- El botón **Plugins** no se ocultaba si `config.developer = False` se declaraba
+  en un archivo que carga antes (por ejemplo `game/core/`): `definitions.rpy`
+  reasignaba `"auto"` y lo devolvía a `True`.
+
 ## [1.5.0] - 2026-11-02
 
 ### Agregado
@@ -266,7 +283,8 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.0...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.1...HEAD
+[1.5.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.2...1.5.0
 [1.4.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.1...1.4.2
 [1.4.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.0...1.4.1

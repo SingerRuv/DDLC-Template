@@ -1,9 +1,9 @@
 # ¡Este archivo define cosas importantes para tu juego!
 
-# Esta variable declara si se activan los plugins de Desarrollador de Ren'Py.
-# Con "auto", Ren'Py la activa al lanzar desde el launcher y la desactiva
-# sola en el build publicado. (Para forzarla, usa True/False.)
-define config.developer = "auto"
+# Activa las herramientas de desarrollador de Ren'Py (el hub de Plugins, entre
+# otras). Igual que Bronya: acá queda en True mientras desarrollás; al empaquetar
+# tu mod, ponelo en False.
+define config.developer = True
 
 # Si se permiten cuadrículas incompletas en el juego.
 define config.allow_underfull_grids = True

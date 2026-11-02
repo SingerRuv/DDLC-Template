@@ -2,8 +2,9 @@
 
 Todas las herramientas de desarrollo se abren desde el **hub de Plugins**, en el
 menú principal. El botón **Plugins** (arriba a la derecha) solo aparece con
-`config.developer = True`, es decir: cuando corrés el proyecto desde el launcher
-y no en un build publicado.
+`config.developer = True`. Igual que Bronya, el template lo declara en `True` en
+`game/definitions/definitions.rpy`: acordate de ponerlo en `False` antes de
+empaquetar tu mod.
 
 ## Hub de Plugins
 
