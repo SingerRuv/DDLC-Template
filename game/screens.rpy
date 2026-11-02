@@ -372,6 +372,7 @@ init python:
         renpy.save_persistent()
         renpy.hide_screen("name_input")
         if launchGame:
+            store.start_from_menu = True
             renpy.jump_out_of_context("start")
 
 

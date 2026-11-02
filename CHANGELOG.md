@@ -6,6 +6,15 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-11-01
+
+### Corregido
+- **Aviso de template:** aparece solo al empezar una partida desde **Nueva
+  Partida**. Si algo llama a `start` por otro camino (autoload, consola), ya no
+  interrumpe con la ventana.
+- **Reporte de migración:** ya no lista los archivos que el template dejó de
+  incluir (eran archivos del repo y no requerían ninguna acción).
+
 ## [1.4.1] - 2026-10-31
 
 ### Corregido
@@ -234,7 +243,8 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.1...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.2...HEAD
+[1.4.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.1...1.4.2
 [1.4.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.3.1...1.4.0
 [1.3.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.3.0...1.3.1

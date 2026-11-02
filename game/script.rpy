@@ -2,6 +2,11 @@
 
 # Este es el script principal que Ren'Py ejecuta para iniciar la historia de tu juego.
 
+# True solo cuando la partida arranca desde "Nueva Partida" del menú principal.
+# Sirve para que el aviso de template no aparezca si algo llama a `start` por
+# otro camino (autoload, consola, un `jump` del motor).
+default start_from_menu = False
+
 label start:
 
     # Este label configura el número anti-cheat del juego.
@@ -51,7 +56,8 @@ label start:
     # Escribe el guion en cualquier archivo .rpy dentro de game/ (Ren'Py los carga
     # automáticamente) y llámalo aquí con:
     #     call nombre_de_tu_label
-    call screen dialog(message="Este es un template, no un juego real: todavía no hay historia que jugar.\n\nEscribe tu historia en un archivo .rpy dentro de la carpeta game/ (Ren'Py lo carga automáticamente) y llámala desde 'script.rpy' con:\n\n    call nombre_de_tu_label\n\nDespués, borra esta línea.", ok_action=MainMenu(confirm=False))
+    if start_from_menu:
+        call screen dialog(message="Este es un template, no un juego real: todavía no hay historia que jugar.\n\nEscribe tu historia en un archivo .rpy dentro de la carpeta game/ (Ren'Py lo carga automáticamente) y llámala desde 'script.rpy' con:\n\n    call nombre_de_tu_label\n\nDespués, borra esta línea.", ok_action=MainMenu(confirm=False))
 
     ## Ejemplo de cómo el template original de DDLC llamaba a sus capítulos:
     # Nota: el template original organizaba la historia en "chapters" (capitulos).

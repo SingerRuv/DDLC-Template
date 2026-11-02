@@ -5,6 +5,17 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.4.2 — 2026-11-01
+
+### Corregido
+- **Aviso de template:** ahora aparece solo al empezar una partida desde **Nueva
+  Partida**. Si algo llama a `start` por otro camino (autoload, consola), ya no
+  interrumpe.
+- **Reporte de migración:** ya no muestra los archivos que el template dejó de
+  incluir.
+
+---
+
 ## 1.4.1 — 2026-10-31
 
 ### Corregido

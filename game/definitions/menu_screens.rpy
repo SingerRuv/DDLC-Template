@@ -161,7 +161,7 @@ screen main_navigation():
                 null height 14
 
             # --- Ejemplo: botón de texto -----------------------------------
-            textbutton _("New Game") action If(persistent.playername, true=Start(), false=Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName))) at nav_button_anim
+            textbutton _("New Game") action [SetVariable("start_from_menu", True), If(persistent.playername, true=Start(), false=Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName)))] at nav_button_anim
 
             # --- Ejemplo: botón con imagen (imagebutton) --------------------
             # Para usarlo: descomenta estas líneas y comenta el textbutton.
