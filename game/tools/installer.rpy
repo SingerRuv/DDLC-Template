@@ -43,6 +43,11 @@ screen plugins_installer():
     # Volver al hub.
     key "K_ESCAPE" action Show("complements")
 
+    # La acción pedida se procesa en el frame siguiente, para que el toast
+    # ("Instalando…") llegue a pintarse antes de la extracción.
+    if _pi_solicitud["archivo"] or _pi_solicitud["desinstalar"] is not None:
+        timer 0.05 action Function(_pi_procesar)
+
     add gui.main_menu_background
 
     $ pendientes = _pi_listar()
@@ -108,16 +113,20 @@ screen plugins_installer():
                                 if item["meta"]:
                                     text "[item['meta']['titulo']] · v[item['meta']['version']] · [max(1, item['bytes'] // 1024)] KB":
                                         style "pl_ins_row_text"
+                                if item["aviso"]:
+                                    text "[item['aviso']]":
+                                        style "pl_ins_row_text"
+                                        color "#a9791c"
                                 if item["motivo"]:
                                     text "[item['motivo']]":
                                         style "pl_ins_row_text"
                                         color "#cc3333"
 
-                            if item["meta"]:
+                            if item["meta"] and item["estado"] != "conflicto":
                                 button:
                                     style "pl_ins_button"
                                     yalign 0.5
-                                    action Function(_pi_instalar_ui, item["archivo"])
+                                    action Function(_pi_pedir_instalar, item["archivo"])
                                     text "[item['etiqueta']]" style "pl_ins_button_text"
 
                     if instalados:
@@ -139,7 +148,7 @@ screen plugins_installer():
                                 yalign 0.5
                                 action Show("confirm",
                                             message="¿Borrar tools/plugins/%s? No hay vuelta atrás." % t["dir"],
-                                            yes_action=[Function(_pi_desinstalar_ui, t),
+                                            yes_action=[Function(_pi_pedir_desinstalar, t),
                                                         Hide("confirm")],
                                             no_action=Hide("confirm"))
                                 text _("Desinstalar") style "pl_ins_button_text"

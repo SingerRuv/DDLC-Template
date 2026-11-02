@@ -58,6 +58,79 @@ init python:
             except Exception as e:
                 print("%s: fallo el refresco de un plugin: %s" % (_PL_PLUGINS_LOG, e))
 
+    # ======================================================================
+    # Manifiesto (tool.json): única fuente de verdad del contrato.
+    #
+    # Lo usan el hub (sobre `renpy.file`) y el instalador (sobre los bytes de
+    # un ZIP). Si cambia una regla, cambia acá y los dos quedan alineados.
+    # ======================================================================
+
+    def pl_manifiesto(datos, carpeta):
+        """Valida y normaliza un tool.json ya parseado.
+
+        Devuelve (e, motivos). `e` es None si el manifiesto es inservible
+        (no es un objeto o no declara `screen`); `motivos` es una lista de
+        (texto, fatal).
+
+        No toca el disco: el `screen` registrado, el icono y las capturas se
+        validan afuera, porque solo el hub tiene el juego cargado. `icono` y
+        `capturas` se devuelven tal cual (rutas relativas a la carpeta)."""
+
+        if not isinstance(datos, _pl_builtins.dict):
+            return None, [("no es un objeto JSON", True)]
+
+        screen = str(datos.get("screen") or "").strip()
+        if not screen:
+            return None, [("falta 'screen'", True)]
+
+        orden = datos.get("orden", 0)
+        if not isinstance(orden, _pl_builtins.int):
+            orden = 0
+
+        palabras = datos.get("palabras_clave") or []
+        if not isinstance(palabras, _pl_builtins.list):
+            palabras = []
+
+        motivos = []
+
+        args = datos.get("args") or {}
+        if not isinstance(args, _pl_builtins.dict):
+            motivos.append(("'args' no es un objeto; se ignora", False))
+            args = {}
+
+        capturas = datos.get("capturas") or []
+        if not isinstance(capturas, _pl_builtins.list):
+            capturas = []
+
+        return {
+            "id": str(datos.get("id") or carpeta),
+            "titulo": str(datos.get("titulo") or carpeta),
+            "descripcion": str(datos.get("descripcion") or ""),
+            "autor": str(datos.get("autor") or ""),
+            "version": str(datos.get("version") or ""),
+            "categoria": str(datos.get("categoria") or "General"),
+            "orden": orden,
+            "screen": screen,
+            "palabras_clave": [str(p) for p in palabras],
+            "args": args,
+            "modulo": str(datos.get("modulo") or ""),
+            "min_version": str(datos.get("min_version") or ""),
+            "icono": str(datos.get("icono") or ""),
+            "capturas": [str(c) for c in capturas
+                         if isinstance(c, _pl_builtins.str)],
+        }, motivos
+
+    def pl_manifiesto_bytes(raw, carpeta):
+        """Igual que `pl_manifiesto`, desde los bytes de un tool.json.
+
+        Acepta BOM (`utf-8-sig`): un tool.json guardado desde Windows con BOM
+        no debe dejar el plugin instalado pero invisible."""
+        try:
+            datos = _pl_json.loads(raw.decode("utf-8-sig"))
+        except Exception as e:
+            return None, [("JSON ilegible: %s" % e, True)]
+        return pl_manifiesto(datos, carpeta)
+
     def pl_plugins():
         """Descubre los plugins en tools/plugins/ y devuelve
         (plugins, diagnosticos).
@@ -82,87 +155,55 @@ init python:
 
             try:
                 with renpy.file(f) as fh:
-                    datos = _pl_json.loads(fh.read().decode("utf-8"))
+                    raw = fh.read()
             except Exception as e:
                 print("%s: tool.json ilegible en %s: %s" % (_PL_PLUGINS_LOG, f, e))
-                _pl_diag(diagnosticos, carpeta, f, "JSON ilegible: %s" % e)
+                _pl_diag(diagnosticos, carpeta, f, "no se pudo leer: %s" % e)
                 continue
 
-            # Ojo: en el store de Ren'Py `dict` es RevertableDict; usamos el
-            # builtin para que json.loads (dict normal) pase la validacion.
-            if not isinstance(datos, _pl_builtins.dict):
-                _pl_diag(diagnosticos, carpeta, f, "tool.json no es un objeto JSON")
+            e, motivos = pl_manifiesto_bytes(raw, carpeta)
+            for texto, fatal in motivos:
+                _pl_diag(diagnosticos, carpeta, f, texto, fatal=fatal)
+            if e is None:
                 continue
 
-            id_ = str(datos.get("id") or carpeta)
-            titulo = str(datos.get("titulo") or carpeta)
-            screen = str(datos.get("screen") or "")
-            categoria = str(datos.get("categoria") or "General")
-            orden = datos.get("orden", 0)
-            if not isinstance(orden, _pl_builtins.int):
-                orden = 0
-            min_version = str(datos.get("min_version") or "")
+            id_ = e["id"]
 
             if id_ in ids:
                 _pl_diag(diagnosticos, id_, f, "id duplicado: '%s'" % id_)
                 continue
-            if not screen:
-                _pl_diag(diagnosticos, id_, f, "falta 'screen'")
-                continue
-            if not renpy.has_screen(screen):
-                _pl_diag(diagnosticos, id_, f, "no existe el screen '%s'" % screen)
+            if not renpy.has_screen(e["screen"]):
+                _pl_diag(diagnosticos, id_, f, "no existe el screen '%s'" % e["screen"])
                 continue
 
             ids.add(id_)
 
-            palabras = datos.get("palabras_clave") or []
-            if not isinstance(palabras, _pl_builtins.list):
-                palabras = []
-
-            args = datos.get("args") or {}
-            if not isinstance(args, _pl_builtins.dict):
-                _pl_diag(diagnosticos, id_, f, "'args' no es un objeto; se ignora", fatal=False)
-                args = {}
-
-            icono = str(datos.get("icono") or "")
+            # Icono y capturas: rutas relativas a la carpeta del plugin.
             icono_ruta = ""
-            if icono:
-                ruta = "%s%s/%s" % (_PL_PLUGINS_DIR, carpeta, icono)
+            if e["icono"]:
+                ruta = "%s%s/%s" % (_PL_PLUGINS_DIR, carpeta, e["icono"])
                 if renpy.loadable(ruta):
                     icono_ruta = ruta
                 else:
-                    _pl_diag(diagnosticos, id_, f, "icono no cargable: %s" % icono, fatal=False)
-
-            if min_version:
-                v_req, v_api = _pl_ver(min_version), _pl_ver(tools_api_version)
-                if v_req and v_api and v_req > v_api:
-                    _pl_diag(diagnosticos, id_, f, "requiere API >= %s (actual %s)" % (min_version, tools_api_version), fatal=False)
+                    _pl_diag(diagnosticos, id_, f,
+                             "icono no cargable: %s" % e["icono"], fatal=False)
 
             capturas = []
-            for cap in (datos.get("capturas") or []):
-                if not isinstance(cap, _pl_builtins.str):
-                    continue
+            for cap in e["capturas"]:
                 ruta = "%s%s/%s" % (_PL_PLUGINS_DIR, carpeta, cap)
                 if renpy.loadable(ruta):
                     capturas.append(ruta)
 
-            plugins.append({
-                "id": id_,
-                "dir": carpeta,
-                "titulo": titulo,
-                "descripcion": str(datos.get("descripcion") or ""),
-                "autor": str(datos.get("autor") or ""),
-                "version": str(datos.get("version") or ""),
-                "categoria": categoria,
-                "orden": orden,
-                "icono": icono_ruta,
-                "palabras_clave": [str(p) for p in palabras],
-                "capturas": capturas,
-                "screen": screen,
-                "args": args,
-                "modulo": str(datos.get("modulo") or ""),
-                "min_version": min_version,
-            })
+            if e["min_version"]:
+                v_req, v_api = _pl_ver(e["min_version"]), _pl_ver(tools_api_version)
+                if v_req and v_api and v_req > v_api:
+                    _pl_diag(diagnosticos, id_, f,
+                             "requiere API >= %s (actual %s)"
+                             % (e["min_version"], tools_api_version),
+                             fatal=False)
+
+            plugins.append(dict(e, dir=carpeta, icono=icono_ruta,
+                                capturas=capturas))
 
         for e in plugins:
             _pl_aplicar_metadata(e)

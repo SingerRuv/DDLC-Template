@@ -14,6 +14,18 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
   el ZIP antes de escribir, guarda la versión anterior cuando actualizás y te
   ofrece reiniciar para que el plugin aparezca.
 
+### Corregido
+- Un `tool.json` guardado con BOM ya no se instala para después quedar
+  invisible: el hub y el instalador ahora validan igual.
+- Si un plugin trae el mismo identificador que otro que ya tenés instalado, se
+  avisa como conflicto en vez de reemplazarlo sin querer.
+- El instalador avisa si el plugin pide una versión de la API más nueva (se
+  instala igual) y rechaza los ZIP que no traen ningún `.rpy`.
+
+### Cambiado
+- **Reiniciar ahora** salta el splash de arranque, y mientras instala se ve un
+  aviso en pantalla.
+
 ---
 
 ## 1.4.2 — 2026-11-01

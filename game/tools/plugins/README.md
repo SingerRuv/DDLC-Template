@@ -55,7 +55,9 @@ game/tools/plugins/
 
 \* Si `tool.json` está roto o falta, o el `screen` no existe, el plugin **no**
 se muestra como plugin pero **sí** aparece en el panel **Diagnóstico** del
-hub, con el motivo. Nunca se descarta en silencio.
+hub, con el motivo. Los avisos menores (`min_version` mayor que la API,
+`icono` que no carga, `args` que no es un objeto) también van a Diagnóstico,
+pero el plugin se lista igual. Nunca se descarta en silencio.
 
 ### Capturas
 
@@ -210,11 +212,16 @@ de archivos del sistema (Ren'Py no trae uno): la entrada es una carpeta.
 3. **Reescanear**, **Instalar** y **Reiniciar ahora**.
 
 El instalador valida el ZIP antes de tocar nada: `tool.json` legible y con
-`screen`, un solo plugin, rutas que no se escapan de su carpeta (`..`,
-unidades, rutas absolutas, symlinks) y una allowlist de extensiones (`.rpy`,
-`.py`, `.json`, `.md`, `.txt`, imágenes, audio, fuentes y shaders). Rechaza
-ejecutables (`.exe`, `.dll`, `.pyd`, `.bat`, `.ps1`) y `.rpyc`. Tope: 100 MB y
-2000 archivos.
+`screen`, al menos un `.rpy` (sin él no habría screen que mostrar), un solo
+plugin, rutas que no se escapan de su carpeta (`..`, unidades, rutas absolutas,
+symlinks) y una allowlist de extensiones (`.rpy`, `.py`, `.json`, `.md`, `.txt`,
+imágenes, audio, fuentes y shaders). Rechaza ejecutables (`.exe`, `.dll`,
+`.pyd`, `.bat`, `.ps1`) y `.rpyc`. Tope: 100 MB y 2000 archivos.
+
+> Instalar un ZIP es ejecutar su código: el `.py` del plugin corre en `setup()`
+> al arrancar y el `.rpy` se compila como cualquier script del juego. El
+> allowlist frena binarios y bytecode, no el código de Ren'Py/Python. Instalá
+> solo plugins en los que confíes.
 
 Todo se escribe dentro de `game/tools/plugins/<carpeta>/`: un plugin no puede
 instalar archivos en `game/definitions/` ni en `game/mod_assets/`. Si tu plugin
@@ -230,4 +237,7 @@ necesita algo ahí, no es autocontenido: movelo adentro de su carpeta (el módul
 `_incoming/` está en `.gitignore`: los ZIPs y los backups no se commitean ni
 entran al release. Y como Ren'Py compila los `.rpy` al arrancar, un plugin
 recién instalado aparece en el hub después de reiniciar (el instalador ofrece
-**Reiniciar ahora**).
+**Reiniciar ahora**, que salta el splash de arranque).
+
+Si el ZIP pide una `min_version` mayor que la API actual, la fila lo avisa en
+ámbar pero se instala igual: el hub lo vuelve a marcar en Diagnóstico.

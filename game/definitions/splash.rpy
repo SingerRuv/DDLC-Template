@@ -172,6 +172,11 @@ init python:
 # ---- Label del splash screen --------------------------------------------------
 
 label splashscreen:
+    # El instalador de plugins reinicia el juego para cargar el plugin nuevo:
+    # ese reinicio no necesita repetir el splash. `pop` lo consume una vez.
+    if renpy.session.pop("_pi_reinicio", False):
+        return
+
     $ quick_menu = False
 
     # Chequeo de versión del template en segundo plano (solo dev y proyectos

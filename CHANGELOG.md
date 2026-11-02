@@ -12,9 +12,22 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - **Instalador de plugins:** el hub gana **Instalar…**. Se deja un `.zip` en
   `game/tools/plugins/_incoming/` y desde una pantalla propia se instala,
   actualiza o desinstala. Antes de escribir valida el ZIP (un solo plugin,
-  `tool.json` con `screen`, rutas seguras, extensiones permitidas, 100 MB),
-  aparta la versión anterior al actualizar y pide reiniciar para activar el
-  plugin.
+  `tool.json` con `screen`, rutas seguras, extensiones permitidas, al menos un
+  `.rpy`, 100 MB), aparta la versión anterior al actualizar y pide reiniciar
+  para activar el plugin.
+
+### Corregido
+- El hub y el instalador comparten la misma validación de `tool.json`
+  (`pl_manifiesto`): lo que instala el uno ya no lo rechaza el otro. Incluye los
+  `tool.json` guardados con BOM, que antes se instalaban y quedaban invisibles.
+- Un ZIP cuyo `id` ya existe en **otra** carpeta se marca como conflicto y no
+  se instala: antes se tomaba como actualización y reemplazaba al otro plugin.
+- El instalador avisa en la fila si el plugin pide una `min_version` mayor que
+  la API actual (se instala igual).
+
+### Cambiado
+- **Reiniciar ahora** salta el splash de arranque, y la instalación muestra un
+  aviso ("Instalando…") antes de descomprimir.
 
 ## [1.4.2] - 2026-11-01
 

@@ -27,9 +27,11 @@ Recorre `game/tools/plugins/<carpeta>/` y busca `tool.json`. El único campo
 obligatorio es `"screen"`; el resto tiene valores por defecto (id y título =
 nombre de la carpeta, categoría `General`, orden al final).
 
-Si algo está mal (JSON roto, `screen` inexistente, `min_version` mayor que la
-API), el plugin **no** se lista pero aparece en el panel **Diagnóstico** con el
-motivo. Nunca se descarta en silencio.
+Si el `tool.json` está roto o el `screen` no existe, el plugin **no** se lista
+pero aparece en el panel **Diagnóstico** con el motivo. Los problemas menores
+(`min_version` mayor que la API, `icono` que no carga, `args` que no es un
+objeto) también van a Diagnóstico, pero el plugin **sí** se lista. Nunca se
+descarta en silencio.
 
 Versión de la API: `tools_api_version = "1.0"` en `complements_data.rpy`. Un
 plugin puede exigir una mínima con `"min_version"`.

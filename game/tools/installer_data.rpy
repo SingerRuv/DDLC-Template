@@ -162,40 +162,23 @@ init python:
             if info_tool.file_size > _PI_MAX_TOOL:
                 return None, ["tool.json es demasiado grande."]
 
-            try:
-                datos = _pi_json.loads(zf.read(info_tool).decode("utf-8-sig"))
-            except Exception as e:
-                return None, ["tool.json ilegible: %s" % e]
+            # Misma validación de manifiesto que el hub (complements_data.rpy).
+            carpeta = raiz.split("/")[-1] if raiz else _pi_os.path.splitext(
+                _pi_os.path.basename(ruta))[0]
+            e, motivos = pl_manifiesto_bytes(zf.read(info_tool), carpeta)
+            if e is None:
+                return None, [texto for texto, _fatal in motivos]
 
-            # En el store de Ren'Py `dict` es RevertableDict: comparar con el
-            # builtin, igual que hace complements_data.rpy.
-            if not isinstance(datos, _pi_builtins.dict):
-                return None, ["tool.json no es un objeto JSON."]
+            # Un plugin sin .rpy no puede definir su screen (los .rpyc están
+            # fuera del allowlist), así que se rechaza antes de escribir.
+            if not any(p.endswith(".rpy") for _, p in entradas):
+                return None, ["No incluye ningún .rpy: no podría definir su screen."]
 
-            screen = str(datos.get("screen") or "").strip()
-            if not screen:
-                return None, ["tool.json no declara 'screen'."]
-
-            dir_ = _pi_sanea(datos.get("id"))
-            if not dir_ and raiz:
-                dir_ = _pi_sanea(raiz.split("/")[-1])
-            if not dir_:
-                dir_ = _pi_sanea(_pi_os.path.splitext(
-                    _pi_os.path.basename(ruta))[0])
+            dir_ = _pi_sanea(e["id"]) or _pi_sanea(carpeta)
             if not dir_:
                 return None, ["No se pudo deducir el nombre de la carpeta."]
 
-            return {
-                "id": str(datos.get("id") or dir_),
-                "dir": dir_,
-                "titulo": str(datos.get("titulo") or dir_),
-                "version": str(datos.get("version") or ""),
-                "min_version": str(datos.get("min_version") or ""),
-                "screen": screen,
-                "raiz": raiz,
-                "entradas": entradas,
-                "bytes": total,
-            }, []
+            return dict(e, dir=dir_, raiz=raiz, entradas=entradas, bytes=total), []
 
     # ------------------------------------------------------------------
     # Listado de pendientes.
@@ -263,6 +246,7 @@ init python:
                 "bytes": _pi_os.path.getsize(ruta),
                 "meta": meta,
                 "motivo": _pi_fuera(motivos),
+                "aviso": "",
                 "estado": "",
                 "etiqueta": "",
                 "instalado": None,
@@ -272,7 +256,22 @@ init python:
                 if not actual:
                     actual = _pi_instalado_de(meta["dir"])
                 item["instalado"] = actual
-                item["estado"], item["etiqueta"] = _pi_estado(meta, actual)
+
+                # Mismo id en OTRA carpeta: si se instalara, reemplazaría al
+                # otro plugin (y su backup sería el de él). Se frena acá.
+                if actual and actual["dir"] != meta["dir"]:
+                    item["estado"] = "conflicto"
+                    item["motivo"] = ("Ya hay un plugin con el id '%s' en "
+                                      "tools/plugins/%s."
+                                      % (meta["id"], actual["dir"]))
+                else:
+                    item["estado"], item["etiqueta"] = _pi_estado(meta, actual)
+
+                v_req = _pl_ver(meta.get("min_version"))
+                v_api = _pl_ver(tools_api_version)
+                if v_req and v_api and v_req > v_api:
+                    item["aviso"] = ("Requiere API %s (actual %s)."
+                                     % (meta["min_version"], tools_api_version))
             salida.append(item)
 
         return salida
@@ -308,6 +307,14 @@ init python:
         meta, motivos = _pi_leer_zip(ruta_zip)
         if not meta:
             return None, motivos
+
+        # Mismo id en otra carpeta: no es una actualización, es otro plugin.
+        # ponytail: no ve un plugin instalado que el hub todavía no lista y
+        # tenga otro dir; ese caso ya lo frena la pantalla al listar.
+        for t in pl_plugins()[0]:
+            if t["id"] == meta["id"] and t["dir"] != meta["dir"]:
+                return None, ["Ya hay un plugin con el id '%s' en "
+                              "tools/plugins/%s." % (meta["id"], t["dir"])]
 
         plugins_dir = _pi_asegurar("tools/plugins")
         destino = _pi_os.path.join(plugins_dir, meta["dir"])
@@ -394,15 +401,41 @@ init python:
 
     # ------------------------------------------------------------------
     # Acciones para la pantalla (dejan el resultado en _pi_msg).
+    #
+    # Instalar y desinstalar son sincrónicos: para que el aviso llegue a
+    # pintarse antes del freeze, la pantalla pide la acción, muestra el toast y
+    # recién en el siguiente frame la procesa (_pi_procesar).
     # ------------------------------------------------------------------
+
+    _pi_solicitud = {"archivo": None, "desinstalar": None}
+
+    def _pi_pedir_instalar(archivo):
+        _pi_solicitud["archivo"] = archivo
+        _pi_solicitud["desinstalar"] = None
+        tool_toast("Instalando %s…" % archivo)
+
+    def _pi_pedir_desinstalar(tool):
+        _pi_solicitud["desinstalar"] = tool
+        _pi_solicitud["archivo"] = None
+        tool_toast("Desinstalando %s…" % tool["dir"])
+
+    def _pi_procesar():
+        archivo = _pi_solicitud["archivo"]
+        tool = _pi_solicitud["desinstalar"]
+        _pi_solicitud["archivo"] = None
+        _pi_solicitud["desinstalar"] = None
+        if archivo:
+            _pi_instalar_ui(archivo)
+        elif tool is not None:
+            _pi_desinstalar_ui(tool)
 
     def _pi_instalar_ui(archivo):
         carpeta, motivos = _pi_instalar(archivo)
         if carpeta:
             _pi_msg["ok"] = True
             _pi_msg["pendiente"] = True
-            _pi_msg["texto"] = ("Instalado en tools/plugins/%s. "
-                                "Reiniciá para poder usarlo." % carpeta)
+            _pi_msg["texto"] = ("Instalado en tools/plugins/%s. Reiniciá; "
+                                "si no aparece, mirá Diagnóstico." % carpeta)
         else:
             _pi_msg["ok"] = False
             _pi_msg["pendiente"] = False
@@ -423,5 +456,8 @@ init python:
         tool_abrir_carpeta(_PI_INCOMING)
 
     def _pi_reiniciar():
+        # `full_restart` NO vuelve a leer los .rpy (reusa el script cargado);
+        # `utter_restart` sí. El splash se salta con la bandera de sesión.
         if config.developer:
+            renpy.session["_pi_reinicio"] = True
             renpy.utter_restart()
