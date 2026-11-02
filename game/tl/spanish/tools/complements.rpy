@@ -20,3 +20,7 @@ translate spanish strings:
     # game/tools/complements.rpy:110
     old "Diagnóstico"
     new "Diagnóstico"
+
+    # game/tools/complements.rpy:75
+    old "Instalar…"
+    new "Instalar…"

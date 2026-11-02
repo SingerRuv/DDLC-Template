@@ -197,3 +197,37 @@ def close(tool):
 4. Si agregás archivos con el juego abierto, el botón **Reescanear** de la
    herramienta los ve sin reiniciar (ver "Refrescar sin reiniciar" en
    `game/tools/README.md`).
+
+## Instalar un plugin desde un ZIP
+
+En el hub, **Instalar…** (panel izquierdo) abre el instalador. No hay diálogo
+de archivos del sistema (Ren'Py no trae uno): la entrada es una carpeta.
+
+1. Empaquetá el plugin en un `.zip` con `tool.json` en la raíz o dentro de una
+   única carpeta (`mi_plugin/tool.json`). **Un ZIP = un plugin.**
+2. Dejalo en `game/tools/plugins/_incoming/` (el botón **Abrir _incoming**
+   abre esa carpeta; se crea sola).
+3. **Reescanear**, **Instalar** y **Reiniciar ahora**.
+
+El instalador valida el ZIP antes de tocar nada: `tool.json` legible y con
+`screen`, un solo plugin, rutas que no se escapan de su carpeta (`..`,
+unidades, rutas absolutas, symlinks) y una allowlist de extensiones (`.rpy`,
+`.py`, `.json`, `.md`, `.txt`, imágenes, audio, fuentes y shaders). Rechaza
+ejecutables (`.exe`, `.dll`, `.pyd`, `.bat`, `.ps1`) y `.rpyc`. Tope: 100 MB y
+2000 archivos.
+
+Todo se escribe dentro de `game/tools/plugins/<carpeta>/`: un plugin no puede
+instalar archivos en `game/definitions/` ni en `game/mod_assets/`. Si tu plugin
+necesita algo ahí, no es autocontenido: movelo adentro de su carpeta (el módulo
+`.py` y los assets relativos funcionan igual).
+
+- **Actualizar** aparta la versión anterior en
+  `game/tools/plugins/_incoming/_backups/`.
+- **Desinstalar** (desde el mismo instalador) borra la carpeta: no hay vuelta
+  atrás.
+- El ZIP usado se archiva en `game/tools/plugins/_incoming/instalados/`.
+
+`_incoming/` está en `.gitignore`: los ZIPs y los backups no se commitean ni
+entran al release. Y como Ren'Py compila los `.rpy` al arrancar, un plugin
+recién instalado aparece en el hub después de reiniciar (el instalador ofrece
+**Reiniciar ahora**).

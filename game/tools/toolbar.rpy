@@ -20,9 +20,19 @@ init python:
     # Carpeta del proyecto.
     # ======================================================================
 
-    def tool_abrir_carpeta():
-        """Abre la carpeta del proyecto en el explorador del sistema."""
-        ruta = renpy.config.basedir
+    def tool_abrir_carpeta(rel=None):
+        """Abre una carpeta del proyecto en el explorador del sistema.
+
+        Sin argumentos abre la raíz del proyecto; con `rel` (p. ej.
+        "tools/plugins/_incoming") abre esa carpeta dentro de game/."""
+        if rel:
+            ruta = ins_ruta(rel)
+            try:
+                _tb_os.makedirs(ruta, exist_ok=True)
+            except Exception:
+                pass
+        else:
+            ruta = renpy.config.basedir
         try:
             if renpy.windows:
                 _tb_os.startfile(ruta)

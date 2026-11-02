@@ -13,7 +13,7 @@
 ## la sección de Ajustes muestra "Deshabilitado". El jugador igual tiene que
 ## activarlo a mano (Ajustes › Discord RPC), porque por defecto está apagado.
 
-define discord_client_id = ""
+define discord_client_id = "1566503102700589156"
 
 # Nombres de las imágenes (tal cual figuran en Art Assets de tu application).
 define discord_image_logo = "mod_logo"

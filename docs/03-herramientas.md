@@ -31,6 +31,20 @@ La arquitectura del hub y los estilos globales están en `game/tools/README.md`;
 la lista de plugins instalados se genera en
 [`referencia/plugins.md`](referencia/plugins.md).
 
+### Instalar un plugin desde un ZIP
+
+**Plugins → Instalar…** abre el instalador. Dejás el `.zip` del plugin en
+`game/tools/plugins/_incoming/` (el botón **Abrir _incoming** abre esa carpeta),
+tocás **Reescanear** y el instalador lo lista con su versión y su estado
+(**Instalar**, **Actualizar a vX** o **Bajar a vX**). Un ZIP = un plugin, con
+`tool.json` en la raíz o dentro de una única carpeta.
+
+Instalar valida el ZIP antes de escribir (rutas seguras, extensiones
+permitidas, topes de tamaño), aparta la versión anterior al actualizar y archiva
+el ZIP en `_incoming/instalados/`. Después hay que reiniciar: Ren'Py compila los
+`.rpy` al arrancar, así que el instalador ofrece **Reiniciar ahora**. Los
+detalles y los límites están en `game/tools/plugins/README.md`.
+
 ## PoseLab
 
 Arma poses leyendo las definiciones **reales** de sprites del proyecto. No hay

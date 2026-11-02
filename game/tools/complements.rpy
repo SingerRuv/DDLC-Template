@@ -70,6 +70,10 @@ screen complements():
                             action [SetScreenVariable("cat", c),
                                     SetScreenVariable("cat_open", False)]
 
+            textbutton _("Instalar…"):
+                style "pl_dropdown"
+                action Show("plugins_installer")
+
     # ----- Área derecha: buscador + grilla de tarjetas + diagnóstico -----
     vbox:
         xpos 340

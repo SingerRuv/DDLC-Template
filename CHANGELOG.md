@@ -6,6 +6,16 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-02
+
+### Agregado
+- **Instalador de plugins:** el hub gana **Instalar…**. Se deja un `.zip` en
+  `game/tools/plugins/_incoming/` y desde una pantalla propia se instala,
+  actualiza o desinstala. Antes de escribir valida el ZIP (un solo plugin,
+  `tool.json` con `screen`, rutas seguras, extensiones permitidas, 100 MB),
+  aparta la versión anterior al actualizar y pide reiniciar para activar el
+  plugin.
+
 ## [1.4.2] - 2026-11-01
 
 ### Corregido
@@ -243,7 +253,8 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.2...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.2...1.5.0
 [1.4.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.1...1.4.2
 [1.4.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.3.1...1.4.0

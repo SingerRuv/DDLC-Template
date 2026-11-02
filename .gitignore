@@ -66,3 +66,7 @@ game/migracion/reporte.json
 game/migracion/migracion.log
 # Respaldos de la migración (van en la raíz, fuera de game/).
 migracion_backup/
+
+# --- Instalador de plugins ---
+# ZIPs de entrada, instalados y backups: son del modder, no del repo.
+game/tools/plugins/_incoming/

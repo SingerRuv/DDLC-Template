@@ -14,6 +14,8 @@ de desarrollo, autocontenidas, que el template descubre solo.
 | `complements.rpy` | Screen raíz del hub (`complements`): grilla de tarjetas, búsqueda, filtro y panel de diagnóstico |
 | `complements_data.rpy` | Lógica sin UI: descubre plugins, lee y valida `tool.json`, busca, y carga los módulos `.py` con sus hooks |
 | `complements_ui.rpy` | Piezas visuales del hub: la tarjeta (`pl_card`), el shell `tool_shell` y los estilos `complements_*`/`pl_*` |
+| `installer.rpy` | Pantalla **Instalador**: lista los ZIP de `_incoming`, instala/actualiza y desinstala |
+| `installer_data.rpy` | Lógica del instalador: valida el ZIP, extrae de forma atómica, hace backups y borra |
 | `inserter.rpy` | Panel **Insertar en…** compartido: escribe un snippet en un `.rpy` del guion (lo usan PoseLab y Diálogo) |
 | `toolbar.rpy` | **Barra de herramientas** compartida por las herramientas dev: Copiar/Copiar en…, Reiniciar, Abrir carpeta y Volver |
 | `ui_styles.rpy` | Catálogo **global** `tool_*` (textos, paneles, botones, inputs, barras) y los componentes `tool_dropdown` / `tool_barra` / `tool_shell` |
@@ -33,6 +35,24 @@ Versión de la API: `tools_api_version = "1.0"` en `complements_data.rpy`. Un
 plugin puede exigir una mínima con `"min_version"`.
 
 Para escribir uno: `game/tools/plugins/README.md`.
+
+## Instalador de plugins (ZIP local)
+
+El botón **Instalar…** del hub abre `installer.rpy`. Los ZIPs se dejan en
+`game/tools/plugins/_incoming/` (botón **Abrir _incoming**) y el instalador los
+valida antes de escribir. Cómo empaquetar uno: "Instalar un plugin desde un
+ZIP" en `plugins/README.md`.
+
+Reglas a tener presentes al tocar el instalador:
+
+- Escribe **solo** dentro de `game/tools/plugins/<carpeta>/`; valida rutas,
+  symlinks, extensiones y topes antes de extraer.
+- Extrae en `_incoming/_tmp/` y recién ahí mueve a destino: si falla no queda
+  nada a medias ni se pierde la versión anterior.
+- Actualizar mueve la versión previa a `_incoming/_backups/`; el ZIP usado va a
+  `_incoming/instalados/`.
+- Desinstalar borra la carpeta (con confirmación).
+- `_incoming/` está en `.gitignore`: no se commitea ni se distribuye.
 
 ## Refrescar sin reiniciar
 

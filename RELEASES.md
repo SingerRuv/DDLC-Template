@@ -5,6 +5,17 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.5.0 — 2026-11-02
+
+### Agregado
+- **Instalador de plugins:** ahora podés instalar plugins sin tocar carpetas a
+  mano. Dejás el `.zip` en `game/tools/plugins/_incoming/` y, desde **Plugins →
+  Instalar…**, lo instalás, lo actualizás o lo desinstalás. El instalador revisa
+  el ZIP antes de escribir, guarda la versión anterior cuando actualizás y te
+  ofrece reiniciar para que el plugin aparezca.
+
+---
+
 ## 1.4.2 — 2026-11-01
 
 ### Corregido
