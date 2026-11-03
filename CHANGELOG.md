@@ -6,6 +6,30 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-11-03
+
+### Cambiado
+- **Copiar en…** quedó reworkeado: preview con la fila fantasma (el snippet ya
+  indentado en su lugar), breadcrumb del `label` que lo contiene, toggle
+  **Antes/Después**, gutter de números, validación en vivo y teclado (`Enter`,
+  `Esc`, `↑/↓`, `PageUp/Down`). **Deshacer** muestra la fecha del backup.
+- Insertar código **ya no reinicia el juego**: se refresca el watcher de
+  autoreload y el panel ofrece **Recargar scripts** para aplicar los cambios.
+
+### Corregido
+- Insertar desde **Copiar en…** reiniciaba el juego: Ren'Py recargaba el script
+  a los ~1,5 s de escribir el `.rpy`. Ahora no se recarga solo.
+- Los nombres de los personajes ya no se pisan al empezar: `label start` dejó
+  de reasignar `s_name`/`m_name`/`n_name`/`y_name` con `"???"`/`"Chica N"` y se
+  respetan los `default` de `definitions.rpy`. El modo "nombres ocultos" queda
+  como opción: cambiá esos `default` o asigná el nombre en tu historia.
+- **PoseLab**: al crear las definiciones de un personaje custom ahora también
+  escribe su `define`/`default` en `definitions.rpy` (en su sitio, entre los de
+  las dokis), así el personaje puede hablar; y lo ofrece para los bloques que
+  ya existían. Los outfit packs no generan personaje.
+- `pl_plugins()` ya no lee archivos durante la predicción de pantallas (se
+  acabó el ruido `Refusing to open … while predicting` en `log.txt`).
+
 ## [1.5.1] - 2026-11-02
 
 ### Cambiado
@@ -283,7 +307,8 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.1...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.2...HEAD
+[1.5.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.2...1.5.0
 [1.4.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.1...1.4.2

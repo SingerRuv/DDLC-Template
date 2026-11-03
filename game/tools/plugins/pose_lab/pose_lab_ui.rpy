@@ -257,7 +257,7 @@ screen pl_code(txt):
 
 
 # Pregunta automática: personajes custom sin definiciones propias.
-screen pl_definir(tags=[]):
+screen pl_definir(tags=[], personajes=[]):
     modal True
     zorder 300
     key "K_ESCAPE" action Hide("pl_definir")
@@ -275,15 +275,29 @@ screen pl_definir(tags=[]):
 
             text "ATENCIÓN" style "pl_destino_title"
 
-            if len(tags) == 1:
-                text "Este sprite no cuenta con definiciones propias. ¿Te gustaría que las cree?" style "pl_text"
-            else:
-                text "Estos sprites no cuentan con definiciones propias. ¿Te gustaría que las cree?" style "pl_text"
+            if tags:
+                if len(tags) == 1:
+                    text "Este sprite no cuenta con sus definiciones correspondientes." style "pl_text"
+                else:
+                    text "Estos sprites no cuentan con sus definiciones correspondientes." style "pl_text"
 
-            vbox:
-                spacing 2
-                for t in tags:
-                    text ("• " + t) style "pl_hint"
+                vbox:
+                    spacing 2
+                    for t in tags:
+                        text ("- " + t) style "pl_hint"
+
+            if personajes:
+                if len(personajes) == 1:
+                    text "Este personaje no cuenta con sus definiciones correspondientes." style "pl_text"
+                else:
+                    text "Estos personajes no cuentan con sus definiciones correspondientes." style "pl_text"
+
+                vbox:
+                    spacing 2
+                    for t in personajes:
+                        text ("- " + t) style "pl_hint"
+
+            text "¿Te gustaría que las genere?" style "pl_text"
 
             hbox:
                 spacing 10

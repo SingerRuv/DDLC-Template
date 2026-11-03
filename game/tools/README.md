@@ -17,7 +17,7 @@ de desarrollo, autocontenidas, que el template descubre solo.
 | `complements_ui.rpy` | Piezas visuales del hub: la tarjeta (`pl_card`), el shell `tool_shell` y los estilos `complements_*`/`pl_*` |
 | `installer.rpy` | Pantalla **Instalador**: lista los ZIP de `_incoming`, instala/actualiza y desinstala |
 | `installer_data.rpy` | Lógica del instalador: valida el ZIP, extrae de forma atómica, hace backups y borra |
-| `inserter.rpy` | Panel **Insertar en…** compartido: escribe un snippet en un `.rpy` del guion (lo usan PoseLab y Diálogo) |
+| `inserter.rpy` | Panel **Copiar en…** compartido (PoseLab, Shaders Lab y Diálogo): preview con la fila fantasma, validación del resultado y escritura con backup |
 | `toolbar.rpy` | **Barra de herramientas** compartida por las herramientas dev: Copiar/Copiar en…, Reiniciar, Abrir carpeta y Volver |
 | `ui_styles.rpy` | Catálogo **global** `tool_*` (textos, paneles, botones, inputs, barras) y los componentes `tool_dropdown` / `tool_barra` / `tool_shell` |
 | `plugins/` | Un directorio por plugin (ver `plugins/README.md`) |
@@ -79,11 +79,14 @@ init 10 python:
     TOOL_DIAG_FNS.append(mi_diagnostico)
 ```
 
-Escribir un `.rpy` es otro caso: el archivo cambia de fecha y el autoreload de
-Ren'Py corre `reload_script()` a los ~1,5 s (guarda y recarga la partida). Por
-eso `inserter.rpy` (y las definiciones de PoseLab) escriben con `auto_lock` +
-`renpy.loader.add_auto(ruta, force=True)`, el mismo idiom de
-`renpy/scriptedit.py`: el watcher toma ese mtime como referencia y no recarga.
+Escribir un `.rpy` con el juego abierto es otro caso: el archivo cambia de fecha
+y el autoreload de Ren'Py corre `reload_script()` a los ~1,5 s (guarda y recarga
+la partida; en el menú principal te reinicia el juego). `inserter.rpy` lo evita
+en dos pasos: `_ins_refrescar_watcher()` actualiza **todas** las claves de
+`renpy.loader.auto_mtimes` que apuntan al archivo (el loader y `add_auto` pueden
+usar claves distintas) y, como red de seguridad, `_ins_autoreload` se registra en
+`config.autoreload_functions` e ignora el archivo recién escrito. Los cambios se
+aplican cuando el modder toca **Recargar scripts** en el panel.
 
 Solo PoseLab necesita el *Reescanear* del disco. Shaders Lab lee
 `renpy.list_images()` (imágenes ya registradas) y Diálogo usa sus propias

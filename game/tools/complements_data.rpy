@@ -142,6 +142,12 @@ init python:
         Cada plugin: id, titulo, descripcion, autor, version, categoria,
         orden, icono, palabras_clave, capturas, screen, args, modulo,
         min_version. Ordenadas por (orden, titulo)."""
+
+        # Durante la predicción Ren'Py no deja abrir archivos y no se dibuja
+        # nada: devolver vacío evita el ruido de "Refusing to open".
+        if renpy.predicting():
+            return [], []
+
         plugins = []
         diagnosticos = []
         ids = set()

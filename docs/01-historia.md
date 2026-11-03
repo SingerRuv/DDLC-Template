@@ -27,18 +27,17 @@ Ya están definidos en `game/definitions/definitions.rpy`:
 | `y` | Yuri | `y_name` |
 | `narrator` | Narración | — |
 
-Los nombres se definen al empezar la partida:
+Los nombres se definen una vez en `game/definitions/definitions.rpy`:
 
 ```renpy
-label start:
-    $ s_name = "Sayori"
-    $ n_name = "Natsuki"
-    ...
+default s_name = "Sayori"
+default m_name = "Monika"
+# ...
 ```
 
-Por defecto `script.rpy` los deja en `"???"` / `"Chica 1"` para que los reveles
-cuando quieras. También podés cambiar los valores por defecto en
-`game/definitions/definitions.rpy`.
+Se ven desde el inicio de la partida. Si querés el efecto de DDLC (nombres
+ocultos que se revelan en la historia), cambiá esos `default` por `"???"` /
+`"Chica 1"`, o agregá en tu historia `$ s_name = "..."` cuando quieras revelarlo.
 
 ### Diálogo
 

@@ -79,13 +79,22 @@ los archivos del juego: las carpetas nuevas o borradas se ven sin cerrar la
 herramienta ni reiniciar) y **Fijar** (deja la ventana de controles abierta).
 
 Si encuentra carpetas de sprites propias **sin** definiciones (`image … =
-Composite(…)`), ofrece crearlas: las escribe en `definitions/sprites.rpy` con
-backup y las aplica al toque (no hace falta reiniciar).
+Composite(…)`), ofrece crearlas: escribe los `image` en
+`definitions/sprites.rpy` y, además, el personaje en `definitions.rpy` —su
+`define <tag> = DynamicCharacter(...)` entre los de las dokis y su
+`default <tag>_name = "Nombre"` entre los nombres— para que puedas hacer
+`<tag> "..."` sin escribir nada a mano. Los dos archivos quedan con backup y el
+personaje funciona al toque (no hace falta reiniciar).
+
+Los *outfit packs* (`Sleepy Yuri` → `yuri_sleepy`) no generan personaje: es la
+misma doki con otra ropa. Los tags que ya tienen un `define` propio tampoco se
+duplican.
 
 Si borraste la carpeta de un personaje y sus definiciones quedaron en
 `sprites.rpy`, el personaje deja de aparecer en la lista y PoseLab ofrece
-borrar esos bloques (solo los que escribió él; el backup queda en
-`sprites.rpy.poselab.bak`). Las definiciones escritas a mano que apuntan a
+borrar esos bloques, incluido su `define`/`default` en `definitions.rpy` (solo
+los que escribió él; los backups quedan en `sprites.rpy.poselab.bak` y
+`definitions.rpy.poselab.bak`). Las definiciones escritas a mano que apuntan a
 `.png` inexistentes se avisan en el **Diagnóstico** del hub, sin tocarlas.
 
 > El preview aplica el transform **real**, así que ves la misma animación y
@@ -99,7 +108,7 @@ fija arriba, siempre visible:
 | Botón | Qué hace |
 |---|---|
 | **Copiar** | Copia el código de la herramienta al portapapeles |
-| **Copiar en…** | Inserta el código en un `.rpy` del guion (con backup y deshacer) |
+| **Copiar en…** | Abre un panel para insertar el código en un `.rpy` del guion: preview, validación y backup |
 | **Ocultar panel** | Esconde el panel de controles para ver el preview a pantalla completa |
 | **Reiniciar** | Devuelve la herramienta a su estado inicial (y las ventanas a su posición) |
 | **Abrir carpeta** | Abre la carpeta del proyecto en el explorador del sistema |
@@ -108,6 +117,24 @@ fija arriba, siempre visible:
 La barra la arma el hub (`game/tools/toolbar.rpy`) y reusa los estilos
 globales: si escribís un plugin nuevo, sumá `use tool_toolbar(...)` y ya tenés
 las acciones comunes.
+
+### El panel Copiar en…
+
+Lista los `.rpy` que tienen el marcador de la herramienta (`# poselab`,
+`# shaders`, `# dialogo`) y muestra el archivo elegido con números de línea.
+Entre la línea seleccionada y la siguiente aparece una **fila verde con el
+snippet ya indentado**: eso es exactamente lo que se va a escribir.
+
+- El breadcrumb de arriba dice archivo, `label` contenedor, si se inserta antes
+  o después y con cuántos espacios.
+- **Antes / Después** cambia el punto de inserción.
+- **✓ válido / ✗ rompería el script** valida el resultado. Si es inválido,
+  **Insertar** queda deshabilitado y se muestra el error del parser.
+- **Deshacer** restaura el backup anterior (muestra su fecha).
+- **Recargar scripts** aplica lo insertado: escribir **no** reinicia el juego.
+
+Teclado: `Enter` inserta, `Esc` cierra, `↑`/`↓` mueven la línea y
+`PageUp`/`PageDown` saltan 20.
 
 ## Shaders Lab
 

@@ -102,6 +102,16 @@ init python:
     # Marcador del bloque que escribe PoseLab en definitions/sprites.rpy.
     _PL_MARCA_RE = _pl_re.compile(r"^# === PoseLab: (\S+) \(auto\) ===$", _pl_re.M)
 
+    # Personajes: los `define`/`default` van en definitions.rpy, en su sitio
+    # (entre los de las dokis), dentro de bloques marcados.
+    _PL_DEFS_REL = "definitions/definitions.rpy"
+    _PL_MARCA_PER_INI = "# === PoseLab: personajes ==="
+    _PL_MARCA_PER_FIN = "# === fin PoseLab: personajes ==="
+    _PL_MARCA_NOM_INI = "# === PoseLab: nombres ==="
+    _PL_MARCA_NOM_FIN = "# === fin PoseLab: nombres ==="
+    _PL_DEF_RE = _pl_re.compile(r"^\s*define\s+\w+\s*=\s*DynamicCharacter\(")
+    _PL_NOM_RE = _pl_re.compile(r"^\s*default\s+\w+_name\s*=")
+
     def _pl_agregar_sprites(datos, item):
         """Registra un `image tag nombre = ...` si referencia algún .png."""
         rutas = _PL_RUTAS_RE.findall(item[2])
@@ -914,6 +924,162 @@ init python:
                         % (pl_tag(tag), v["nombre"], v["izq"], v["der"], v["cara"]))
         return lineas
 
+    # --- Personajes (define/default) --------------------------------------
+
+    def pl_nombre_personaje(tag):
+        """Nombre visible del personaje derivado del tag: 'akira' -> 'Akira'."""
+        return tag.replace("_", " ").title()
+
+    def _pl_tags_personajes_auto():
+        """Tags con `define` dentro del bloque PoseLab de definitions.rpy."""
+        try:
+            with open(_pl_os.path.join(config.gamedir, _PL_DEFS_REL),
+                      "r", encoding="utf-8", newline="") as fh:
+                texto = fh.read()
+        except Exception:
+            return set()
+        if _PL_MARCA_PER_INI not in texto:
+            return set()
+        a = texto.index(_PL_MARCA_PER_INI)
+        b = texto.find(_PL_MARCA_PER_FIN, a)
+        bloque = texto[a:len(texto) if b == -1 else b]
+        return set(_pl_re.findall(
+            r"^\s*define\s+(\w+)\s*=\s*DynamicCharacter\(", bloque, _pl_re.M))
+
+    def pl_personaje_texto(tag):
+        """Líneas `define`/`default` del personaje custom, o [] si no aplica.
+
+        Los outfit packs (`yuri_sleepy`) no generan personaje: cambia la ropa,
+        la doki es la misma. Y si el tag ya es un personaje ajeno no se repite
+        el `define` (Ren'Py falla con dos definiciones del mismo nombre)."""
+        if tag in _pl_carpetas_outfit():
+            return []
+        if hasattr(store, tag) and tag not in _pl_tags_personajes_auto():
+            return []
+        return [
+            "define %s = DynamicCharacter('%s_name', image='%s', "
+            "what_prefix='\"', what_suffix='\"', ctc=\"ctc\", "
+            "ctc_position=\"fixed\")" % (tag, tag, tag),
+            "default %s_name = \"%s\"" % (tag, pl_nombre_personaje(tag)),
+        ]
+
+    def _pl_personajes_tags():
+        """Tags de bloques PoseLab que deben tener personaje."""
+        return sorted(t for t in _pl_tags_auto()
+                      if t not in _pl_carpetas_outfit())
+
+    def _pl_bloque(lineas, ini, fin):
+        if not lineas:
+            return ""
+        return "\n".join([ini] + lineas + [fin]) + "\n"
+
+    def _pl_poner_bloque(texto, ini, fin, lineas, ancla_re):
+        """Reemplaza el bloque marcado, o lo inserta tras la última ancla."""
+        bloque = _pl_bloque(lineas, ini, fin)
+
+        if ini in texto:
+            a = texto.index(ini)
+            b = texto.find(fin, a)
+            b = len(texto) if b == -1 else b + len(fin)
+            resto = texto[b:]
+            if resto.startswith("\n"):
+                resto = resto[1:]
+            return texto[:a] + bloque + resto
+
+        if not bloque:
+            return texto
+
+        lineas_txt = texto.split("\n")
+        dentro = False
+        ancla = None
+        for i, l in enumerate(lineas_txt):
+            s = l.strip()
+            if s == ini:
+                dentro = True
+            elif s == fin:
+                dentro = False
+            elif not dentro and ancla_re.match(l):
+                ancla = i
+
+        nuevas = bloque.rstrip("\n").split("\n")
+        if ancla is None:
+            if not texto.endswith("\n"):
+                lineas_txt.append("")
+            lineas_txt.extend([""] + nuevas)
+            return "\n".join(lineas_txt)
+
+        lineas_txt[ancla + 1:ancla + 1] = nuevas
+        return "\n".join(lineas_txt)
+
+    def _pl_editar_personajes(texto, tags):
+        """Arma los dos bloques (define y default) para `tags`."""
+        per, nom = [], []
+        for tag in tags:
+            lineas = pl_personaje_texto(tag)
+            if not lineas:
+                continue
+            per.append(lineas[0])
+            nom.append(lineas[1])
+        texto = _pl_poner_bloque(texto, _PL_MARCA_PER_INI, _PL_MARCA_PER_FIN,
+                                 per, _PL_DEF_RE)
+        return _pl_poner_bloque(texto, _PL_MARCA_NOM_INI, _PL_MARCA_NOM_FIN,
+                                nom, _PL_NOM_RE)
+
+    def _pl_editar_definiciones(fn):
+        """Edita definitions/definitions.rpy (backup + escritura atómica)."""
+        ruta = _pl_os.path.join(config.gamedir, _PL_DEFS_REL)
+        try:
+            with open(ruta, "r", encoding="utf-8", newline="") as fh:
+                texto = fh.read().replace("\r\n", "\n").replace("\r", "\n")
+            with open(ruta + ".poselab.bak", "w", encoding="utf-8",
+                      newline="\n") as fh:
+                fh.write(texto)
+        except Exception as e:
+            print("pose_lab: no se pudo respaldar definitions.rpy: %s" % e)
+            return None
+        nuevo = fn(texto)
+        if nuevo is None:
+            return None
+        try:
+            _ins_escribir(ruta, nuevo)
+        except Exception as e:
+            print("pose_lab: no se pudo escribir definitions.rpy: %s" % e)
+            return None
+        return nuevo
+
+    def pl_escribir_personajes(tags):
+        """Escribe/reemplaza los bloques de personajes y nombres."""
+        if _pl_editar_definiciones(
+                lambda texto: _pl_editar_personajes(texto, tags)) is None:
+            return 0
+        return sum(1 for t in tags if pl_personaje_texto(t))
+
+    def _pl_aplicar_personajes(tags):
+        """Crea los personajes ya, sin reiniciar (store + nombre)."""
+        n = 0
+        for tag in tags:
+            if tag in _pl_carpetas_outfit() or hasattr(store, tag):
+                continue
+            try:
+                setattr(store, tag, DynamicCharacter(
+                    "%s_name" % tag, image=tag, what_prefix='"',
+                    what_suffix='"', ctc="ctc", ctc_position="fixed"))
+                if not hasattr(store, "%s_name" % tag):
+                    setattr(store, "%s_name" % tag, pl_nombre_personaje(tag))
+                n += 1
+            except Exception as e:
+                print("pose_lab: no se pudo crear el personaje %s: %s" % (tag, e))
+        return n
+
+    def pl_personajes_sin_define():
+        """Tags de bloques PoseLab a los que les falta el personaje."""
+        res = []
+        for tag in _pl_personajes_tags():
+            if hasattr(store, tag) or tag in _pl_tags_personajes_auto():
+                continue
+            res.append(tag)
+        return sorted(res)
+
     def _pl_editar_sprites(fn):
         """Aplica `fn(texto)` a definitions/sprites.rpy (backup + escritura atómica).
 
@@ -1002,16 +1168,28 @@ init python:
         return len(lineas)
 
     def pl_crear_definiciones(tags):
-        """Acción "Crear": escribe las definiciones y las aplica al toque."""
-        n = pl_escribir_definiciones(tags)
-        if not n:
-            tool_toast("No se pudo escribir definitions/sprites.rpy.")
+        """Acción "Crear": escribe imágenes y personajes, y los aplica al toque."""
+        n = 0
+        if tags:
+            n = pl_escribir_definiciones(tags)
+            if not n:
+                tool_toast("No se pudo escribir definitions/sprites.rpy.")
+                return
+
+        pl_limpiar_cache()  # que _pl_tags_auto() vea los bloques recién escritos
+        todos = _pl_personajes_tags()
+        m = pl_escribir_personajes(todos)
+
+        if not n and not m:
+            tool_toast("No había nada que crear.")
             return
-        _pl_cargar_definiciones(tags)
+
+        if tags:
+            _pl_cargar_definiciones(tags)
+        _pl_aplicar_personajes(todos)
         pl_limpiar_cache()
-        tool_toast("%d definición%s escrita%s y aplicada%s."
-                 % (n, "" if n == 1 else "es", "" if n == 1 else "s",
-                    "" if n == 1 else "s"))
+        tool_toast("%d definición%s y %d personaje%s."
+                 % (n, "" if n == 1 else "es", m, "" if m == 1 else "s"))
 
     def pl_defs_auto_huerfanas():
         """Tags con bloque de PoseLab cuyas definiciones perdieron sus PNGs."""
@@ -1048,24 +1226,32 @@ init python:
                         b = sig if sig != -1 else len(texto)
                     while b < len(texto) and texto[b] in "\r\n":
                         b += 1
-                    texto = texto[:a] + texto[b:]
-            return texto
+                    # También el salto que separaba el bloque de lo anterior.
+                    ini_b = a
+                    while ini_b > 0 and texto[ini_b - 1] in "\r\n":
+                        ini_b -= 1
+                    sep = "\n" if ini_b > 0 else ""
+                    texto = texto[:ini_b] + sep + texto[b:]
+            return texto.rstrip("\n") + "\n"
 
         if _pl_editar_sprites(aplicar) is None:
             tool_toast("No se pudo escribir definitions/sprites.rpy.")
             return
         pl_limpiar_cache()
+        pl_escribir_personajes(_pl_personajes_tags())
+        pl_limpiar_cache()
         tool_toast("Definiciones borradas: %s" % ", ".join(tags))
 
     def pl_ofrecer_definiciones():
-        """Muestra el prompt de definiciones (una vez por sesión)."""
+        """Muestra el prompt de definiciones/personajes (una vez por sesión)."""
         global _PL_PROMPT_VISTO
         if _PL_PROMPT_VISTO:
             return
         pendientes = pl_custom_sin_defs()
-        if not pendientes:
+        personajes = pl_personajes_sin_define()
+        if not pendientes and not personajes:
             return
-        renpy.show_screen("pl_definir", tags=pendientes)
+        renpy.show_screen("pl_definir", tags=pendientes, personajes=personajes)
         _PL_PROMPT_VISTO = True
 
     def pl_ofrecer_huerfanas():

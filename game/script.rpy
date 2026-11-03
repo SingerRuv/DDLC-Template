@@ -21,18 +21,6 @@ label start:
     # Esta variable controla si el jugador puede omitir una pausa en el juego.
     $ _dismiss_pause = config.developer
 
-    ## Nombres de los personajes
-    # Estas variables definen los nombres de los personajes del juego.
-    # Para añadir un personaje, usa el siguiente ejemplo:
-    #   $ mi_personaje = "Mi Nombre".
-    # ¡No olvides añadir el personaje en 'definitions.rpy'!
-    # Empiezan ocultos; revelalos en tu historia donde corresponda
-    # (p. ej. $ s_name = "Sayori").
-    $ s_name = "???"
-    $ m_name = "Chica 3"
-    $ n_name = "Chica 2"
-    $ y_name = "Chica 1"
-
     # Esta variable controla si el menú rápido del cuadro de texto está activado.
     $ quick_menu = True
 

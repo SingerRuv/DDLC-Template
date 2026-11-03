@@ -5,6 +5,29 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.5.2 — 2026-11-03
+
+### Cambiado
+- **Copiar en…** es otro panel: muestra el archivo con números de línea y una
+  **fila verde con el código ya indentado** en el lugar donde va a entrar. Se
+  elige **Antes/Después**, avisa si el resultado rompería el script y tiene
+  atajos (`Enter`, `Esc`, flechas). **Deshacer** indica la fecha del backup.
+- Insertar código **ya no reinicia el juego**: el botón **Recargar scripts**
+  aplica los cambios cuando quieras probarlos.
+
+### Corregido
+- Insertar desde **Copiar en…** reiniciaba el juego a los ~1,5 s. Ya no.
+- Los nombres de los personajes ya no se pisan al empezar: el cuadro de diálogo
+  muestra Sayori, Monika, Natsuki y Yuri sin tener que escribir `$ s_name = ...`
+  en la historia. Para el modo de nombres ocultos, cambiá los `default` o
+  asigná el nombre cuando quieras revelarlo.
+- **PoseLab** ahora crea al personaje completo: además de los sprites, escribe
+  su `define`/`default` en `definitions.rpy` (con el nombre tomado del tag) y
+  lo aplica al toque, así podés hacer `akira "..."` sin reiniciar. También te
+  ofrece arreglar los personajes que ya tenías creados.
+
+---
+
 ## 1.5.1 — 2026-11-02
 
 ### Cambiado
