@@ -161,7 +161,13 @@ screen main_navigation():
                 null height 14
 
             # --- Ejemplo: botón de texto -----------------------------------
-            textbutton _("New Game") action [SetVariable("start_from_menu", True), If(persistent.playername, true=Start(), false=Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName)))] at nav_button_anim
+            # En el "playthrough" 1 el botón se camufla (guiño de Bronya/DDLC),
+            # pero la acción es la misma.
+            if persistent.playthrough == 1:
+                textbutton _("ŔŗñĮ¼»ŧþŀÂŻŕěōì«") action If(persistent.playername, true=Start(), false=Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName))) at nav_button_anim:
+                    text_style "main_navigation_glitch_text"
+            else:
+                textbutton _("New Game") action If(persistent.playername, true=Start(), false=Show(screen="name_input", message="Please enter your name", ok_action=Function(FinishEnterName))) at nav_button_anim
 
             # --- Ejemplo: botón con imagen (imagebutton) --------------------
             # Para usarlo: descomenta estas líneas y comenta el textbutton.
@@ -175,6 +181,8 @@ screen main_navigation():
             textbutton _("Load Game") action [ShowMenu("load"), SensitiveIf(renpy.get_screen("load") == None)] at nav_button_anim
 
             textbutton _("Settings") action [ShowMenu("preferences"), SensitiveIf(renpy.get_screen("preferences") == None)] at nav_button_anim
+
+            textbutton _("Credits") action [ShowMenu("creditos"), SensitiveIf(renpy.get_screen("creditos") == None)] at nav_button_anim
 
             if renpy.variant("pc"):
                 textbutton _("Quit") action Quit(confirm=True) at nav_button_anim
@@ -402,6 +410,11 @@ style main_navigation_button_text:
     outlines [(4, text_outline_color, 0, 0), (2, text_outline_color, 2, 2)]
     hover_outlines [(4, "#fac", 0, 0), (2, "#fac", 2, 2)]
     insensitive_outlines [(4, "#fce", 0, 0), (2, "#fce", 2, 2)]
+
+# La etiqueta "corrupta" de Nueva Partida (playthrough 1) usa glifos que
+# RifficFree no trae; se muestra con DejaVuSans para que no salgan cuadraditos.
+style main_navigation_glitch_text is main_navigation_button_text:
+    font "DejaVuSans.ttf"
 
 # --- Menú de pausa: navegación ----------------------------------------------
 

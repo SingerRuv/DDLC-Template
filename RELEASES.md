@@ -5,6 +5,42 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 1.6.0 — 2026-11-04
+
+### Agregado
+- **Chequeos al arrancar:** ahora el juego avisa claro si falta algún `.rpa` de
+  DDLC, si estás en Ren'Py 7 o si el proyecto está dentro de OneDrive.
+- **Consola de Monika:** la terminal de DDLC se puede mostrar desde el guion
+  con `$ console("entrada", "salida")` o `$ console.show_screen()`.
+- **Personajes en disco:** `delete_character("sayori")` borra su `.chr` y
+  `restore_characters()` repone los que falten (copiá los `.chr` de tu DDLC a
+  `characters/` y `game/chrs/`; el template no los incluye).
+- **Pantalla Créditos** en el menú principal, con los créditos del template y
+  la atribución a bronya_rand.
+- Parches para Ren'Py 8 (Windows 11 y animaciones DDLC) y el guiño del botón
+  Nueva Partida en el acto 2 (texto glitcheado).
+
+### Corregido
+- `start` se comporta como en Bronya: al terminar tu historia cae sola en
+  `endgame` (la pantalla de fin), así que ya no hace falta `call endgame` al
+  final del guion.
+
+---
+
+## 1.5.3 — 2026-11-03
+
+### Cambiado
+- **New Game** quedó igual que Bronya: si ya hay nombre arranca con `Start()`;
+  si no, pide el nombre y después salta a `start`. Sin la bandera
+  `start_from_menu`.
+
+### Corregido
+- **Nueva Partida no iniciaba** cuando el `call` a la historia quedaba dentro
+  del guard `start_from_menu`. El botón ya no usa esa bandera: lo que pongas en
+  `start` se ejecuta siempre.
+
+---
+
 ## 1.5.2 — 2026-11-03
 
 ### Cambiado

@@ -15,6 +15,11 @@ El splash del template menciona a bronya_rand en el aviso legal, pero **no**
 incluye el texto de crédito completo: agregalo en los créditos de tu mod (y en
 el splash si lo reemplazás por uno propio).
 
+El template trae una pantalla **Créditos** en el menú principal
+(`game/definitions/creditos.rpy`) con esta atribución, la de ChromaGlitch y el
+aviso de que los assets de DDLC los aporta cada modder. Podés editarla a gusto,
+pero no saques a bronya_rand.
+
 ## Doki Doki Literature Club
 
 DDLC y sus assets son propiedad de **Team Salvato**. Este template es un

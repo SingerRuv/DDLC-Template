@@ -6,8 +6,8 @@ Mapa de la carpeta. Para el flujo de trabajo, ver [`docs/`](../docs/README.md).
 
 | Carpeta | Qué contiene |
 |---|---|
-| `core/` | El motor del template: imports tempranos, funciones de ayuda y Discord RPC. No tocar (ver `core/README.md`) |
-| `definitions/` | Definiciones: imágenes, sprites, música, efectos, transforms, menús, splash y variables persistentes (ver `definitions/README.md`) |
+| `core/` | El motor del template: imports, chequeos de arranque, parches de Ren'Py, consola, personajes `.chr` y Discord RPC. No tocar (ver `core/README.md`) |
+| `definitions/` | Definiciones: imágenes, sprites, música, efectos, transforms, menús, splash, créditos y variables persistentes (ver `definitions/README.md`) |
 | `mod_assets/` | **Tus** assets: imágenes, CGs y audio (ver `mod_assets/README.md`) |
 | `tools/` | Hub de Plugins (dev-only) y herramientas: PoseLab, Shaders Lab, Diálogo (ver `tools/README.md`) |
 | `migracion/` | Sistema de migración de assets entre versiones del template (ver `migracion/README.md`) |

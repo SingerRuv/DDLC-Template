@@ -6,6 +6,40 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-04
+
+### Agregado
+- **Chequeos de arranque:** mensaje claro si Ren'Py no es 8, si faltan
+  `audio.rpa`/`images.rpa`/`fonts.rpa`, o si el proyecto está dentro de OneDrive.
+- **Consola de Monika:** `$ console("entrada", "salida")` y
+  `$ console.show_screen()` (la terminal de DDLC, en `core/`).
+- **Personajes en disco (`.chr`):** `delete_character()` y
+  `restore_characters()` con `characters/` y copias en `game/chrs/`. Los `.chr`
+  de DDLC los aporta cada modder (no se versionan).
+- **Pantalla Créditos** en el menú principal, con la atribución obligatoria a
+  bronya_rand, ChromaGlitch y el aviso de assets.
+- Parches de Ren'Py para DDLC: `wmic` → PowerShell en Windows 11 y
+  `config.atl_start_on_show = False`.
+- En `persistent.playthrough == 1` el botón de Nueva Partida usa la etiqueta
+  glitcheada de Bronya.
+
+### Corregido
+- `label start` quedó como en Bronya: al terminar tu historia la ejecución cae
+  sola en `label endgame` (pantalla de fin), sin tener que poner `call endgame`
+  al final.
+
+## [1.5.3] - 2026-11-03
+
+### Cambiado
+- **New Game** quedó igual que Bronya: `If(persistent.playername,
+  true=Start(), false=Show(name_input…))`, sin la bandera `start_from_menu`.
+  El aviso del template es un `call screen dialog(...)` directo en `start`.
+
+### Corregido
+- Nueva Partida podía no iniciar si el `call` a la historia quedaba dentro del
+  guard `start_from_menu`. El botón ya no usa esa bandera: lo que pongas en
+  `start` se ejecuta siempre.
+
 ## [1.5.2] - 2026-11-03
 
 ### Cambiado
@@ -307,7 +341,9 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.2...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.6.0...HEAD
+[1.6.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.3...1.6.0
+[1.5.3]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.2...1.5.3
 [1.5.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.4.2...1.5.0

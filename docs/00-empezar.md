@@ -45,7 +45,8 @@ carpeta escribible del juego. No hay que hacer nada más: la pantalla está en
 
 Con un proyecto recién clonado, `label start` (en `game/script.rpy`) muestra un
 diálogo avisando que todavía no hay historia. Eso es lo normal: borrá esa línea
-cuando llames a tu historia.
+y poné el `call` a tu historia. Al terminar, `start` cae en `endgame` (la
+pantalla de fin) sin que tengas que llamarlo.
 
 ## 4. Dónde va tu historia
 

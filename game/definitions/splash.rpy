@@ -179,6 +179,14 @@ label splashscreen:
 
     $ quick_menu = False
 
+    # Prepara la carpeta `characters/` (solo si el modder copió los .chr de su
+    # instalación; si no están, no hace nada). Ver docs/01-historia.md.
+    python:
+        try:
+            initialize_characters_folder()
+        except Exception as _e:
+            print("personajes: %s" % _e)
+
     # Chequeo de versión del template en segundo plano (solo dev y proyectos
     # con manifest). El resultado aparece como indicador en el menú principal.
     $ mg_iniciar()
@@ -286,6 +294,13 @@ label after_load:
     $ config.allow_skipping = allow_skipping
     $ _dismiss_pause = config.developer
     $ style.say_dialogue = style.normal
+
+    # Restaura los .chr que falten (si el modder copió los suyos a chrs/).
+    python:
+        try:
+            restore_characters()
+        except Exception as _e:
+            print("personajes: %s" % _e)
 
     # Compara el token anti-cheat local con el persistente. Si no
     # coinciden, la partida fue alterada - se expulsa al jugador.

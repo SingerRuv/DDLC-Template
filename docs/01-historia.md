@@ -15,6 +15,19 @@ label start:
 `label start` tiene que existir **una sola vez**. Los capítulos pueden vivir en
 archivos separados dentro de `game/`; Ren'Py los carga solo.
 
+En el template, `start` trae el aviso de "template sin historia" como un
+`call screen dialog(...)` directo (igual que en Bronya). Para empezar tu mod:
+**borrá esa línea** y poné tu `call` en su lugar:
+
+```renpy
+    call mi_historia
+```
+
+Al terminar tu historia, `start` **cae en `label endgame`** (la pantalla de fin)
+sin que tengas que llamarlo; por eso no hay `return` al final de `start`. El
+botón **New Game** hace `Start()` (o pide el nombre y después
+`jump_out_of_context("start")`).
+
 ## Personajes
 
 Ya están definidos en `game/definitions/definitions.rpy`:
@@ -42,9 +55,15 @@ ocultos que se revelan en la historia), cambiá esos `default` por `"???"` /
 ### Diálogo
 
 ```renpy
+    show sayori 1a at t11 zorder 2
     s "Hola, ¿cómo estás?"
     "Texto de narración, sin personaje."
 ```
+
+Ojo con los dos nombres del personaje: los sprites se muestran con el **tag**
+(`sayori`, `yuri`, …), pero para hablar se usa la **variable** (`s`, `y`, …).
+En un personaje custom creado con PoseLab el tag y la variable coinciden
+(`show mc 1a` y `mc "..."`).
 
 El estilo del diálogo se controla con `style.say_dialogue` (por defecto
 `style.normal`). Si querés un estilo "glitcheado", definí el tuyo y asignaló:
@@ -113,7 +132,8 @@ default persistent.mi_logro = False
 ## Fin de partida
 
 `label endgame` (en `script.rpy`) hace el cierre estándar de DDLC: fundido a
-negro, cartel de fin y espera. Se puede llamar con otra duración:
+negro, cartel de fin y espera. Corre solo al terminar `start`; si querés
+cortar antes, llamalo con otra duración:
 
 ```renpy
     call endgame(2.0)
@@ -132,6 +152,31 @@ negro, cartel de fin y espera. Se puede llamar con otra duración:
    propio `.rpy`). Ver el ejemplo de `game/mod_assets/README.md`.
 3. Para armar poses sin escribir código a mano, usá **PoseLab** (ver
    [`03-herramientas.md`](03-herramientas.md)).
+
+## Consola de Monika
+
+La terminal falsa de DDLC está en `game/core/console.rpy` (la lógica en
+`game/core/py/console_ren.py`). Desde el guion:
+
+```renpy
+    $ console("sayori", "Just Monika.")   # escribe la entrada y después la salida
+    $ console.show_screen()               # muestra el historial
+    $ console.clear_history()             # borra el historial
+```
+
+## Personajes en disco (`.chr`)
+
+El template **no incluye** los `.chr` de DDLC (son datos oficiales). Copiá los
+tuyos a `characters/` (junto a `game/`) y, si querés poder restaurarlos, una
+copia a `game/chrs/`:
+
+```renpy
+    $ delete_character("sayori")     # borra characters/sayori.chr
+    $ restore_characters()           # repone los que falten según persistent.playthrough
+```
+
+`restore_characters()` corre al arrancar y en `after_load`; solo repone lo que
+falta (no borra otros `.chr`). Ver `characters/README.md`.
 
 ## Errores comunes
 
