@@ -69,6 +69,8 @@ init python:
                 continue
             if not _mc_os.path.isdir(_mc_os.path.join(ruta, "game")):
                 continue
+            if _mc_os.path.isfile(_mc_os.path.join(ruta, ".migracion_destino")):
+                continue
             man = _mc_manifest(_mc_os.path.join(ruta, _MC_MANIFEST))
             if not man:
                 continue
@@ -191,9 +193,6 @@ screen mc_oferta(candidatas):
                     spacing 4
                     text "[_mc_nom] — v[_mc_ver_txt][_mc_rec]":
                         style "migracion_texto"
-                    text "[_mc_ruta]":
-                        style "migracion_texto"
-                        size 14
                     if c.get("igual"):
                         text _("Misma versión: puede ser una carpeta corrupta. "
                                "Elegí cuál usar como origen."):

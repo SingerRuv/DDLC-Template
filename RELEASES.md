@@ -5,6 +5,18 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 2.0.1 — 2026-11-12
+
+### Corregido
+- **Arranque del template:** `script.rpy` ya no llama a `testt` (un label de
+  `game/story/`, que no se incluye en el ZIP); ahora muestra el aviso de
+  template y no falla con `LabelNotFound`.
+- **Migración entre carpetas:** conserva el `script.rpy` de la plantilla
+  destino, limpia el `.rpyc` temporal del arranque y marca el destino para no
+  volver a ofrecerlo.
+
+---
+
 ## 2.0.0 — 2026-11-10
 
 ### Cambiado (ruptura)

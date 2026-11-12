@@ -23,6 +23,29 @@ IGNORAR_DIRS = set(base.IGNORAR_DIRS) | {"migracion_backup"}
 RUTA_REPORTE = os.path.join("game", "migracion", "reporte.json")
 RUTA_LOG = os.path.join("game", "migracion", "migracion.log")
 
+# El script principal siempre lo aporta la plantilla destino. La historia del
+# origen va en otros .rpy y no se pierde.
+ARCHIVOS_PLANTILLA = ("game/script.rpy",)
+
+
+def _marcar_destino(dest, source):
+    """Marca la carpeta como destino para no volver a ofrecerla."""
+    try:
+        with io.open(os.path.join(dest, ".migracion_destino"), "w",
+                     encoding="utf-8", newline="\n") as fh:
+            fh.write("origen=%s\n" % source)
+    except Exception:
+        pass
+
+
+def _limpiar_boot(boot_rpy):
+    """Borra el .rpy temporal y su .rpyc compilado."""
+    for ruta in (boot_rpy, boot_rpy + "c"):
+        try:
+            os.remove(ruta)
+        except OSError:
+            pass
+
 
 def _rel(raiz, ruta):
     return base._norm(os.path.relpath(ruta, raiz))
@@ -36,6 +59,8 @@ def _ignorar(rel):
     if rel.startswith("game/migracion/"):
         return True
     if partes[-1] in base.IGNORAR_FILES:
+        return True
+    if partes[-1] in (".migracion_destino", ".migracion_boot_ok"):
         return True
     if rel.endswith(base.IGNORAR_EXT):
         return True
@@ -88,7 +113,9 @@ def _reporte(project, source, dest, desde, hasta, ok, error, plan=None,
         "nuevos": plan.get("nuevos", []),
         "borrados": [],
         "origen": source,
+        "origen_nombre": os.path.basename(os.path.normpath(source)),
         "destino": dest,
+        "destino_nombre": os.path.basename(os.path.normpath(dest)),
         "carpeta_vieja": source,
         "carpeta_vieja_borrada": bool(borrada),
     }
@@ -114,7 +141,7 @@ def _archivos_origen(source, man):
         for nombre in filenames:
             ruta = os.path.join(dirpath, nombre)
             rel = _rel(source, ruta)
-            if _ignorar(rel) or rel in ignorados:
+            if _ignorar(rel) or rel in ignorados or rel in ARCHIVOS_PLANTILLA:
                 continue
             if rel in files:
                 try:
@@ -257,6 +284,7 @@ def migrar(job):
     creados = []
     rpa_nuevos = []
     saves_flag = False
+    boot_rpy = None
     try:
         for rel, ruta in propios:
             dst = os.path.join(dest, rel.replace("/", os.sep))
@@ -294,8 +322,8 @@ def migrar(job):
                 break
             time.sleep(1)
         try:
-            os.remove(boot_rpy)
-        except OSError:
+            _limpiar_boot(boot_rpy)
+        except Exception:
             pass
         try:
             os.remove(boot_marker)
@@ -311,12 +339,18 @@ def migrar(job):
         except Exception as e:
             _log(dest, "no se pudo borrar la carpeta vieja: %s" % e)
 
+        _marcar_destino(dest, source)
         _reporte(dest, source, dest, desde, hasta, True, "", plan, backup,
                  len(propios), borrada,
                  {"rpa": rpa_nuevos, "saves": bool(saves_flag)})
         _log(dest, "migracion entre carpetas OK: %d archivos" % len(propios))
         return True
     except Exception as e:
+        if boot_rpy:
+            try:
+                _limpiar_boot(boot_rpy)
+            except Exception:
+                pass
         try:
             os.remove(os.path.join(dest, ".migracion_boot_ok"))
         except OSError:

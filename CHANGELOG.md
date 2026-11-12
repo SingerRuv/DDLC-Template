@@ -6,6 +6,16 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-12
+
+### Corregido
+- `script.rpy` ya no llama a un label de `game/story/` (carpeta local que no
+  viaja en el ZIP); muestra el aviso de template.
+- La migración entre carpetas conserva siempre `game/script.rpy` de la
+  plantilla destino.
+- El migrador entre carpetas limpia el `.rpyc` del marcador de arranque y marca
+  el destino para no volver a ofrecerlo.
+
 ## [2.0.0] - 2026-11-10
 
 ### Cambiado (ruptura)
@@ -368,7 +378,9 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/1.6.0...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/SingerRuv/DDLC-Template/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.6.0...2.0.0
 [1.6.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.3...1.6.0
 [1.5.3]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.2...1.5.3
 [1.5.2]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.1...1.5.2

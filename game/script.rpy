@@ -39,8 +39,7 @@ label start:
     # Escribe el guion en cualquier archivo .rpy dentro de game/ (Ren'Py los
     # carga automáticamente) y llámalo acá con:
     #     call nombre_de_tu_label
-    call testt
-    #call screen dialog(message="Este es un template, no un juego real: todavía no hay historia que jugar.\n\nEscribe tu historia en un archivo .rpy dentro de la carpeta game/ (Ren'Py lo carga automáticamente) y llámala desde 'script.rpy' con:\n\n    call nombre_de_tu_label\n\nDespués, borra esta línea.", ok_action=MainMenu(confirm=False))
+    call screen dialog(message="Este es un template, no un juego real: todavía no hay historia que jugar.\n\nEscribe tu historia en un archivo .rpy dentro de la carpeta game/ (Ren'Py lo carga automáticamente) y llámala desde 'script.rpy' con:\n\n    call nombre_de_tu_label\n\nDespués, borra esta línea.", ok_action=MainMenu(confirm=False))
 
     ## Ejemplo de cómo el template original de DDLC llamaba a sus capítulos:
     # Nota: el template original organizaba la historia en "chapters" (capitulos).

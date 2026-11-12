@@ -6,6 +6,9 @@ init -1 python:
     def mg_ignorar_version(version):
         persistent.mg_ignorar = version
 
+    def mg_nombre_carpeta(ruta):
+        return (ruta or "?").replace("\\", "/").rstrip("/").split("/")[-1] or "?"
+
     def mg_resumen(reporte):
         """Arma las líneas del reporte de migración para mostrar en pantalla."""
         lineas = []
@@ -13,8 +16,10 @@ init -1 python:
             return lineas
         if reporte.get("modo") == "carpetas":
             lineas.append(_("Migración entre carpetas: %s a %s") %
-                          (reporte.get("origen", "?"),
-                           reporte.get("destino", "?")))
+                          (reporte.get("origen_nombre") or
+                           mg_nombre_carpeta(reporte.get("origen")),
+                           reporte.get("destino_nombre") or
+                           mg_nombre_carpeta(reporte.get("destino"))))
             if reporte.get("carpeta_vieja_borrada"):
                 lineas.append(_("La carpeta vieja se eliminó."))
             elif reporte.get("ok"):

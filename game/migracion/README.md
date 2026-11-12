@@ -72,11 +72,15 @@ al arrancar se ofrece migrar entre carpetas. Requisitos y reglas:
   (por si una carpeta está corrupta).
 - Se copian solo los archivos propios del origen, dentro y fuera de `game/`,
   según los hashes del manifest. No se copian docs/tools/README del template.
+- `game/script.rpy` siempre se conserva de la plantilla destino; la historia
+  del origen va en sus propios `.rpy`.
 - En conflictos se conserva la versión propia del origen y se avisa.
 - Las saves del origen se copian solo si el destino no tiene saves.
 - Se copian al destino solo los `.rpa` que falten.
 - La carpeta vieja queda intacta hasta que el destino confirma el arranque;
   después se elimina. Si el destino falla, se restaura y la vieja se conserva.
+- La carpeta destino queda marcada con `.migracion_destino` y no se vuelve a
+  ofrecer como candidata.
 - Se ofrece una vez por arranque, antes del chequeo de GitHub; ambos flujos
   son independientes.
 - Sin manifest en el proyecto actual no se ofrece nada.
