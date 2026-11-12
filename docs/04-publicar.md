@@ -24,7 +24,7 @@ En la rama `dev`, `config.version` se deja en `"0.0.0"`.
 | Rama | Contenido |
 |---|---|
 | `dev` | Desarrollo: `config.version = "0.0.0"`, `.vscode/`, plugins en progreso |
-| `main` | Releases: versión real, `CHANGELOG.md` / `RELEASE.md` / `RELEASES.md`, `.github/` (workflow del ZIP) |
+| `main` | Releases: versión real, `CHANGELOG.md` / `RELEASES.md`, `.github/` (workflow del ZIP) |
 
 Un **plugin en desarrollo vive solo en `dev`**: no pasa a `main` hasta que esté
 listo.
@@ -54,7 +54,7 @@ locales (por ejemplo los sprites propios) o guardalos con `stash`.
    esté commiteado. Si el fallo es `sobra docs/referencia/<plugin>.md`, el
    plugin todavía no llegó a esta rama: subilo con su referencia o sacá los
    links.
-4. **Manifest**: lo genera el workflow con `tools/gen_manifest.py`; no se
+4. **Manifest**: lo genera el workflow con `.github/scripts/gen_manifest.py`; no se
    commitea (`game/migracion/manifest.json` está en `.gitignore`).
 5. **Pruebas**:
 
@@ -65,7 +65,7 @@ locales (por ejemplo los sprites propios) o guardalos con `stash`.
    - Arrancar el juego y jugar el tramo inicial.
    - Probar el splash y el aviso legal.
    - `python game/migracion/migrar.py --selftest` (algoritmo de migración).
-6. **Commit, tag y Release**: crear el tag (`1.3.0`) y la GitHub Release. El
+6. **Commit, tag y Release**: crear el tag (`2.0.0`) y la GitHub Release. El
    workflow arma el ZIP con `git archive`.
 
 ## Qué entra en el ZIP
@@ -74,12 +74,13 @@ locales (por ejemplo los sprites propios) o guardalos con `stash`.
 
 ```
 .github/  .gitattributes  .gitignore  .vscode/
-CHANGELOG.md  RELEASE.md  RELEASES.md  /tools/
+CHANGELOG.md  RELEASES.md  /tools/
 ```
 
 > [!WARNING]
-> `/tools/` está **anclado a la raíz**. No lo cambies por `tools/`: eso también
-> excluiría `game/tools/` (el hub de Plugins) y rompería el juego publicado.
+> `/tools/` está **anclado a la raíz** y es local (no versionado). No lo cambies
+> por `tools/`: eso también excluiría `game/plugins/` (el hub de Plugins) y
+> rompería el juego publicado.
 
 Tampoco viajan: `.rpa` de DDLC, `game/saves/`, `game/cache/`, `*.rpyc`, logs ni
 respaldos de migración.
@@ -94,6 +95,12 @@ modder no tocó se actualiza, lo que tocó se conserva, y lo agregado se respald
 El aviso vive en el menú principal (`Actualizar vX.Y.Z`) y solo
 aparece en modo dev; el jugador final nunca lo ve. Detalles en
 `game/migracion/README.md`.
+
+También existe la migración entre carpetas: si el modder tiene dos proyectos
+hermanos con manifest, el juego ofrece pasar los archivos propios de la carpeta
+vieja a la nueva y, si el destino arranca bien, eliminar la vieja. Se puede
+iniciar desde cualquiera de las dos, pero siempre copia de la versión menor a la
+mayor.
 
 Consecuencia para el release: **todo archivo del template tiene que estar en el
 manifest**. Si agregás algo fuera de `game/` que el manifiesto no liste (por
@@ -110,6 +117,6 @@ los aporta en el primer arranque (ver [`00-empezar.md`](00-empezar.md)).
 ## Documentación
 
 - Guías para modders: `docs/`.
-- READMEs por carpeta: `game/README.md`, `game/tools/README.md`,
-  `game/tools/plugins/README.md`, `game/migracion/README.md`, `game/tl/`.
-- Scripts de mantenimiento: `tools/README.md`.
+- READMEs por carpeta: `game/README.md`, `game/plugins/README.md`,
+  `game/plugins/PLUGINS.md`, `game/migracion/README.md`, `game/tl/`.
+- Scripts de mantenimiento (solo en la copia del mantenedor): `tools/`.

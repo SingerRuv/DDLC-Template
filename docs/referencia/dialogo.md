@@ -1,9 +1,9 @@
 # Referencia — Estilo de diálogo (Diálogo)
 
-> Generado por `tools/gen_docs.py` desde `game/tools/plugins/dialogo_lab/dialogo_doc.py`.
+> Generado por `tools/gen_docs.py` desde `game/plugins/dialogo_lab/dialogo_doc.py`.
 > **No editar a mano**: corré `python tools/gen_docs.py` después de tocar el código.
 
-Plugin **Diálogo** (`game/tools/plugins/dialogo_lab/`). Arma líneas de diálogo con énfasis (negrita, itálica, subrayado, tachado, color y tamaño) sobre la frase que marques, y deja la línea lista para copiar o insertar en el guion.
+Plugin **Diálogo** (`game/plugins/dialogo_lab/`). Arma líneas de diálogo con énfasis (negrita, itálica, subrayado, tachado, color y tamaño) sobre la frase que marques, y deja la línea lista para copiar o insertar en el guion.
 
 No hay motor: el efecto se aplica con los tags de Ren'Py, que son markup nativo. Ver [`03-herramientas.md`](../03-herramientas.md).
 

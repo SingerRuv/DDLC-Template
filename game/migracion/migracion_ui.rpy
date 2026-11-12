@@ -11,6 +11,32 @@ init -1 python:
         lineas = []
         if not reporte:
             return lineas
+        if reporte.get("modo") == "carpetas":
+            lineas.append(_("Migración entre carpetas: %s a %s") %
+                          (reporte.get("origen", "?"),
+                           reporte.get("destino", "?")))
+            if reporte.get("carpeta_vieja_borrada"):
+                lineas.append(_("La carpeta vieja se eliminó."))
+            elif reporte.get("ok"):
+                lineas.append(_("La carpeta vieja se conservó como respaldo."))
+            if reporte.get("ok"):
+                lineas.append(_("Se copiaron %d archivos propios.") %
+                              reporte.get("copiados", 0))
+                if reporte.get("rpa"):
+                    lineas.append(_("Se copiaron %d assets .rpa faltantes.") %
+                                  len(reporte["rpa"]))
+                if reporte.get("saves"):
+                    lineas.append(_("Se copiaron las saves del origen."))
+                if reporte.get("conflictos"):
+                    lineas.append(_("Archivos en conflicto: %d.") %
+                                  len(reporte["conflictos"]))
+                if reporte.get("backup"):
+                    lineas.append(_("Respaldo del destino: %s") %
+                                  reporte["backup"])
+            else:
+                lineas.append(_("No se pudo migrar: %s") %
+                              reporte.get("error", ""))
+            return lineas
         lineas.append(_("Template: v%s a v%s") % (reporte.get("desde", "?"), reporte.get("hasta", "?")))
         if reporte.get("ok"):
             lineas.append(_("Se actualizaron %d archivos del template.") % reporte.get("copiados", 0))

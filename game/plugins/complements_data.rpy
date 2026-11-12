@@ -1,0 +1,349 @@
+## complements_data.rpy
+## Hub de Plugins — Lógica (sin UI): descubrimiento de plugins, manifiesto
+## (tool.json), validación/diagnóstico, búsqueda, y el soporte de módulos .py
+## con sus hooks (setup/open/close/metadata).
+##
+## La interfaz vive en complements_ui.rpy y el screen raíz del hub en
+## complements.rpy. Ver game/plugins/PLUGINS.md para escribir un plugin.
+
+init python:
+    import json as _pl_json
+    import builtins as _pl_builtins
+
+    _PL_PLUGINS_DIR = "plugins/"
+    _PL_PLUGINS_LOG = "plugins"
+
+    # Version de la API de plugins; un tool.json puede exigir `min_version`.
+    tools_api_version = "1.0"
+
+    def _pl_ver(v):
+        """'1.2.3' -> (1, 2, 3); None si no es una version valida."""
+        try:
+            return tuple(int(x) for x in str(v).split("."))
+        except Exception:
+            return None
+
+    def _pl_diag(diagnosticos, id_, ruta, motivo, fatal=True):
+        diagnosticos.append({
+            "id": id_, "ruta": ruta, "motivo": motivo, "fatal": fatal})
+
+    # ======================================================================
+    # Registros que llenan los plugins:
+    #   TOOL_REFRESCO_FNS -> limpiar cachés al re-escanear (tool_refrescar).
+    #   TOOL_DIAG_FNS     -> problemas extra que el hub muestra en Diagnóstico.
+    # ======================================================================
+    TOOL_REFRESCO_FNS = []
+    TOOL_DIAG_FNS = []
+
+    def tool_refrescar():
+        """Vuelve a listar los archivos del juego (sin reiniciar).
+
+        `renpy.list_files()` es una foto del arranque: sin esto, una carpeta
+        nueva no aparece y una borrada sigue estando. `scandirfiles()` solo
+        agrega (duplica e ignora lo que ya no existe), así que hay que usar
+        `index_files()`, que vacía y re-escanea. Después se limpian las cachés
+        de `loadable` (si no, un archivo borrado sigue dando True) y de
+        imágenes, y la de cada plugin."""
+        try:
+            renpy.loader.index_files()
+            renpy.loader.loadable_cache.clear()
+            renpy.display.im.cache.clear()
+        except Exception as e:
+            print("%s: no se pudo refrescar la lista de archivos: %s"
+                  % (_PL_PLUGINS_LOG, e))
+
+        for fn in list(TOOL_REFRESCO_FNS):
+            try:
+                fn()
+            except Exception as e:
+                print("%s: fallo el refresco de un plugin: %s" % (_PL_PLUGINS_LOG, e))
+
+    # ======================================================================
+    # Manifiesto (tool.json): única fuente de verdad del contrato.
+    #
+    # Lo usan el hub (sobre `renpy.file`) y el instalador (sobre los bytes de
+    # un ZIP). Si cambia una regla, cambia acá y los dos quedan alineados.
+    # ======================================================================
+
+    def pl_manifiesto(datos, carpeta):
+        """Valida y normaliza un tool.json ya parseado.
+
+        Devuelve (e, motivos). `e` es None si el manifiesto es inservible
+        (no es un objeto o no declara `screen`); `motivos` es una lista de
+        (texto, fatal).
+
+        No toca el disco: el `screen` registrado, el icono y las capturas se
+        validan afuera, porque solo el hub tiene el juego cargado. `icono` y
+        `capturas` se devuelven tal cual (rutas relativas a la carpeta)."""
+
+        if not isinstance(datos, _pl_builtins.dict):
+            return None, [("no es un objeto JSON", True)]
+
+        screen = str(datos.get("screen") or "").strip()
+        if not screen:
+            return None, [("falta 'screen'", True)]
+
+        orden = datos.get("orden", 0)
+        if not isinstance(orden, _pl_builtins.int):
+            orden = 0
+
+        palabras = datos.get("palabras_clave") or []
+        if not isinstance(palabras, _pl_builtins.list):
+            palabras = []
+
+        motivos = []
+
+        args = datos.get("args") or {}
+        if not isinstance(args, _pl_builtins.dict):
+            motivos.append(("'args' no es un objeto; se ignora", False))
+            args = {}
+
+        capturas = datos.get("capturas") or []
+        if not isinstance(capturas, _pl_builtins.list):
+            capturas = []
+
+        return {
+            "id": str(datos.get("id") or carpeta),
+            "titulo": str(datos.get("titulo") or carpeta),
+            "descripcion": str(datos.get("descripcion") or ""),
+            "autor": str(datos.get("autor") or ""),
+            "version": str(datos.get("version") or ""),
+            "categoria": str(datos.get("categoria") or "General"),
+            "orden": orden,
+            "screen": screen,
+            "palabras_clave": [str(p) for p in palabras],
+            "args": args,
+            "modulo": str(datos.get("modulo") or ""),
+            "min_version": str(datos.get("min_version") or ""),
+            "icono": str(datos.get("icono") or ""),
+            "capturas": [str(c) for c in capturas
+                         if isinstance(c, _pl_builtins.str)],
+        }, motivos
+
+    def pl_manifiesto_bytes(raw, carpeta):
+        """Igual que `pl_manifiesto`, desde los bytes de un tool.json.
+
+        Acepta BOM (`utf-8-sig`): un tool.json guardado desde Windows con BOM
+        no debe dejar el plugin instalado pero invisible."""
+        try:
+            datos = _pl_json.loads(raw.decode("utf-8-sig"))
+        except Exception as e:
+            return None, [("JSON ilegible: %s" % e, True)]
+        return pl_manifiesto(datos, carpeta)
+
+    def pl_plugins():
+        """Descubre los plugins en plugins/ y devuelve
+        (plugins, diagnosticos).
+
+        Nunca descarta un plugin en silencio: todo problema (JSON roto, screen
+        inexistente, id duplicado, icono faltante, etc.) queda en `diagnosticos`,
+        con `fatal` indicando si el plugin se excluyo de la lista.
+
+        Cada plugin: id, titulo, descripcion, autor, version, categoria,
+        orden, icono, palabras_clave, capturas, screen, args, modulo,
+        min_version. Ordenadas por (orden, titulo)."""
+
+        # Durante la predicción Ren'Py no deja abrir archivos y no se dibuja
+        # nada: devolver vacío evita el ruido de "Refusing to open".
+        if renpy.predicting():
+            return [], []
+
+        plugins = []
+        diagnosticos = []
+        ids = set()
+
+        for f in sorted(renpy.list_files()):
+            if not f.startswith(_PL_PLUGINS_DIR) or not f.endswith("/tool.json"):
+                continue
+            carpeta = f[len(_PL_PLUGINS_DIR):-len("tool.json")].rstrip("/")
+            if "/" in carpeta or not carpeta:
+                continue  # solo plugins en el primer nivel
+
+            try:
+                with renpy.file(f) as fh:
+                    raw = fh.read()
+            except Exception as e:
+                print("%s: tool.json ilegible en %s: %s" % (_PL_PLUGINS_LOG, f, e))
+                _pl_diag(diagnosticos, carpeta, f, "no se pudo leer: %s" % e)
+                continue
+
+            e, motivos = pl_manifiesto_bytes(raw, carpeta)
+            for texto, fatal in motivos:
+                _pl_diag(diagnosticos, carpeta, f, texto, fatal=fatal)
+            if e is None:
+                continue
+
+            id_ = e["id"]
+
+            if id_ in ids:
+                _pl_diag(diagnosticos, id_, f, "id duplicado: '%s'" % id_)
+                continue
+            if not renpy.has_screen(e["screen"]):
+                _pl_diag(diagnosticos, id_, f, "no existe el screen '%s'" % e["screen"])
+                continue
+
+            ids.add(id_)
+
+            # Icono y capturas: rutas relativas a la carpeta del plugin.
+            icono_ruta = ""
+            if e["icono"]:
+                ruta = "%s%s/%s" % (_PL_PLUGINS_DIR, carpeta, e["icono"])
+                if renpy.loadable(ruta):
+                    icono_ruta = ruta
+                else:
+                    _pl_diag(diagnosticos, id_, f,
+                             "icono no cargable: %s" % e["icono"], fatal=False)
+
+            capturas = []
+            for cap in e["capturas"]:
+                ruta = "%s%s/%s" % (_PL_PLUGINS_DIR, carpeta, cap)
+                if renpy.loadable(ruta):
+                    capturas.append(ruta)
+
+            if e["min_version"]:
+                v_req, v_api = _pl_ver(e["min_version"]), _pl_ver(tools_api_version)
+                if v_req and v_api and v_req > v_api:
+                    _pl_diag(diagnosticos, id_, f,
+                             "requiere API >= %s (actual %s)"
+                             % (e["min_version"], tools_api_version),
+                             fatal=False)
+
+            plugins.append(dict(e, dir=carpeta, icono=icono_ruta,
+                                capturas=capturas))
+
+        for e in plugins:
+            _pl_aplicar_metadata(e)
+        plugins.sort(key=lambda d: (d["orden"], d["titulo"].lower()))
+
+        # Problemas que detectan los plugins (p. ej. definiciones de sprites
+        # que apuntan a archivos borrados). Cada función devuelve una lista
+        # de dicts como los de `_pl_diag`.
+        for fn in list(TOOL_DIAG_FNS):
+            try:
+                diagnosticos.extend(fn())
+            except Exception as e:
+                print("%s: fallo el diagnóstico de un plugin: %s"
+                      % (_PL_PLUGINS_LOG, e))
+
+        return plugins, diagnosticos
+
+    # ======================================================================
+    # Hub: búsqueda.
+    # ======================================================================
+
+    def pl_coincide(t, texto):
+        """True si la herramienta coincide con el texto de búsqueda (busca
+        también en los metadatos traducidos, para el idioma actual)."""
+        texto = (texto or "").strip().lower()
+        if not texto:
+            return True
+        campos = (
+            t["titulo"], _(t["titulo"]),
+            t["descripcion"], _(t["descripcion"]),
+            t["categoria"], _(t["categoria"]),
+            " ".join(t["palabras_clave"]), t["id"])
+        return any(texto in str(c).lower() for c in campos)
+
+    def pl_corto(texto, n=110):
+        """Recorta un texto para la tarjeta (con '…')."""
+        texto = texto or ""
+        return texto if len(texto) <= n else texto[:n - 1].rstrip() + "…"
+
+    # ======================================================================
+    # Plugins Python (.py): un plugin puede declarar `"modulo": "nombre"` y
+    # poner `nombre.py` en su carpeta. El hub agrega la carpeta al import path
+    # y llama, si existen, los hooks:
+    #   setup(tool)  -> una vez, al init
+    #   open(tool)   -> al abrir la herramienta
+    #   close(tool)  -> al cerrarla (detectado)
+    #   metadata()   -> dict que sobreescribe campos cosmeticos del manifiesto
+    # ======================================================================
+    import importlib as _pl_importlib
+
+    _PL_PLUGIN_MODULOS = {}     # id -> modulo importado (o None)
+    _PL_PLUGIN_SETUP = set()    # ids con setup() ya llamado
+    _PL_TOOL_ABIERTA = None     # herramienta abierta (dict) o None
+
+    def _pl_cargar_modulo(tool):
+        """Importa el .py declarado por el plugin (una vez por id)."""
+        id_ = tool["id"]
+        if id_ in _PL_PLUGIN_MODULOS:
+            return _PL_PLUGIN_MODULOS[id_]
+        mod = None
+        nombre = tool.get("modulo") or ""
+        if nombre:
+            try:
+                renpy.add_python_directory("%s%s/" % (_PL_PLUGINS_DIR, tool["dir"]))
+                mod = _pl_importlib.import_module(nombre)
+            except Exception as e:
+                print("%s: no se pudo importar '%s' (%s): %s" % (_PL_PLUGINS_LOG, nombre, id_, e))
+        _PL_PLUGIN_MODULOS[id_] = mod
+        return mod
+
+    def _pl_aplicar_metadata(e):
+        """Aplica metadata() del modulo (sobreescribe campos cosmeticos)."""
+        mod = _PL_PLUGIN_MODULOS.get(e["id"])
+        if mod is None:
+            return
+        try:
+            md = getattr(mod, "metadata", None)
+            md = md() if callable(md) else md
+        except Exception as ex:
+            print("%s: metadata() de '%s' fallo: %s" % (_PL_PLUGINS_LOG, e["id"], ex))
+            return
+        if isinstance(md, _pl_builtins.dict):
+            for k in ("titulo", "descripcion", "autor", "version", "categoria"):
+                if k in md:
+                    e[k] = str(md[k])
+            if "orden" in md:
+                try:
+                    e["orden"] = int(md["orden"])
+                except Exception:
+                    pass
+            palabras = md.get("palabras_clave")
+            if isinstance(palabras, (_pl_builtins.list, _pl_builtins.tuple)):
+                e["palabras_clave"] = [str(p) for p in palabras]
+
+    def _pl_llamar(mod, nombre, *args):
+        """Llama un hook opcional del modulo; los errores van al log."""
+        hook = getattr(mod, nombre, None) if mod is not None else None
+        if callable(hook):
+            try:
+                hook(*args)
+            except Exception as e:
+                print("%s: %s.%s() fallo: %s" % (_PL_PLUGINS_LOG, getattr(mod, "__name__", "?"), nombre, e))
+
+    def _pl_llamar_cierre():
+        global _PL_TOOL_ABIERTA
+        tool = _PL_TOOL_ABIERTA
+        _PL_TOOL_ABIERTA = None
+        if tool is not None:
+            _pl_llamar(_PL_PLUGIN_MODULOS.get(tool["id"]), "close", tool)
+
+    def _pl_vigilar_cierre():
+        """Periodic: si la herramienta abierta ya no esta, llama close()."""
+        if _PL_TOOL_ABIERTA is not None and not renpy.get_screen(_PL_TOOL_ABIERTA["screen"]):
+            _pl_llamar_cierre()
+
+    def pl_abrir(tool):
+        """Abre una herramienta: cierra la anterior, corre open() y muestra el screen."""
+        global _PL_TOOL_ABIERTA
+        _pl_llamar_cierre()
+        mod = _PL_PLUGIN_MODULOS.get(tool["id"]) or _pl_cargar_modulo(tool)
+        _pl_llamar(mod, "open", tool)
+        _PL_TOOL_ABIERTA = tool
+        renpy.show_screen(tool["screen"], **tool["args"])
+
+
+init 999 python:
+    # Carga los modulos .py de los plugins y llama setup() una vez por cada uno.
+    for _t in pl_plugins()[0]:
+        if _t.get("modulo") and _t["id"] not in _PL_PLUGIN_SETUP:
+            _mod = _pl_cargar_modulo(_t)
+            if _mod is not None:
+                _pl_llamar(_mod, "setup", _t)
+            _PL_PLUGIN_SETUP.add(_t["id"])
+
+    # Vigila el cierre de la herramienta abierta (para el hook close()).
+    if _pl_vigilar_cierre not in config.periodic_callbacks:
+        config.periodic_callbacks.append(_pl_vigilar_cierre)

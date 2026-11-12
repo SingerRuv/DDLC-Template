@@ -14,9 +14,10 @@ game/tl/spanish/
     discord_rpc.rpy     estados del Rich Presence
   migracion/
     migracion_ui.rpy    ventanas de migración (dev; entradas identidad)
-  tools/
+  plugins/
     complements.rpy     hub de Plugins (dev; entradas identidad)
     complements_ui.rpy  shell de Plugins (dev; entradas identidad)
+    installer.rpy       instalador de plugins (dev; entradas identidad)
 ```
 
 El jugador cambia de idioma desde **Ajustes → Language** (screen
@@ -47,9 +48,11 @@ sincronizar. Las entradas sin `old` vigente se ignoran, no rompen nada.
 
 ## Textos de plugins y herramientas
 
-Las pantallas de `game/tools/` son **dev-only** y no se traducen (no se
-distribuyen). Si un plugin tuyo muestra texto al jugador, envolvelo en `_()`
-igual que el resto y agregalo a tu idioma.
+Las pantallas de `game/plugins/` son **dev-only**. El hub ya está escrito en
+español, así que `tl/spanish/plugins/` contiene entradas identidad (`old` ==
+`new`) solo para que `translate --count` refleje la realidad. Si un plugin tuyo
+muestra texto al jugador, envolvelo en `_()` igual que el resto y agregalo a tu
+idioma.
 
 ## Reglas
 

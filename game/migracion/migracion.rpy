@@ -88,7 +88,7 @@ init -1 python:
         """Consulta la última release. Devuelve (version, url_del_zip)."""
         import requests
         url = "https://api.github.com/repos/%s/releases/latest" % mg_repo()
-        req = {"User-Agent": "DDLC-BrokenDreamsModTemplate",
+        req = {"User-Agent": "RyuModTemplate",
                "Accept": "application/vnd.github+json"}
         try:
             proxies = renpy.exports.proxies
@@ -112,7 +112,7 @@ init -1 python:
             proxies = renpy.exports.proxies
         except Exception:
             proxies = None
-        with requests.get(url, headers={"User-Agent": "DDLC-BrokenDreamsModTemplate"},
+        with requests.get(url, headers={"User-Agent": "RyuModTemplate"},
                           proxies=proxies, timeout=60, stream=True) as resp:
             resp.raise_for_status()
             with _mg_io.open(destino, "wb") as f:

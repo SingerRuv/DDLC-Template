@@ -2,21 +2,21 @@
 # Este archivo personaliza que es tu juego y como arranca y se compila!
 
 # Esto controla como se llama tu juego.
-define config.name = "DDLC BrokenDreamsModTemplate"
+define config.name = "Ryu Mod Template"
 
 # Esto controla si quieres que el nombre del juego se vea en el menu principal.
 # Si el nombre es largo, se sugiere desactivarlo.
 define gui.show_name = True
 
 # Esto controla el numero de version de tu juego.
-define config.version = "1.6.0"
+define config.version = "2.0.0"
 
 # Esto controla el nombre del build al empaquetar tu juego
 # en el Launcher de Ren'Py.
 # Nota:
 #   El nombre de build es solo ASCII, sin numeros, espacios ni punto y coma.
 #   Ejemplo: Mi Nuevo Juego -> MiNuevoJuego
-define build.name = "RyuMaGucciModTemplate"
+define build.name = "RyuModTemplate"
 
 # Esto configura si tu juego tiene efectos de sonido.
 define config.has_sound = True
@@ -76,7 +76,7 @@ default preferences.sfx_volume = 0.75
 #   Linux: $HOME/.renpy/
 # IMPORTANTE: si publicás un mod, cambiá este nombre para no compartir
 # partidas/persistent con otros mods hechos con esta plantilla.
-define config.save_directory = "DDLCBrokenDreamsModTemplate"
+define config.save_directory = "RyuModTemplate"
 
 # Avisa (en el log) si dos propiedades incompatibles se usan a la vez.
 define config.check_conflicting_properties = True
@@ -142,7 +142,7 @@ init python:
 
 init python:
     # Estas variables declaran los paquetes para compilar tu juego.
-    build.package("RyuMaGucciModTemplate", 'zip', 'windows linux mac android renpy mod',
+    build.package("RyuModTemplate", 'zip', 'windows linux mac android renpy mod',
         description="Ren'Py 8 Game")
 
     # Estas variables declaran los archivos que se crearan para tu juego empaquetado.

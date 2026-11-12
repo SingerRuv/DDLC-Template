@@ -1,6 +1,6 @@
 # Referencia — Shaders
 
-> Generado por `tools/gen_docs.py` desde `game/tools/plugins/shaders_lab/shaders_lab_data.rpy`.
+> Generado por `tools/gen_docs.py` desde `game/plugins/shaders_lab/shaders_lab_data.rpy`.
 > **No editar a mano**: corré `python tools/gen_docs.py` después de tocar el código.
 
 ## Transforms listos (`sh_*`)

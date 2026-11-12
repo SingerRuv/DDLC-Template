@@ -40,7 +40,7 @@ carpeta escribible del juego. No hay que hacer nada más: la pantalla está en
 ## 3. Abrir el proyecto
 
 1. Abrí el **Ren'Py Launcher**.
-2. Elegí el proyecto **DDLC BrokenDreamsModTemplate**.
+2. Elegí el proyecto **Ryu Mod Template**.
 3. **Launch Project**.
 
 Con un proyecto recién clonado, `label start` (en `game/script.rpy`) muestra un

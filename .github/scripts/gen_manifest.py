@@ -72,7 +72,7 @@ def _recorrer(raiz):
     raiz_abs = os.path.abspath(raiz)
     for dirpath, dirnames, filenames in os.walk(raiz):
         # IGNORAR_RAIZ solo aplica en la raíz: si se aplicara en todo el árbol,
-        # `tools` excluiría también `game/tools/` (el hub de Plugins + PoseLab).
+        # `tools` excluiría también `game/plugins/` (el hub de Plugins + PoseLab).
         en_raiz = os.path.abspath(dirpath) == raiz_abs
         dirnames[:] = [d for d in dirnames
                        if d not in IGNORAR_DIRS
@@ -156,7 +156,7 @@ def selftest():
         ("README.md", "readme"),
         ("game/saves/save1.save", "x"),      # ignorado
         ("game/migracion/manifest.json", "{}"),  # no se lista
-        ("game/tools/plugins/x/tool.json", "{}"),  # SÍ se lista (game/tools)
+        ("game/plugins/x/tool.json", "{}"),  # SÍ se lista (game/plugins)
         ("tools/gen_manifest.py", "x"),      # ignorado (tools de la raíz)
         (".gitattributes",
          ".gitattributes export-ignore\nCHANGELOG.md export-ignore\ndocs/ export-ignore\n"),
@@ -177,7 +177,7 @@ def selftest():
     assert "game/core/a.rpy" in man["files"], "incluye archivos de game/"
     assert "README.md" in man["files"], "incluye archivos de la raíz"
     assert "game/saves/save1.save" not in man["files"], "ignora saves/"
-    assert "game/tools/plugins/x/tool.json" in man["files"], "incluye game/tools"
+    assert "game/plugins/x/tool.json" in man["files"], "incluye game/plugins"
     assert "tools/gen_manifest.py" not in man["files"], "ignora tools de la raíz"
     assert "CHANGELOG.md" not in man["files"], "respeta export-ignore (archivo)"
     assert "docs/guia.md" not in man["files"], "respeta export-ignore (carpeta)"

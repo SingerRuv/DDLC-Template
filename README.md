@@ -1,8 +1,8 @@
 <div align="center">
 
-# DDLC BrokenDreamsModTemplate
+# Ryu Mod Template
 
-**Un template de mods para Doki Doki Literature Club, hecho por Broken Dreams Studio.**
+**Un template de mods para Doki Doki Literature Club, hecho por Ryu MaGucci.**
 
 Basado en el [DDLC Mod Template 2.0](https://github.com/Bronya-Rand/DDLCModTemplate2.0) de Azariel "Bronya Rand" Del Carmen (bronya_rand).
 
@@ -19,9 +19,9 @@ Basado en el [DDLC Mod Template 2.0](https://github.com/Bronya-Rand/DDLCModTempl
 
 ## Overview
 
-DDLC BrokenDreamsModTemplate es una base lista para crear mods de DDLC con el look y
+Ryu Mod Template es una base lista para crear mods de DDLC con el look y
 los sistemas del template original, pero con todo **organizado, configurable y
-documentado** para el flujo de trabajo de Broken Dreams Studio.
+documentado** para el flujo de trabajo de Ryu MaGucci.
 
 Incluye la interfaz de DDLC, el sistema de sprites estilo Bronya, transiciones,
 efectos, menús configurables y un conjunto de ajustes para el jugador — todo con
@@ -80,7 +80,7 @@ Requiere los permisos de almacenamiento (ya configurados en `options.rpy`).
 2. Copiá esta carpeta dentro de `renpy-8.5.x-sdk/Proyectos/` (o donde tengas tus proyectos).
 3. **Aportá los assets** de tu copia de DDLC (`audio.rpa`, `fonts.rpa`, `images.rpa`)
    a la carpeta `game/` (ver sección "Assets oficiales").
-4. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **DDLC BrokenDreamsModTemplate**.
+4. Abrí el **Ren'Py Launcher** y seleccioná el proyecto **Ryu Mod Template**.
 5. **Launch Project** para probarlo.
 
 Para escribir tu historia podés empezar en `game/script.rpy` (`label start`) o
@@ -97,7 +97,7 @@ game/
 ├── options.rpy           ← nombre, versión, configuración de build
 ├── definitions/          ← sprites, transforms, audio, efectos, menús, splash
 ├── core/                 ← el motor del template (no tocar)
-├── tools/                ← hub de Plugins (dev): PoseLab, Shaders Lab, Diálogo
+├── plugins/              ← hub de Plugins (dev): PoseLab, Shaders Lab, Diálogo
 ├── migracion/            ← sistema de migración de assets entre versiones
 ├── mod_assets/           ← tus assets propios (imágenes, CGs, audio)
 ├── tl/                   ← traducciones (viene con español)
@@ -105,7 +105,7 @@ game/
 └── *.rpa                 ← assets oficiales de DDLC (los aportás vos)
 
 docs/                     ← guías para modders (empezá por docs/README.md)
-tools/                    ← scripts de mantenimiento (no se distribuyen)
+tools/                    ← scripts de mantenimiento (solo mantenedor, no incluido)
 ```
 
 > Las carpetas `images/`, `bgm/`, `sfx/` y casi todo `gui/` **no están en el
@@ -114,9 +114,10 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
 
 ## Features
 
-- **Sprites estilo Bronya** (`Composite`): cientos de variantes por doki (más de
-  700 en total) con notación compacta, ej. `show sayori 2b at t41`. Tabla
-  completa en [`docs/referencia/sprites.md`](docs/referencia/sprites.md).
+- **Sprites estilo Bronya** (`Composite`): 703 variantes estándar de las cuatro
+  dokis (sin especiales/yandere), con full-body Yuri `4*` y resto `5*`. Ej.
+  `show sayori 2b at t41`. Tabla completa en
+  [`docs/referencia/sprites.md`](docs/referencia/sprites.md).
 - **Transforms de posición:** `t11`–`t44`, focus `f*`, entradas laterales `l*`/`r*`,
   animaciones `hop`/`dip`, salidas `lhide`/`rhide`.
 - **Transiciones:** `dissolve`, `dissolve_cg`, `close_eyes`, `open_eyes`,
@@ -127,7 +128,7 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
   combinado, más glitch por **franjas y cuadrados** estilo DDLC, vendorizado de
   [ChromaGlitch](https://github.com/Gouvernathor/renpy-ChromaGlitch) de Gouvernathor.
   Se usan como transforms (`show bg class at sh_scanlines`) y hay una demo en el
-  hub de Plugins. Ver `game/tools/plugins/shaders_lab/`.
+  hub de Plugins. Ver `game/plugins/shaders_lab/`.
 - **Text shaders (dev):** `ts_glitch` para diálogo glitcheado (sacudida por glifo
   + separación RGB), más los text shaders incluidos en Ren'Py (wave, jitter,
   dissolve, typewriter…). Se aplican con `what_textshader` o `textshader`.
@@ -136,12 +137,13 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
   subrayado, tachado, color y tamaño) sobre la frase que marques, con vista
   previa del textbox del juego y la línea lista para copiar o insertar en el
   guion. Se apoya en los tags de Ren'Py, sin motor propio. Ver
-  `game/tools/plugins/dialogo_lab/` y `docs/referencia/dialogo.md`.
+  `game/plugins/dialogo_lab/` y `docs/referencia/dialogo.md`.
 - **Hub de Plugins (dev):** catálogo de herramientas autocontenidas con búsqueda,
   categorías y diagnóstico; viene con **PoseLab** (arma poses leyendo los
-  sprites reales y devuelve el `show` listo), **Shaders Lab** (vista previa de
+  sprites reales, devuelve el `show` listo, estado de habla Activo/Atenuado con
+  `t_activo`/`t_atenuar` y sprites full-body), **Shaders Lab** (vista previa de
   shaders de fondo) y **Diálogo** (énfasis en el texto del diálogo).
-  Ver `game/tools/README.md`.
+  Ver `game/plugins/README.md`.
 - **Menús configurables:** principal, de pausa y quick menu; sprites, logo,
   partículas y animación hover editables desde `definitions/menu_screens.rpy`.
 - **Ajustes del Template:** el jugador puede activar/desactivar quick menu,
@@ -158,7 +160,8 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
   `game/definitions/py/android_assets_ren.py`.
 - **Migración de assets:** cuando sale una versión nueva del template, el juego te
   avisa y actualiza el template **conservando tus assets** (mod_assets, tu historia,
-  tus `definitions` y `gui`). Ver `game/migracion/README.md`.
+  tus `definitions` y `gui`). También detecta otras carpetas hermanas con manifest
+  y ofrece migrar tus archivos propios a la nueva. Ver `game/migracion/README.md`.
 - **Discord Rich Presence:** muestra en tu perfil de Discord que estás jugando,
   con el capítulo actual y el tiempo jugado. Apagado por defecto; se activa en
   Ajustes › Discord RPC y se configura en `game/definitions/discord.rpy`. Ver
@@ -181,8 +184,8 @@ tools/                    ← scripts de mantenimiento (no se distribuyen)
   *"This mod was made possible by bronya_rand's DDLC Mod Template 2.0"*.
 - **Doki Doki Literature Club:** propiedad de **Team Salvato**
   ([IP Guidelines](https://teamsalvato.com/ip-guidelines)).
-- **Autor de este template:** Broken Dreams Studio.
+- **Autor de este template:** Ryu MaGucci.
 
-El código propio de Broken Dreams Studio se distribuye bajo licencia **MIT**
+El código propio de Ryu MaGucci se distribuye bajo licencia **MIT**
 (ver [`LICENSE`](LICENSE)). El código y los assets heredados pertenecen a sus
 autores originales (bronya_rand / Team Salvato).

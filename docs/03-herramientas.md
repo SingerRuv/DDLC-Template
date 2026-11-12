@@ -14,7 +14,7 @@ empaquetar tu mod.
   de la API no alcanza, el plugin no se lista pero **sí** aparece ahí con el
   motivo. Nunca se descarta en silencio.
 
-Cada plugin es una carpeta en `game/tools/plugins/<carpeta>/` con:
+Cada plugin es una carpeta en `game/plugins/<carpeta>/` con:
 
 ```
 mi_plugin/
@@ -24,18 +24,18 @@ mi_plugin/
 ```
 
 Para escribir uno (manifiesto, hooks de Python, estilos `tool_*`, música), seguí
-`game/tools/plugins/README.md`. La API actual es **1.0**
-(`tools_api_version` en `game/tools/complements_data.rpy`) y un plugin puede
+`game/plugins/PLUGINS.md`. La API actual es **1.0**
+(`tools_api_version` en `game/plugins/complements_data.rpy`) y un plugin puede
 pedir una mínima con `"min_version"` en su `tool.json`.
 
-La arquitectura del hub y los estilos globales están en `game/tools/README.md`;
+La arquitectura del hub y los estilos globales están en `game/plugins/README.md`;
 la lista de plugins instalados se genera en
 [`referencia/plugins.md`](referencia/plugins.md).
 
 ### Instalar un plugin desde un ZIP
 
 **Plugins → Instalar…** abre el instalador. Dejás el `.zip` del plugin en
-`game/tools/plugins/_incoming/` (el botón **Abrir _incoming** abre esa carpeta),
+`game/plugins/_incoming/` (el botón **Abrir _incoming** abre esa carpeta),
 tocás **Reescanear** y el instalador lo lista con su versión y su estado
 (**Instalar**, **Actualizar a vX** o **Bajar a vX**). Un ZIP = un plugin, con
 `tool.json` en la raíz o dentro de una única carpeta.
@@ -44,7 +44,7 @@ Instalar valida el ZIP antes de escribir (rutas seguras, extensiones
 permitidas, topes de tamaño), aparta la versión anterior al actualizar y archiva
 el ZIP en `_incoming/instalados/`. Después hay que reiniciar: Ren'Py compila los
 `.rpy` al arrancar, así que el instalador ofrece **Reiniciar ahora**. Los
-detalles y los límites están en `game/tools/plugins/README.md`.
+detalles y los límites están en `game/plugins/PLUGINS.md`.
 
 ## PoseLab
 
@@ -58,25 +58,28 @@ Campos:
 | Campo | Qué elige |
 |---|---|
 | Personaje | Tag del sprite (`sayori`, `natsuki`, …) |
-| Cuerpo completo | Poses de una sola capa (pose 5), si existen |
-| Outfit | Variante de uniforme (`1`, `1b`, …) |
-| Pose | Número de pose |
-| Cara | Expresión |
+| Cuerpo completo | Poses full-body: Yuri `4*`, Sayori/Natsuki/Monika `5*`, si existen |
+| Outfit | Uniforme o casual (`b`), si el sprite lo tiene |
+| Pose | Número de pose (`1`–`4`; Yuri `1`–`3`) |
+| Cara | Expresión (`a`–`z`), según el sprite |
 | Variante | Familia de transform (`Normal`, `Focus`, `Hop`, …) |
 | Posición | Slot `11`–`44` |
+| Estado | Tinte del habla: `Normal`, `Activo` (blanco) o `Atenuado` (gris) |
 | Fondo | Fondo del preview (no cambia el código generado) |
 | Zorder | Orden de dibujado (`zorder N`) |
 
-Devuelve el código listo para pegar en el guion (el `zorder` también):
+Devuelve el código listo para pegar en el guion (el `zorder` también). El
+**Estado** agrega el tinte a la posición elegida:
 
 ```renpy
-show sayori 1a at t21 zorder 2
+show sayori 1a at f21, t_activo zorder 2
 ```
 
-Botones útiles: **Copiar** (portapapeles), **Copiar en…** (inserta la línea en
-un `.rpy` del proyecto, con backup y deshacer), **Reescanear** (vuelve a listar
-los archivos del juego: las carpetas nuevas o borradas se ven sin cerrar la
-herramienta ni reiniciar) y **Fijar** (deja la ventana de controles abierta).
+En la sección de código: **Copiar** (portapapeles) y **Copiar en…** (inserta el
+bloque en un `.rpy` del proyecto, con backup, deshacer y rehacer). **Reescanear** vuelve
+a listar los archivos del juego (las carpetas nuevas o borradas se ven sin
+cerrar la herramienta ni reiniciar) y **Fijar** deja la ventana de controles
+abierta.
 
 Si encuentra carpetas de sprites propias **sin** definiciones (`image … =
 Composite(…)`), ofrece crearlas: escribe los `image` en
@@ -103,18 +106,17 @@ los que escribió él; los backups quedan en `sprites.rpy.poselab.bak` y
 ## La barra de herramientas
 
 Las tres herramientas dev (PoseLab, Shaders Lab, Diálogo) comparten una barra
-fija arriba, siempre visible:
+fija arriba, siempre visible. Los botones de copia (**Copiar**, **Copiar en…**)
+viven en la sección de código de cada herramienta.
 
 | Botón | Qué hace |
 |---|---|
-| **Copiar** | Copia el código de la herramienta al portapapeles |
-| **Copiar en…** | Abre un panel para insertar el código en un `.rpy` del guion: preview, validación y backup |
-| **Ocultar panel** | Esconde el panel de controles para ver el preview a pantalla completa |
+| **Ocultar paneles** | Esconde todas las ventanas flotantes para ver el preview a pantalla completa |
 | **Reiniciar** | Devuelve la herramienta a su estado inicial (y las ventanas a su posición) |
 | **Abrir carpeta** | Abre la carpeta del proyecto en el explorador del sistema |
 | **Volver** | Vuelve al hub de Plugins |
 
-La barra la arma el hub (`game/tools/toolbar.rpy`) y reusa los estilos
+La barra la arma el hub (`game/plugins/toolbar.rpy`) y reusa los estilos
 globales: si escribís un plugin nuevo, sumá `use tool_toolbar(...)` y ya tenés
 las acciones comunes.
 
@@ -122,16 +124,21 @@ las acciones comunes.
 
 Lista los `.rpy` que tienen el marcador de la herramienta (`# poselab`,
 `# shaders`, `# dialogo`) y muestra el archivo elegido con números de línea.
-Entre la línea seleccionada y la siguiente aparece una **fila verde con el
-snippet ya indentado**: eso es exactamente lo que se va a escribir.
+Entre la línea seleccionada y la siguiente aparece una **fila verde rotulada
+“A PEGAR” con el snippet ya indentado**: eso es exactamente lo que se va a
+escribir, no una copia de la línea seleccionada.
 
-- El breadcrumb de arriba dice archivo, `label` contenedor, si se inserta antes
-  o después y con cuántos espacios.
-- **Antes / Después** cambia el punto de inserción.
+- El breadcrumb de arriba dice archivo, `label` contenedor, después de qué
+  línea y con cuántos espacios.
+- **Punto de inserción:** clic en una línea: si está vacía, el snippet la
+  ocupa; si tiene contenido, se inserta después.
+- **Dentro de un label:** si la línea elegida queda fuera, el panel lo marca
+  inválido y no deja insertar.
 - **✓ válido / ✗ rompería el script** valida el resultado. Si es inválido,
   **Insertar** queda deshabilitado y se muestra el error del parser.
-- **Deshacer** restaura el backup anterior (muestra su fecha).
-- **Recargar scripts** aplica lo insertado: escribir **no** reinicia el juego.
+- **Deshacer / Rehacer** revierten o reaplican el último cambio (un paso).
+- **Eliminar línea** borra la línea seleccionada; también se puede deshacer.
+- Escribir **no** reinicia el juego.
 
 Teclado: `Enter` inserta, `Esc` cierra, `↑`/`↓` mueven la línea y
 `PageUp`/`PageDown` saltan 20.
@@ -164,7 +171,7 @@ arma con la herramienta **Diálogo**.
 ### Crear un shader propio
 
 1. Registralo en un `init python` (como en
-   `game/tools/plugins/shaders_lab/shaders_lab_data.rpy`):
+   `game/plugins/shaders_lab/shaders_lab_data.rpy`):
    `renpy.register_shader("mi.nombre", variables=…, fragment_300=… )`.
    En `variables` declarás los `uniform` que vas a usar; después se pueden
    animar desde ATL (`linear 1.0 u_x 1.0`).
@@ -207,8 +214,8 @@ aplicada.
   estilo).
 - **Salida:** el personaje (Sayori, Monika, Natsuki, Yuri o Narrador) y si la
   línea sale con el personaje delante o pelada.
-- **Copiar / Copiar en…** (barra de herramientas): copia la línea o la escribe
-  en un `.rpy` con backup y deshacer. El archivo destino debe tener una línea
+- **Copiar / Copiar en…** (sección de código): copia la línea o la escribe
+  en un `.rpy` con backup, deshacer y rehacer. El archivo destino debe tener una línea
   `# dialogo`.
 
 Uso típico:

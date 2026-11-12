@@ -52,6 +52,15 @@ RUTA_MANIFEST = os.path.join("game", "migracion", "manifest.json")
 RUTA_REPORTE = os.path.join("game", "migracion", "reporte.json")
 RUTA_LOG = os.path.join("game", "migracion", "migracion.log")
 
+# v2.0.0: renombres de estructura. Se aplican al proyecto antes de comparar y a
+# las claves del manifest viejo (de -> a).
+RENOMBRES_ESTRUCTURA = (
+    ("game/tools/plugins/README.md", "game/plugins/PLUGINS.md"),
+    ("game/tools/plugins/", "game/plugins/"),
+    ("game/tools/", "game/plugins/"),
+    ("game/tl/spanish/tools/", "game/tl/spanish/plugins/"),
+)
+
 # Tope de tamano descomprimido del ZIP del template (defensa ante zip-bombs).
 LIMITE_ZIP = 500 * 1024 * 1024
 
@@ -139,6 +148,77 @@ def _leer_manifest(raiz):
 
 # ---- Plan de migracion --------------------------------------------------------------
 
+def _renombrar_man(man):
+    """Reescribe las claves de un manifest viejo a la estructura nueva (v2)."""
+    files = man.get("files", {})
+    out = {}
+    for rel, h in files.items():
+        rel = _norm(rel)
+        for viejo, nuevo in RENOMBRES_ESTRUCTURA:
+            if rel == viejo or rel.startswith(viejo):
+                rel = nuevo + rel[len(viejo):]
+                break
+        out[rel] = h
+    man["files"] = out
+    return man
+
+
+def _revertir_estructura(ops):
+    """Deshace `_estructura_v2` a partir de la lista de movimientos."""
+    for src, dst in reversed(ops):
+        if os.path.isdir(dst) or os.path.isfile(dst):
+            os.makedirs(os.path.dirname(src), exist_ok=True)
+            shutil.move(dst, src)
+
+
+def _estructura_v2(project):
+    """Lleva `game/tools` (con su `plugins/`) a `game/plugins` plano y
+    `game/tl/spanish/tools` a `game/tl/spanish/plugins`.
+
+    Devuelve la lista de movimientos para poder revertir. Valida los destinos
+    antes de mover y, si algo falla a mitad, revierte lo hecho.
+    """
+    ops = []
+
+    def mover(src, dst):
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.move(src, dst)
+        ops.append((src, dst))
+
+    tools = os.path.join(project, "game", "tools")
+    plugins = os.path.join(project, "game", "plugins")
+    tl_old = os.path.join(project, "game", "tl", "spanish", "tools")
+    tl_new = os.path.join(project, "game", "tl", "spanish", "plugins")
+
+    if not os.path.isdir(tools) and not os.path.isdir(tl_old):
+        return ops
+    if os.path.isdir(tools) and os.path.exists(plugins):
+        raise RuntimeError("existen game/tools y game/plugins; resolve el conflicto antes de migrar")
+    if os.path.isdir(tl_old) and os.path.exists(tl_new):
+        raise RuntimeError("existen game/tl/spanish/tools y .../plugins; resolve el conflicto")
+
+    try:
+        if os.path.isdir(tl_old):
+            mover(tl_old, tl_new)
+        if os.path.isdir(tools):
+            mover(tools, plugins)
+            nested = os.path.join(plugins, "plugins")
+            if os.path.isdir(nested):
+                destinos = []
+                for name in sorted(os.listdir(nested)):
+                    dst = os.path.join(plugins, "PLUGINS.md" if name == "README.md" else name)
+                    if os.path.exists(dst):
+                        raise RuntimeError("colision al aplanar plugins: %s" % dst)
+                    destinos.append((os.path.join(nested, name), dst))
+                for src, dst in destinos:
+                    mover(src, dst)
+                os.rmdir(nested)
+        return ops
+    except Exception:
+        _revertir_estructura(ops)
+        raise
+
+
 def planificar(project, man_old, man_new):
     """Calcula que hacer con cada archivo.
 
@@ -153,6 +233,8 @@ def planificar(project, man_old, man_new):
     """
     viejos = man_old.get("files", {})
     nuevos = man_new.get("files", {})
+    v_old = _ver(man_old.get("template_version") or "")
+    es_bug_122 = v_old is not None and v_old <= (1, 2, 2)
 
     copiar = []
     conservar = {}
@@ -188,7 +270,7 @@ def planificar(project, man_old, man_new):
         if rel in viejos or rel in ARCHIVOS_SISTEMA or rel.endswith(IGNORAR_EXT):
             continue
         if rel in nuevos:
-            if rel.startswith("game/tools/"):
+            if rel.startswith("game/plugins/") and es_bug_122:
                 # Bug de las releases <=1.2.2: el manifest no listaba game/tools,
                 # así que estos archivos del template parecían "del modder". Se
                 # respaldan y se reemplazan por los del template nuevo.
@@ -448,6 +530,7 @@ def migrar(job, dry_run=False):
     hasta = job.get("to_version")
     plan = None
     backup = None
+    movidos = []
     _DRY[0] = dry_run
     try:
         man_old = _leer_manifest(project)
@@ -485,6 +568,12 @@ def migrar(job, dry_run=False):
             raise RuntimeError("el ZIP es mas viejo (%s) que el instalado (%s)"
                                % (hasta, desde))
 
+        # 2.5) Estructura v2.0.0: game/tools -> game/plugins (aplanado) y
+        #      game/tl/spanish/tools -> game/tl/spanish/plugins.
+        if (v_new or (0, 0, 0)) >= (2, 0, 0):
+            movidos = _estructura_v2(project)
+            _renombrar_man(man_old)
+
         # 3) Planificar.
         plan = planificar(project, man_old, man_new)
         _log(project, "plan: %d copiar, %d conservar, %d conflictos, %d ausentes"
@@ -493,6 +582,7 @@ def migrar(job, dry_run=False):
 
         if dry_run:
             _imprimir_plan(plan, desde, hasta)
+            _revertir_estructura(movidos)
             return True
 
         # 4) Respaldar (modder + estado previo) y aplicar.
@@ -510,6 +600,7 @@ def migrar(job, dry_run=False):
         if backup:
             n = restaurar_previos(project, backup)
             _log(project, "rollback: %d archivos restaurados" % n)
+        _revertir_estructura(movidos)
         escribir_reporte(project, desde, hasta, plan, backup, 0,
                          ok=False, error=str(e))
         return False
@@ -618,6 +709,44 @@ def selftest():
     assert restaurar_previos(project, backup2) >= 1, "deberia restaurar al menos un archivo"
     with open(os.path.join(project, "game", "core", "a.rpy")) as f:
         assert f.read() == "A v2", "el rollback debe devolver el contenido previo"
+
+    # --- v2.0.0: game/tools -> game/plugins (aplanado) y rollback ---
+    p2 = os.path.join(tmp, "proj2")
+    escribir(p2, "game/tools/README.md", "hub")
+    escribir(p2, "game/tools/complements.rpy", "hub rpy")
+    escribir(p2, "game/tools/plugins/README.md", "guia")
+    escribir(p2, "game/tools/plugins/pose_lab/tool.json", "{}")
+    escribir(p2, "game/tools/plugins/mi_plugin/tool.json", "{}")
+    escribir(p2, "game/tl/spanish/tools/x.rpy", "tl")
+
+    man_v1 = {"template_version": "1.6.0", "files": {
+        "game/tools/README.md": "h",
+        "game/tools/complements.rpy": "h",
+        "game/tools/plugins/README.md": "h",
+        "game/tools/plugins/pose_lab/tool.json": "h",
+        "game/tools/plugins/mi_plugin/tool.json": "h",
+        "game/tl/spanish/tools/x.rpy": "h",
+    }}
+    _renombrar_man(man_v1)
+    for rel in ("game/plugins/README.md", "game/plugins/PLUGINS.md",
+                "game/plugins/pose_lab/tool.json", "game/plugins/mi_plugin/tool.json",
+                "game/tl/spanish/plugins/x.rpy"):
+        assert rel in man_v1["files"], "el manifest v2 deberia tener %s" % rel
+
+    ops = _estructura_v2(p2)
+    assert os.path.isfile(os.path.join(p2, "game", "plugins", "README.md")), "hub"
+    assert os.path.isfile(os.path.join(p2, "game", "plugins", "PLUGINS.md")), "guia"
+    assert os.path.isfile(os.path.join(p2, "game", "plugins", "pose_lab", "tool.json")), "pose_lab"
+    assert os.path.isfile(os.path.join(p2, "game", "plugins", "mi_plugin", "tool.json")), "plugin del modder"
+    assert os.path.isfile(os.path.join(p2, "game", "tl", "spanish", "plugins", "x.rpy")), "tl"
+    assert not os.path.exists(os.path.join(p2, "game", "tools")), "tools no debe quedar"
+    assert not os.path.exists(os.path.join(p2, "game", "plugins", "plugins")), "plugins/plugins no debe quedar"
+
+    _revertir_estructura(ops)
+    assert os.path.isfile(os.path.join(p2, "game", "tools", "complements.rpy")), "rollback tools"
+    assert os.path.isfile(os.path.join(p2, "game", "tools", "plugins", "mi_plugin", "tool.json")), "rollback plugin"
+    assert os.path.isfile(os.path.join(p2, "game", "tl", "spanish", "tools", "x.rpy")), "rollback tl"
+    assert not os.path.exists(os.path.join(p2, "game", "plugins")), "rollback deja limpio plugins"
 
     # --- ZIP con ruta no permitida se rechaza ---
     malo = os.path.join(tmp, "malo.zip")

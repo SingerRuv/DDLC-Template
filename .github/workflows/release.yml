@@ -17,7 +17,7 @@ jobs:
         run: |
           TAG="${{ github.event.release.tag_name || github.ref_name }}"
           VER="${TAG#v}"
-          DEST="RyuMaGucciModTemplate-${VER}"
+          DEST="RyuModTemplate-${VER}"
           mkdir -p "build/${DEST}" ZIPs
           # git archive respeta export-ignore (excluye .github, CHANGELOG, tools, etc.)
           git archive --format=tar HEAD | tar -x -C "build/${DEST}"

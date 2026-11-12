@@ -1,6 +1,6 @@
 # Documentación
 
-Guías para modders que usan **DDLC BrokenDreamsModTemplate**. Todo está en
+Guías para modders que usan **Ryu Mod Template**. Todo está en
 español y asume Ren'Py 8.5.x.
 
 ## Por dónde empezar
@@ -18,11 +18,11 @@ español y asume Ren'Py 8.5.x.
 También hay documentación pegada al código, en cada carpeta:
 
 - `game/README.md` — mapa completo de `game/`.
-- `game/tools/README.md` — cómo funciona el hub de Plugins y sus estilos.
-- `game/tools/plugins/README.md` — cómo escribir un plugin.
+- `game/plugins/README.md` — cómo funciona el hub de Plugins y sus estilos.
+- `game/plugins/PLUGINS.md` — cómo escribir un plugin.
 - `game/tl/README.md` — traducciones.
 - `game/migracion/README.md` — sistema de migración de assets entre versiones.
-- `tools/README.md` — scripts de mantenimiento (release y referencia).
+- Scripts de mantenimiento (solo en la copia del mantenedor): `tools/`.
 
 ## Referencia generada
 

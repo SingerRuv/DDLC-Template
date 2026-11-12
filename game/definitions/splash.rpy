@@ -149,7 +149,7 @@ image warning:
 init python:
     # El mensaje de splash por defecto que se muestra al arrancar el juego.
     splash_message_default = (
-        "This game is an unofficial fan game, created by Broken Dreams Studio."
+        "This game is an unofficial fan game, created by Ryu MaGucci."
     )
 
     # Conjunto de mensajes de splash. Se elige uno al azar por arranque.
@@ -189,6 +189,13 @@ label splashscreen:
 
     # Chequeo de versión del template en segundo plano (solo dev y proyectos
     # con manifest). El resultado aparece como indicador en el menú principal.
+    # Migracion entre carpetas: se ofrece antes del chequeo de GitHub.
+    $ _mc_candidatas = mc_buscar()
+    if _mc_candidatas:
+        call screen mc_oferta(candidatas=_mc_candidatas)
+        if _return:
+            $ mc_migrar_y_salir(*_return)
+
     $ mg_iniciar()
 
     # Android: por IP Guidelines, el jugador debe extraer los assets de DDLC.
@@ -249,7 +256,7 @@ label splashscreen:
         "This is an unofficial fan game, not affiliated with Team Salvato or the author of the DDLC Mod Template, Azariel Del Carmen (bronya_rand)."
         "It is designed to be played after completing the original story and contains spoilers from it."
         "The original game files are required to play. Doki Doki Literature Club is by Team Salvato and can be downloaded at {a=https://ddlc.moe}https://ddlc.moe{/a}."
-        "Made by Broken Dreams Studio, based on the DDLC Mod Template by Azariel Del Carmen (bronya_rand)."
+        "Made by Ryu MaGucci, based on the DDLC Mod Template by Azariel Del Carmen (bronya_rand)."
 
         menu:
             "By playing this game you agree that you have completed the original story and accept any spoilers contained within."

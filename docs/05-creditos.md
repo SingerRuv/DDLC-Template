@@ -42,13 +42,13 @@ Cumplí siempre las [IP Guidelines](IP-GUIDELINES.md) (resumen en
 | pypresence (Discord RPC) | qwertyquerty y colaboradores | MIT |
 
 El código de ChromaGlitch está vendorizado en
-`game/tools/plugins/shaders_lab/glitch_slices_ren.py`, con la nota de autoría en
+`game/plugins/shaders_lab/glitch_slices_ren.py`, con la nota de autoría en
 su cabecera. pypresence está vendorizado en `game/python-packages/pypresence/`,
 con su licencia en `game/python-packages/pypresence-LICENSE.txt`.
 
 ## Licencia de este template
 
-El código propio de **Broken Dreams Studio** se distribuye bajo licencia **MIT**
+El código propio de **Ryu MaGucci** se distribuye bajo licencia **MIT**
 (ver [`LICENSE`](../LICENSE)). El código y los assets heredados pertenecen a sus
 autores originales (bronya_rand / Team Salvato) y conservan sus condiciones.
 

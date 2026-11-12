@@ -31,6 +31,7 @@ La nomenclatura `##` es `nº de personajes` + `slot`: `t21` es el primero de dos
 | Entrada desde la derecha (`r##`) | 10 | `r11`, `r21`, `r22`, `r31`, `r32`, `r33`, `r41`, `r42`, `r43`, `r44` |
 | Entradas especiales | 2 | `leftin`, `rightin` |
 | Salidas | 3 | `lhide`, `rhide`, `thide` |
+| Estado de habla | 2 | `t_activo`, `t_atenuar` |
 | Otras animaciones | 5 | `dip`, `hop`, `hopfocus`, `musica_slide_in`, `sink` |
 
 ## Transiciones (`with …`)

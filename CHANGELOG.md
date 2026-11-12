@@ -1,10 +1,37 @@
 # Changelog
 
-Todas las versiones notables de **DDLC BrokenDreamsModTemplate**.
+Todas las versiones notables de **Ryu Mod Template**.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/)
 y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
+
+## [2.0.0] - 2026-11-10
+
+### Cambiado (ruptura)
+- El hub de Plugins pasa de `game/tools/` a `game/plugins/`, con los plugins en
+  la raíz de esa carpeta (antes `game/tools/plugins/`). Las traducciones pasan
+  de `game/tl/spanish/tools/` a `game/tl/spanish/plugins/`. La migración 2.0.0
+  renombra y aplana la estructura automáticamente (con rollback si falla).
+- Nombre del template: **Ryu Mod Template**. `build.name` y
+  `config.save_directory` pasan a `RyuModTemplate`.
+- Autoría del template: **Ryu MaGucci**.
+
+### Agregado
+- **Migración entre carpetas:** si hay otra carpeta hermana con manifest, el
+  juego ofrece pasar los archivos propios a la versión nueva, respalda el
+  destino y elimina la carpeta vieja cuando el arranque fue correcto.
+- **Sprites estándar de Bronya:** 703 variantes de las cuatro dokis con los
+  nombres de Bronya (`yuri 4b`, `sayori 5a`, …), sin especiales/yandere.
+  PoseLab etiqueta el cuerpo completo (uniforme/casual + letra).
+- **PoseLab 2.4:** estado de habla `Activo`/`Atenuado` (tinte con
+  `t_activo`/`t_atenuar`) y sprites full-body. El preview muestra el tinte.
+- Nuevos transforms `t_activo` y `t_atenuar` en `definitions/transforms.rpy`
+  (tinte blanco/gris), combinables con cualquier posición: `at f21, t_activo`.
+
+### Actualizado
+- Documentación y scripts de mantenimiento con las nuevas rutas.
+- `.gitattributes` sin el `RELEASE.md` fantasma (queda `RELEASES.md`).
 
 ## [1.6.0] - 2026-11-04
 

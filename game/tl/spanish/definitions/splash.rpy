@@ -31,8 +31,8 @@ translate spanish strings:
     new "Consejo: puedes usar el botón \"Skip\" para\navanzar rápido el texto que ya has leído."
 
     # game/definitions/splash.rpy:135
-    old "This game is an unofficial fan game, created by Broken Dreams Studio."
-    new "Este juego es un juego de fans no oficial, creado por Broken Dreams Studio."
+    old "This game is an unofficial fan game, created by Ryu MaGucci."
+    new "Este juego es un juego de fans no oficial, creado por Ryu MaGucci."
 
     # game/definitions/splash.rpy:140-150 (mensajes de splash)
     old "Just Monika."
@@ -77,8 +77,8 @@ translate spanish strings:
     old "The original game files are required to play. Doki Doki Literature Club is by Team Salvato and can be downloaded at {a=https://ddlc.moe}https://ddlc.moe{/a}."
     new "Se requieren los archivos del juego original para jugar. Doki Doki Literature Club es de Team Salvato y puede descargarse en {a=https://ddlc.moe}https://ddlc.moe{/a}."
 
-    old "Made by Broken Dreams Studio, based on the DDLC Mod Template by Azariel Del Carmen (bronya_rand)."
-    new "Hecho por Broken Dreams Studio, basado en el DDLC Mod Template de Azariel Del Carmen (bronya_rand)."
+    old "Made by Ryu MaGucci, based on the DDLC Mod Template by Azariel Del Carmen (bronya_rand)."
+    new "Hecho por Ryu MaGucci, basado en el DDLC Mod Template de Azariel Del Carmen (bronya_rand)."
 
     old "DDLC mods are not supported on iOS. Use Android or PC."
     new "Los mods de DDLC no están soportados en iOS. Usá Android o PC."

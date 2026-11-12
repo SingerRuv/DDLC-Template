@@ -1,7 +1,32 @@
-# Releases — DDLC BrokenDreamsModTemplate
+# Releases — Ryu Mod Template
 
 Notas de cada versión, listas para pegar en GitHub Releases.
 El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
+
+---
+
+## 2.0.0 — 2026-11-10
+
+### Cambiado (ruptura)
+- **Nueva estructura del hub:** `game/tools/` → `game/plugins/` (plugins en la
+  raíz) y `game/tl/spanish/tools/` → `game/tl/spanish/plugins/`. La migración
+  2.0.0 lo renombra y aplana automáticamente, conservando tus plugins y con
+  rollback si algo falla.
+- **Nombre y marca:** el template pasa a llamarse **Ryu Mod Template**
+  (`build.name` y `save_directory`: `RyuModTemplate`). Autoría: **Ryu MaGucci**.
+- Documentación y scripts de mantenimiento actualizados a las rutas nuevas.
+
+### Agregado
+- **Migración entre carpetas:** detecta proyectos hermanos con manifest y
+  ofrece pasar los archivos propios a la versión nueva; respalda el destino y
+  elimina la carpeta vieja cuando el arranque fue correcto.
+- **Sprites estándar de Bronya:** 703 variantes de las cuatro dokis, con
+  full-body Yuri `4*` y resto `5*`, sin especiales/yandere. PoseLab los
+  etiqueta.
+- **PoseLab 2.4:** estado de habla `Activo`/`Atenuado` (tinte con
+  `t_activo`/`t_atenuar`) y sprites full-body. El preview muestra el tinte.
+- Nuevos transforms `t_activo` y `t_atenuar` (tinte blanco/gris),
+  combinables con cualquier posición: `at f21, t_activo`.
 
 ---
 

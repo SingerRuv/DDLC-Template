@@ -24,6 +24,8 @@ que éste se cierre.
 | `migracion/migracion.rpy` | In-game: lee la versión, consulta la última release de GitHub, muestra la ventana, escribe el trabajo y lanza el script. |
 | `migracion/migracion_ui.rpy` | In-game: las ventanas (aviso, confirmación, "al día", reporte). |
 | `migracion/migrar.py` | Externo (stdlib): espera el cierre, descarga, respalda, aplica y relanza. |
+| `migracion/migracion_carpetas.rpy` | In-game: detecta carpetas hermanas, lista candidatas y lanza la migración entre carpetas. |
+| `migracion/migrar_carpetas.py` | Externo (stdlib): copia archivos propios a otra carpeta, respalda, arranca el destino y elimina la vieja. |
 
 ## Qué se preserva (nunca se toca)
 
@@ -43,6 +45,41 @@ Lo demás sigue esta regla, archivo por archivo:
 | Archivo que el template ya no trae | Se deja el tuyo (aviso) |
 
 Nunca se tocan: `*.rpa`, `game/saves/`, `*.rpyc`, `game/cache/`, logs.
+
+## Cambio de estructura en v2.0.0
+
+A partir de 2.0.0 el hub de Plugins vive en `game/plugins/` (antes
+`game/tools/`), con los plugins en la raíz de esa carpeta (antes
+`game/tools/plugins/`). Antes de comparar el manifest, `migrar.py`:
+
+1. mueve `game/tools/` a `game/plugins/` y aplana su `plugins/`;
+2. mueve `game/tl/spanish/tools/` a `game/tl/spanish/plugins/`;
+3. reescribe las claves del manifest viejo con la nueva ruta.
+
+Los plugins propios del modder se mueven con la carpeta. Si algo falla, el
+renombrado se revierte junto con el resto de la migración.
+
+## Migración entre carpetas
+
+Si el proyecto tiene otra carpeta hermana con `game/migracion/manifest.json`,
+al arrancar se ofrece migrar entre carpetas. Requisitos y reglas:
+
+- Solo en modo dev. Se puede iniciar desde cualquiera de las dos carpetas:
+  siempre se copia de la versión menor a la mayor. Si la carpeta nueva inicia,
+  importa la vieja.
+- Se listan las hermanas con manifest; se recomienda la versión más nueva.
+- Si las versiones son iguales, se avisa y se pregunta cuál usar como origen
+  (por si una carpeta está corrupta).
+- Se copian solo los archivos propios del origen, dentro y fuera de `game/`,
+  según los hashes del manifest. No se copian docs/tools/README del template.
+- En conflictos se conserva la versión propia del origen y se avisa.
+- Las saves del origen se copian solo si el destino no tiene saves.
+- Se copian al destino solo los `.rpa` que falten.
+- La carpeta vieja queda intacta hasta que el destino confirma el arranque;
+  después se elimina. Si el destino falla, se restaura y la vieja se conserva.
+- Se ofrece una vez por arranque, antes del chequeo de GitHub; ambos flujos
+  son independientes.
+- Sin manifest en el proyecto actual no se ofrece nada.
 
 ## Flujo
 

@@ -1,0 +1,1377 @@
+## pose_lab_data.rpy
+## PoseLab — Lógica (sin UI): parser de sprites, índices, consultas, estado,
+## transforms disponibles, salida y utilidades (portapapeles, música).
+##
+## La interfaz vive en pose_lab_ui.rpy y el preview en pose_lab_preview.rpy.
+## El screen raíz (pose_lab) en pose_lab.rpy.
+
+init python:
+    import re as _pl_re
+    import os as _pl_os
+
+    # Registro de todas las cachés de PoseLab (para poder limpiarlas con el
+    # botón "Reescanear"). Ver `pl_limpiar_cache`.
+    _PL_CACHES = []
+
+    def _pl_cacheado(fn):
+        """Cachea el resultado de `fn` por (nombre, argumentos).
+
+        Las definiciones no cambian en runtime, así que se leen una sola vez.
+        La caché se registra en `_PL_CACHES` para poder limpiarla."""
+        cache = {}
+        _PL_CACHES.append(cache)
+
+        def wrapper(*args):
+            key = (fn.__name__, args)
+            if key not in cache:
+                cache[key] = fn(*args)
+            return cache[key]
+
+        return wrapper
+
+    # ======================================================================
+    # Transforms del template ofrecidos para la salida `show ... at <t>`.
+    # Se arman como familia (letra) + slot (11..44). Definidas en
+    # definitions/transforms.rpy. La familia "Normal" = t11..t44.
+    # ======================================================================
+
+    _PL_SLOTS = ["11", "21", "22", "31", "32", "33", "41", "42", "43", "44"]
+
+    # Familias: (etiqueta, prefijo). El transform es prefijo + slot.
+    _PL_FAMILIAS = [
+        ("Normal", "t"),
+        ("Instantáneo", "i"),
+        ("Focus", "f"),
+        ("Hop", "h"),
+        ("Dip", "d"),
+        ("Sink", "s"),
+        ("Hop-focus", "hf"),
+        ("Entrada izq", "l"),
+        ("Entrada der", "r"),
+    ]
+
+    # Estado de habla: transform de tinte que se agrega a la posicion.
+    _PL_ESTADOS = [
+        ("Normal", ""),
+        ("Activo", "t_activo"),
+        ("Atenuado", "t_atenuar"),
+    ]
+
+    def pl_estado_trans(estado):
+        for label, trans in _PL_ESTADOS:
+            if label == estado:
+                return trans
+        return ""
+
+    def pl_prefijo(variante):
+        for label, pref in _PL_FAMILIAS:
+            if label == variante:
+                return pref
+        return "t"
+
+    def pl_trans_de(variante, slot):
+        return "%s%s" % (pl_prefijo(variante), slot)
+
+    def pl_slot_de(trans):
+        """Slot ('11'..'44') de un transform, o '' si no es una posición."""
+        for label, pref in _PL_FAMILIAS:
+            if trans.startswith(pref):
+                resto = trans[len(pref):]
+                if resto in _PL_SLOTS:
+                    return resto
+        return ""
+
+    # Capas de la línea `show ... zorder N` (quién queda detrás/delante).
+    _PL_ZORDERS = [0, 1, 2, 3, 4, 5]
+
+    # ======================================================================
+    # Parser de sprites: lee todos los `image <tag> <nombre> = ...` de los .rpy
+    # del proyecto (excluye traducciones y la propia carpeta plugins/) y guarda
+    # las capas. Es la fuente de verdad; nada se adivina.
+    # ======================================================================
+
+    _PL_LINEA_RE = _pl_re.compile(r'^\s*image\s+(\w+)\s+(\w+)\s*=\s*(.+)$')
+    _PL_IZQ_RE = _pl_re.compile(r"^\d+[a-z]*l$")
+    _PL_DER_RE = _pl_re.compile(r"^\d+[a-z]*r$")
+    # Caras sueltas de una carpeta custom: `a`..`z` y variantes `a2`, `y1`...
+    _PL_CARA_RE = _pl_re.compile(r"^[a-z]\d*$")
+    # Capa "cara" dentro de una definicion: ademas, palabras (`scream`) y las
+    # cabezas manga de Natsuki (`2t`, `2bta`...).
+    _PL_CARA_WIDE_RE = _pl_re.compile(r"^([a-z][a-z0-9]*|\d+[a-z]+)$")
+    # Poses especiales de Natsuki: 12/42 (cabeza 2t*) — la cara va como `2t[letra]`.
+    _PL_ESPECIAL_RE = _pl_re.compile(r"^(12|42)([a-z]?)$")
+    # Formato "cuerpo + expresión" (2 capas): cuerpo = pose (`1`, `2`, `1b`, `2b`),
+    # expresión = `a`, `a1`, `i5`… (ver `_pl_capas_body_cara`).
+    _PL_BODY_RE = _pl_re.compile(r"^\d+[a-z]*$")
+    _PL_CARA2_RE = _pl_re.compile(r"^[a-z]\d*$")
+
+    # Outfit packs: carpeta "<Etiqueta> <Doki>" con brazos alternativos.
+    # Izquierda: `1l`, `1lx`, `2l`… (l + letras opcionales). Derecha: `1r`, `2r`.
+    _PL_IZQ2_RE = _pl_re.compile(r"^\d+[a-z]*l[a-z]*$")
+    _PL_DOKIS = ("sayori", "natsuki", "yuri", "monika")
+
+    _PL_RUTAS_RE = _pl_re.compile(r"""["']([^"']+\.png)["']""")
+
+    # Marcador del bloque que escribe PoseLab en definitions/sprites.rpy.
+    _PL_MARCA_RE = _pl_re.compile(r"^# === PoseLab: (\S+) \(auto\) ===$", _pl_re.M)
+
+    # Personajes: los `define`/`default` van en definitions.rpy, en su sitio
+    # (entre los de las dokis), dentro de bloques marcados.
+    _PL_DEFS_REL = "definitions/definitions.rpy"
+    _PL_MARCA_PER_INI = "# === PoseLab: personajes ==="
+    _PL_MARCA_PER_FIN = "# === fin PoseLab: personajes ==="
+    _PL_MARCA_NOM_INI = "# === PoseLab: nombres ==="
+    _PL_MARCA_NOM_FIN = "# === fin PoseLab: nombres ==="
+    _PL_DEF_RE = _pl_re.compile(r"^\s*define\s+\w+\s*=\s*DynamicCharacter\(")
+    _PL_NOM_RE = _pl_re.compile(r"^\s*default\s+\w+_name\s*=")
+
+    def _pl_agregar_sprites(datos, item):
+        """Registra un `image tag nombre = ...` si referencia algún .png."""
+        rutas = _PL_RUTAS_RE.findall(item[2])
+        if not rutas:
+            return
+        capas = [r.split("/")[-1][:-4] for r in rutas]
+        datos.setdefault(item[0].lower(), {})[item[1]] = capas
+
+    @_pl_cacheado
+    def _pl_sprites_todo():
+        """{tag: {nombre: [capas]}} de todos los .rpy (excluye tl/ y plugins/)."""
+        datos = {}
+        for f in renpy.list_files():
+            if not f.endswith(".rpy") or f.startswith(("tl/", "plugins/")):
+                continue
+            try:
+                with renpy.file(f) as fh:
+                    texto = fh.read().decode("utf-8-sig")
+            except Exception:
+                continue
+            pendiente = None  # [tag, nombre, cuerpo] de una definición multilínea
+            for linea in texto.splitlines():
+                if pendiente is not None:
+                    pendiente[2] += " " + linea.strip()
+                    if pendiente[2].count("(") <= pendiente[2].count(")"):
+                        _pl_agregar_sprites(datos, pendiente)
+                        pendiente = None
+                    continue
+                if not linea.lstrip().startswith("image"):
+                    continue
+                m = _PL_LINEA_RE.match(linea)
+                if not m:
+                    continue
+                cuerpo = m.group(3)
+                if cuerpo.count("(") > cuerpo.count(")"):
+                    pendiente = [m.group(1), m.group(2), cuerpo]
+                else:
+                    _pl_agregar_sprites(datos, [m.group(1), m.group(2), cuerpo])
+        return datos
+
+    @_pl_cacheado
+    def _pl_sprites_rutas():
+        """{tag: {nombre: [rutas]}} con las rutas completas (para caras base)."""
+        datos = {}
+        for f in renpy.list_files():
+            if not f.endswith(".rpy") or f.startswith(("tl/", "plugins/")):
+                continue
+            try:
+                with renpy.file(f) as fh:
+                    texto = fh.read().decode("utf-8-sig")
+            except Exception:
+                continue
+            pendiente = None
+            for linea in texto.splitlines():
+                if pendiente is not None:
+                    pendiente[2] += " " + linea.strip()
+                    if pendiente[2].count("(") <= pendiente[2].count(")"):
+                        rutas = _PL_RUTAS_RE.findall(pendiente[2])
+                        if rutas:
+                            datos.setdefault(pendiente[0].lower(), {})[pendiente[1]] = rutas
+                        pendiente = None
+                    continue
+                if not linea.lstrip().startswith("image"):
+                    continue
+                m = _PL_LINEA_RE.match(linea)
+                if not m:
+                    continue
+                cuerpo = m.group(3)
+                if cuerpo.count("(") > cuerpo.count(")"):
+                    pendiente = [m.group(1), m.group(2), cuerpo]
+                else:
+                    rutas = _PL_RUTAS_RE.findall(cuerpo)
+                    if rutas:
+                        datos.setdefault(m.group(1).lower(), {})[m.group(2)] = rutas
+        return datos
+
+    def _pl_existe(ruta):
+        """True si el .png está en disco (o dentro de un .rpa).
+
+        Se mira el disco primero: `renpy.loadable` cachea y, si borraste la
+        carpeta con el juego abierto, sigue diciendo que el archivo existe."""
+        if _pl_os.path.exists(_pl_os.path.join(config.gamedir, ruta)):
+            return True
+        return renpy.loadable(ruta)
+
+    @_pl_cacheado
+    def _pl_defs_huerfanas():
+        """{tag: [rutas]} de definiciones que se quedaron sin ninguna PNG.
+
+        Pasa cuando borrás la carpeta de un personaje y su bloque `image`
+        sigue en el .rpy. Si falta alguna capa pero otras siguen existiendo
+        (borraste una expresión), el personaje se mantiene."""
+        res = {}
+        for tag, defs in _pl_sprites_rutas().items():
+            rutas = [r for capas in defs.values() for r in capas]
+            if rutas and not any(_pl_existe(r) for r in rutas):
+                res[tag] = sorted(set(rutas))
+        return res
+
+    @_pl_cacheado
+    def _pl_tags_auto():
+        """Tags cuyas definiciones escribió PoseLab (bloque con marcador)."""
+        res = set()
+        for f in renpy.list_files():
+            if not f.endswith(".rpy"):
+                continue
+            try:
+                with renpy.file(f) as fh:
+                    texto = fh.read().decode("utf-8-sig")
+            except Exception:
+                continue
+            res.update(_PL_MARCA_RE.findall(texto))
+        return res
+
+    @_pl_cacheado
+    def _pl_sprites():
+        """Como `_pl_sprites_todo` sin los personajes que quedaron huérfanos."""
+        huerfanas = _pl_defs_huerfanas()
+        return {t: d for t, d in _pl_sprites_todo().items() if t not in huerfanas}
+
+    def _pl_capas_normales(capas):
+        """(izq, der, cara) si las capas son una pose normal; si no, None."""
+        izq = der = cara = None
+        for c in capas:
+            if _PL_IZQ_RE.fullmatch(c):
+                izq = c
+            elif _PL_DER_RE.fullmatch(c):
+                der = c
+            elif _PL_CARA_WIDE_RE.fullmatch(c):
+                cara = c
+        if izq and der and cara:
+            return izq, der, cara
+        return None
+
+    def _pl_capas_body_cara(capas):
+        """(body, cara) si las capas son 'cuerpo + expresión' (2 capas); si no, None.
+
+        Formato del pack MC: `Composite("1.png", "a.png")` → cuerpo `1` + expresión `a`."""
+        body = cara = None
+        for c in capas:
+            if _PL_BODY_RE.fullmatch(c):
+                body = c
+            elif _PL_CARA2_RE.fullmatch(c):
+                cara = c
+        if body and cara:
+            return body, cara
+        return None
+
+    def _pl_digitos(arm):
+        return int(_pl_re.match(r"\d+", arm).group(0))
+
+    def _pl_outfit(arm):
+        """Letras del brazo, sin dígitos ni lado: '1bl' -> 'b', '2l' -> ''."""
+        return _pl_re.sub(r"^\d+", "", arm).rstrip("lr")
+
+    def pl_es_cuerpo(tag, nombre):
+        """True si `nombre` es una pose de cuerpo completo de la doki."""
+        if not nombre:
+            return False
+        if tag == "yuri":
+            return nombre.startswith("4")
+        if tag == "natsuki" and nombre in ("5", "51"):
+            return False
+        return nombre.startswith("5")
+
+    @_pl_cacheado
+    def _pl_indice(tag):
+        """{(outfit, pose, cara): nombre} de las poses normales del tag."""
+        res = {}
+        for nombre, capas in _pl_sprites().get(tag, {}).items():
+            if pl_es_cuerpo(tag, nombre):
+                continue  # full-body, va en su propia sección
+
+            # Poses especiales (p. ej. natsuki 12/42): el nombre manda.
+            esp = _PL_ESPECIAL_RE.match(nombre)
+            if esp:
+                res[("", int(esp.group(1)), esp.group(2) or "")] = nombre
+                continue
+
+            t = _pl_capas_normales(capas)
+            if t:
+                izq, der, cara = t
+                if tag == "natsuki" and cara == "1t":
+                    continue  # cabeza especial, no es una expresión estándar
+                outfit = _pl_outfit(izq)
+                m = _pl_re.match(r"^(\d+)", nombre)
+                pose = int(m.group(1)) if m else 1 + 2 * (_pl_digitos(izq) - 1) + (_pl_digitos(der) - 1)
+                res[(outfit, pose, cara)] = nombre
+                continue
+
+            # Formato "cuerpo + expresión" (2 capas), p.ej. `image mc 1a = Composite("1", "a")`.
+            bc = _pl_capas_body_cara(capas)
+            if bc:
+                body, cara = bc
+                m = _pl_re.match(r"^(\d+)", nombre)
+                pose = int(m.group(1)) if m else _pl_digitos(body)
+                res[(_pl_outfit(body), pose, cara)] = nombre
+        return res
+
+    # ======================================================================
+    # Personajes custom: carpetas con PNGs sueltos (brazos + caras) que no
+    # tienen definiciones Composite. Siguen el patrón DDLC (960x960, (0,0)).
+    # ======================================================================
+
+    _PL_EXCLUIR = {"bg", "menu", "gui", "tl", "plugins", "cache", "saves"}
+
+    @_pl_cacheado
+    def _pl_carpetas():
+        """{tag: carpeta} de carpetas con brazos y caras, sin definiciones."""
+        por_carpeta = {}
+        for f in renpy.list_files():
+            if not f.lower().endswith(".png"):
+                continue
+            partes = f.split("/")
+            if len(partes) < 2 or any(p in _PL_EXCLUIR for p in partes[:-1]):
+                continue
+            por_carpeta.setdefault("/".join(partes[:-1]), []).append(partes[-1][:-4])
+        res = {}
+        for carpeta, nombres in por_carpeta.items():
+            tiene_brazo = any(_PL_IZQ_RE.fullmatch(n) or _PL_DER_RE.fullmatch(n)
+                              for n in nombres)
+            tiene_cara = any(_PL_CARA_RE.fullmatch(n) for n in nombres)
+            if tiene_brazo and tiene_cara:
+                res[carpeta.split("/")[-1]] = carpeta
+        return res
+
+    def _pl_slug(texto):
+        """'Sleepy' -> 'sleepy'; 'Casual 2' -> 'casual_2'."""
+        return _pl_re.sub(r"[^a-z0-9]+", "_", texto.lower()).strip("_")
+
+    @_pl_cacheado
+    def _pl_carpetas_outfit():
+        """{tag: (carpeta, doki_base)} de carpetas '<Etiqueta> <Doki>' con mitades.
+
+        El tag es `<doki>_<etiqueta>` (p. ej. 'Sleepy Yuri' -> 'yuri_sleepy').
+        Estas carpetas no traen caras: se usan las de la doki base.
+        """
+        por_carpeta = {}
+        for f in renpy.list_files():
+            if not f.lower().endswith(".png"):
+                continue
+            partes = f.split("/")
+            if len(partes) < 2 or any(p in _PL_EXCLUIR for p in partes[:-1]):
+                continue
+            por_carpeta.setdefault("/".join(partes[:-1]), []).append(partes[-1][:-4])
+
+        res = {}
+        for carpeta, nombres in por_carpeta.items():
+            base = carpeta.split("/")[-1]
+            if " " not in base:
+                continue
+            bajo = base.lower()
+            doki = next((d for d in _PL_DOKIS if d in bajo), None)
+            if not doki:
+                continue
+            tiene_izq = any(_PL_IZQ2_RE.fullmatch(n) for n in nombres)
+            tiene_der = any(_PL_DER_RE.fullmatch(n) for n in nombres)
+            if not (tiene_izq and tiene_der):
+                continue
+            etiqueta = _pl_slug(bajo.replace(doki, " "))
+            if not etiqueta:
+                continue
+            res["%s_%s" % (doki, etiqueta)] = (carpeta, doki)
+        return res
+
+    @_pl_cacheado
+    def _pl_archivos_carpeta(tag):
+        carpeta = _pl_carpetas().get(tag)
+        if not carpeta:
+            return []
+        return sorted(f.split("/")[-1][:-4] for f in renpy.list_files()
+                      if f.startswith(carpeta + "/") and f.lower().endswith(".png"))
+
+    def pl_tiene_defs(tag):
+        return bool(_pl_sprites().get(tag))
+
+    def pl_es_custom(tag):
+        return ((tag in _pl_carpetas() or tag in _pl_carpetas_body_expr()
+                 or tag in _pl_carpetas_outfit())
+                and not pl_tiene_defs(tag))
+
+    @_pl_cacheado
+    def _pl_indice_archivos(tag):
+        """Como _pl_indice pero derivado de los nombres de archivo (custom)."""
+        nombres = _pl_archivos_carpeta(tag)
+        izqs = [n for n in nombres if _PL_IZQ_RE.fullmatch(n)]
+        ders = [n for n in nombres if _PL_DER_RE.fullmatch(n)]
+        caras = [n for n in nombres if _PL_CARA_RE.fullmatch(n)]
+        res = {}
+        for izq in izqs:
+            for der in ders:
+                outfit = _pl_outfit(izq)
+                if outfit != _pl_outfit(der):
+                    continue
+                pose = 1 + 2 * (_pl_digitos(izq) - 1) + (_pl_digitos(der) - 1)
+                for cara in caras:
+                    res[(outfit, pose, cara)] = {
+                        "nombre": "%d%s%s" % (pose, outfit, cara),
+                        "izq": izq, "der": der, "cara": cara}
+        return res
+
+    # --- Formato "cuerpo + expresión" por carpetas anidadas (sin definiciones):
+    #     una subcarpeta con los cuerpos y otra con las expresiones. El
+    #     personaje es la carpeta PADRE.
+
+    @_pl_cacheado
+    def _pl_carpetas_body_expr():
+        """{tag: (dir_cuerpos, dir_expresiones)}."""
+        por_dir = {}
+        for f in renpy.list_files():
+            if not f.lower().endswith(".png"):
+                continue
+            partes = f.split("/")
+            if len(partes) < 2 or any(p in _PL_EXCLUIR for p in partes[:-1]):
+                continue
+            por_dir.setdefault("/".join(partes[:-1]), []).append(partes[-1][:-4])
+        tipos = {}
+        for d, nombres in por_dir.items():
+            tiene_cuerpo = any(_PL_BODY_RE.fullmatch(n) for n in nombres)
+            tiene_expr = any(_PL_CARA2_RE.fullmatch(n) for n in nombres)
+            if tiene_cuerpo and not tiene_expr:
+                tipos[d] = "cuerpos"
+            elif tiene_expr and not tiene_cuerpo:
+                tipos[d] = "exprs"
+        res = {}
+        for d in tipos:
+            padre = d.rsplit("/", 1)[0] if "/" in d else ""
+            if not padre or padre in res:
+                continue
+            hermanos = [dd for dd, tt in tipos.items()
+                        if (dd.rsplit("/", 1)[0] if "/" in dd else "") == padre]
+            dc = next((dd for dd in hermanos if tipos[dd] == "cuerpos"), None)
+            de = next((dd for dd in hermanos if tipos[dd] == "exprs"), None)
+            if dc and de:
+                res[padre.split("/")[-1]] = (dc, de)
+        return res
+
+    @_pl_cacheado
+    def _pl_imgs_en(carpeta):
+        """{nombre: ruta} de los .png directamente en `carpeta`."""
+        res = {}
+        pre = carpeta + "/"
+        for f in renpy.list_files():
+            if f.startswith(pre) and f.lower().endswith(".png"):
+                resto = f[len(pre):]
+                if "/" not in resto:
+                    res[resto[:-4]] = f
+        return res
+
+    def _pl_caras_base(doki):
+        """[(cara, ruta), …] con las caras de la doki base (de sus definiciones)."""
+        res = {}
+        rutas = _pl_sprites_rutas().get(doki, {})
+        for nombre, capas in _pl_sprites().get(doki, {}).items():
+            t = _pl_capas_normales(capas)
+            if not t:
+                continue
+            cara = t[2]
+            r = rutas.get(nombre) or []
+            if len(r) >= 3:
+                res.setdefault(cara, r[2])
+        if not res:
+            for cara in sorted({k[2] for k in _pl_indice(doki)}):
+                res[cara] = "images/%s/%s.png" % (doki, cara)
+        return sorted(res.items())
+
+    @_pl_cacheado
+    def _pl_indice_outfit(tag):
+        """{(outfit, pose, cara): {nombre, izq, der, cara}} de un outfit pack.
+
+        Izquierdas ('1l', '1lx', '2l', …) × derechas ('1r', '2r', …) -> poses 1..N
+        (orden izquierda-mayor). Las caras son las de la doki base.
+        """
+        oc = _pl_carpetas_outfit().get(tag)
+        if not oc:
+            return {}
+        carpeta, doki = oc
+        imgs = _pl_imgs_en(carpeta)
+        izqs = sorted(n for n in imgs if _PL_IZQ2_RE.fullmatch(n))
+        ders = sorted(n for n in imgs if _PL_DER_RE.fullmatch(n))
+        caras = _pl_caras_base(doki)
+        res = {}
+        pose = 0
+        for izq in izqs:
+            for der in ders:
+                pose += 1
+                for cara, cara_path in caras:
+                    res[("", pose, cara)] = {
+                        "nombre": "%d%s" % (pose, cara),
+                        "izq": imgs[izq], "der": imgs[der], "cara": cara_path}
+
+        # El 3.png del pack = una pose mas (cuerpo entero + cara por defecto),
+        # no un "cuerpo completo" aparte.
+        for nombre in sorted(imgs):
+            if _pl_re.fullmatch(r"3\d*[a-z]*", nombre):
+                pose += 1
+                for cara, cara_path in caras:
+                    res[("", pose, cara)] = {
+                        "nombre": "%d%s" % (pose, cara),
+                        "full": imgs[nombre], "cara": cara_path}
+        return res
+
+    @_pl_cacheado
+    def _pl_indice_body_expr(tag):
+        """{(outfit, pose, cara): {nombre, body, expr}} (custom, 2 capas)."""
+        dc = _pl_carpetas_body_expr().get(tag)
+        if not dc:
+            return {}
+        cuerpos, exprs = _pl_imgs_en(dc[0]), _pl_imgs_en(dc[1])
+        res = {}
+        for body, body_path in cuerpos.items():
+            if not _PL_BODY_RE.fullmatch(body):
+                continue
+            for expr, expr_path in exprs.items():
+                if not _PL_CARA2_RE.fullmatch(expr):
+                    continue
+                res[(_pl_outfit(body), _pl_digitos(body), expr)] = {
+                    "nombre": "%s%s" % (body, expr),
+                    "body": body_path, "expr": expr_path}
+        return res
+
+    def _pl_paths_body_expr(tag, nombre):
+        """(ruta_cuerpo, ruta_expr) del nombre dado, o (None, None)."""
+        for v in _pl_indice_body_expr(tag).values():
+            if v["nombre"] == nombre:
+                return v["body"], v["expr"]
+        return None, None
+
+    def _pl_indice_tag(tag):
+        """{(outfit, pose, cara): nombre}, según el modo del personaje."""
+        if pl_tiene_defs(tag):
+            return _pl_indice(tag)
+        if tag in _pl_carpetas_body_expr():
+            return {k: v["nombre"] for k, v in _pl_indice_body_expr(tag).items()}
+        if tag in _pl_carpetas_outfit():
+            return {k: v["nombre"] for k, v in _pl_indice_outfit(tag).items()}
+        return {k: v["nombre"] for k, v in _pl_indice_archivos(tag).items()}
+
+    # ======================================================================
+    # Consultas (cascada): personajes -> outfit -> pose -> cara.
+    # ======================================================================
+
+    @_pl_cacheado
+    def pl_personajes():
+        """Tags con poses normales o cuerpo completo (definidos o custom)."""
+        tags = set()
+        for t in _pl_sprites():
+            if _pl_indice(t) or pl_cuerpos(t):
+                tags.add(t)
+        for t in _pl_carpetas():
+            if _pl_indice_archivos(t) or pl_cuerpos(t):
+                tags.add(t)
+        for t in _pl_carpetas_body_expr():
+            if _pl_indice_body_expr(t):
+                tags.add(t)
+        for t in _pl_carpetas_outfit():
+            if _pl_indice_outfit(t) or pl_cuerpos(t):
+                tags.add(t)
+        orden = ("sayori", "natsuki", "yuri", "monika")
+        vanilla = [t for t in orden if t in tags]
+        resto = sorted(t for t in tags if t not in orden)
+        return vanilla + resto
+
+    @_pl_cacheado
+    def pl_cuerpos(tag):
+        """Poses completas definidas (Yuri 4*, resto 5*; en custom, 3x -> 5x)."""
+        if pl_tiene_defs(tag):
+            res = sorted(n for n in _pl_sprites().get(tag, {})
+                         if pl_es_cuerpo(tag, n))
+            # Los alias base (`4`/`5`) duplican la primera variante.
+            if tag == "yuri" and "4a" in res and "4" in res:
+                res.remove("4")
+            if tag == "sayori" and "5a" in res and "5" in res:
+                res.remove("5")
+            return res
+        if _pl_carpetas_outfit().get(tag):
+            return []                       # su 3.png va como pose, no como "5"
+        return sorted("5" + n[1:] for n in _pl_archivos_carpeta(tag)
+                      if _pl_re.fullmatch(r"3\d*[a-z]*", n))
+
+    def pl_cuerpo_label(tag, nombre):
+        """Etiqueta legible de una pose de cuerpo completo."""
+        if not nombre:
+            return "— normal"
+        if tag == "yuri":
+            if nombre == "4":
+                return "Uniforme a2"
+            if len(nombre) == 2 and nombre[0] == "4":
+                return "Uniforme %s2" % nombre[1]
+            if len(nombre) == 3 and nombre.startswith("4b"):
+                return "Casual %s2" % nombre[2]
+        elif tag == "natsuki":
+            if len(nombre) == 2 and nombre[0] == "5":
+                return "Uniforme %s" % nombre[1]
+            if len(nombre) == 3 and nombre.startswith("5b"):
+                return "Casual %s" % nombre[2]
+        elif tag == "sayori":
+            if nombre == "5":
+                return "Full-body 3a"
+            if len(nombre) == 2 and nombre[0] == "5":
+                return "Full-body 3%s" % nombre[1]
+        elif tag == "monika":
+            if nombre == "5a":
+                return "Full-body 3a"
+            if nombre == "5b":
+                return "Full-body 3b"
+        return nombre
+
+    @_pl_cacheado
+    def pl_outfits(tag):
+        return sorted({o for (o, p, c) in _pl_indice_tag(tag)})
+
+    @_pl_cacheado
+    def pl_poses(tag, outfit):
+        return sorted({p for (o, p, c) in _pl_indice_tag(tag) if o == outfit})
+
+    @_pl_cacheado
+    def pl_caras(tag, outfit, pose):
+        return sorted({c for (o, p, c) in _pl_indice_tag(tag)
+        if o == outfit and p == pose})
+
+    def pl_nombre(tag, outfit, pose, cara):
+        """Nombre de la pose (funciona en modo definido y custom)."""
+        return _pl_indice_tag(tag).get((outfit, pose, cara), "")
+
+    def pl_outfit_label(outfit):
+        return "Uniforme" if outfit == "" else ("Casual" if outfit == "b" else outfit.upper())
+
+    def pl_cara_label(cara):
+        """Etiqueta de cara. Vacío solo ocurre en poses especiales (sprite base)."""
+        return cara if cara else "(base)"
+
+    def pl_label(tag):
+        if tag in _pl_carpetas_outfit():
+            return tag      # yuri_sleepy, tal cual
+        return "%s (custom)" % tag if pl_es_custom(tag) else tag
+
+    # Fondos que no sirven para armar una pose: efectos de DDLC (bsod, eyes,
+    # veinmask, vignette, warning), los glitches de color, las pantallas de
+    # poema/notebook y los splashes. Los que agrega el modder en
+    # images/bg/ siguen apareciendo.
+    _PL_FONDOS_EXCLUIDOS = {
+        "bsod", "eyes", "glitch-blue", "glitch-green", "glitch-red",
+        "notebook", "notebook-glitch", "poem", "poem-glitch", "poem-glitch1",
+        "poem-glitch2", "splash", "splash-glitch", "splash-glitch2",
+        "splash-white", "veinmask", "veinmaskb", "vignette", "warning",
+        "warning2",
+    }
+
+    @_pl_cacheado
+    def pl_fondos():
+        """Nombres (sin .png) de los fondos en images/bg/."""
+        fondos = []
+        for f in renpy.list_files():
+            partes = f.split("/")
+            if len(partes) == 3 and partes[0] == "images" and partes[1] == "bg":
+                if partes[2].lower().endswith(".png"):
+                    nombre = partes[2][:-4]
+                    if nombre not in _PL_FONDOS_EXCLUIDOS:
+                        fondos.append(nombre)
+        return sorted(fondos)
+
+    def pl_tag(tag):
+        """Tag de Ren'Py: los nombres de image no admiten espacios."""
+        return (tag or "").replace(" ", "")
+
+    # ======================================================================
+    # Salida para el guion.
+    # ======================================================================
+
+    def pl_show(tag, nombre, trans, zorder=2, estado=""):
+        """Línea `show ...` para el guion ('' si no hay pose).
+
+        `estado` es el transform de tinte (t_activo/t_atenuar) que se agrega
+        a la lista de `at`; vacío = sin tinte."""
+        if not nombre:
+            return ""
+        at = trans
+        if estado:
+            at = "%s, %s" % (trans, estado)
+        return "show %s %s at %s zorder %d" % (pl_tag(tag), nombre, at, zorder)
+
+    def pl_codigo(r):
+        """Línea `show ...` para el panel "Código" ('' si no hay pose)."""
+        return pl_show(r["doki"], r["nombre"], r["trans"], r["zorder"],
+                       r.get("estado_trans", ""))
+
+    # ======================================================================
+    # Estado de la herramienta. Vive en el store (no en variables de screen)
+    # para que los sub-screens puedan leerlo/escribirlo vía SetDict.
+    # ======================================================================
+
+    pl_state = {
+        "doki": "", "cuerpo": "", "outfit": "", "pose": 0,
+        "cara": "", "trans": "t11", "variante": "Normal", "estado": "Normal", "zorder": 2, "fondo": "class", "open": "",
+        "panel": True,
+        # "Copiar en…": archivo destino, línea elegida y texto a insertar.
+        "destino_archivo": "", "destino_linea": 0, "destino_texto": "",
+        "destinos": [],
+    }
+    pl_initialized = False
+
+    def pl_ensure_init():
+        """Inicializa la selección la primera vez que se abre la herramienta."""
+        global pl_initialized
+        if pl_initialized:
+            return
+        dokis = pl_personajes()
+        fondos = pl_fondos()
+        pl_state.update(
+            doki=(dokis[0] if dokis else ""), cuerpo="", outfit="", pose=0,
+            cara="", trans="t11", variante="Normal", estado="Normal",
+            fondo=("class" if "class" in fondos else (fondos[0] if fondos else "")),
+            open="")
+        pl_initialized = True
+
+    def pl_alternar_panel():
+        """Muestra u oculta todas las ventanas flotantes."""
+        pl_state["panel"] = not pl_state.get("panel", True)
+        renpy.restart_interaction()
+
+    def pl_reset():
+        """Vuelve la herramienta a su estado inicial (y las ventanas a su sitio)."""
+        global pl_initialized
+        pl_initialized = False
+        pl_ensure_init()
+        pl_state["panel"] = True
+        tool_ventana_reiniciar("controls", PL_PREFIJO, "pose_lab")
+        tool_ventana_reiniciar("code", PL_PREFIJO, "pose_lab")
+        tool_toast("PoseLab reiniciado")
+
+    def pl_resuelto():
+        """Resuelve la selección efectiva (cascada) y devuelve un dict con la
+        selección + las listas disponibles. Fuente común para UI y preview."""
+        dokis = pl_personajes()
+        doki = pl_state["doki"] if pl_state["doki"] in dokis else (dokis[0] if dokis else "")
+
+        cuerpos = pl_cuerpos(doki)
+        cuerpo = pl_state["cuerpo"] if pl_state["cuerpo"] in cuerpos else ""
+
+        outfits = pl_outfits(doki)
+        outfit = pl_state["outfit"] if pl_state["outfit"] in outfits else (outfits[0] if outfits else "")
+        poses = pl_poses(doki, outfit)
+        pose = pl_state["pose"] if pl_state["pose"] in poses else (poses[0] if poses else 0)
+        caras = pl_caras(doki, outfit, pose)
+        cara = pl_state["cara"] if pl_state["cara"] in caras else (caras[0] if caras else "")
+
+        nombre = cuerpo or pl_nombre(doki, outfit, pose, cara)
+        estado = pl_state.get("estado", "Normal")
+        return {
+            "doki": doki, "cuerpos": cuerpos, "cuerpo": cuerpo,
+            "outfits": outfits, "outfit": outfit,
+            "poses": poses, "pose": pose,
+            "caras": caras, "cara": cara,
+            "nombre": nombre, "fondo": pl_state["fondo"],
+            "trans": pl_state["trans"], "variante": pl_state["variante"], "zorder": pl_state["zorder"],
+            "estado": estado, "estado_trans": pl_estado_trans(estado),
+        }
+
+    def pl_referencia(doki):
+        """(tag, nombre) del primer personaje distinto a `doki`, con una pose
+        por defecto. Sirve de referencia en el preview para ver el layering del
+        zorder. None si no hay otro personaje."""
+        for d in pl_personajes():
+            if d == doki:
+                continue
+            cuerpos = pl_cuerpos(d)
+            if cuerpos:
+                return d, cuerpos[0]
+            outfits = pl_outfits(d)
+            if not outfits:
+                continue
+            outfit = outfits[0]
+            poses = pl_poses(d, outfit)
+            if not poses:
+                continue
+            pose = poses[0]
+            caras = pl_caras(d, outfit, pose)
+            nombre = pl_nombre(d, outfit, pose, caras[0] if caras else "")
+            if nombre:
+                return d, nombre
+        return None
+
+    def pl_choose(name, value):
+        return [SetDict(pl_state, name, value), SetDict(pl_state, "open", "")]
+
+    def pl_choose_variante(variante):
+        # Cambia la familia conservando el slot actual (por defecto, 11).
+        slot = pl_slot_de(pl_state["trans"]) or "11"
+        return [SetDict(pl_state, "variante", variante),
+                SetDict(pl_state, "trans", pl_trans_de(variante, slot)),
+                SetDict(pl_state, "open", "")]
+
+    def pl_choose_doki(value):
+        return [SetDict(pl_state, k, v) for k, v in (
+            ("doki", value), ("cuerpo", ""), ("outfit", ""), ("pose", 0),
+            ("cara", ""), ("open", ""))]
+
+    def pl_choose_cuerpo(value):
+        # Al elegir cuerpo completo, si el transform no es una posición, resetealo.
+        acciones = [SetDict(pl_state, "cuerpo", value), SetDict(pl_state, "open", "")]
+        if value and not pl_slot_de(pl_state["trans"]):
+            acciones.append(SetDict(pl_state, "trans", pl_trans_de(pl_state["variante"], "11")))
+        return acciones
+
+    def pl_choose_outfit(value):
+        return [SetDict(pl_state, "outfit", value), SetDict(pl_state, "pose", 0),
+                SetDict(pl_state, "cara", ""), SetDict(pl_state, "open", "")]
+
+    def pl_choose_pose(value):
+        return [SetDict(pl_state, "pose", value), SetDict(pl_state, "cara", ""),
+                SetDict(pl_state, "open", "")]
+
+    def pl_menus(r):
+        """Menús de la ventana de controles: (título, valor, clave, opciones)."""
+        menus = [
+            ("Personaje", pl_label(r["doki"]) or "—", "doki", [
+                (pl_label(d), pl_choose_doki(d), d == r["doki"])
+                for d in pl_personajes()
+            ]),
+        ]
+        # Cuerpo completo: sección aparte, opcional.
+        if r["cuerpos"]:
+            actual = (pl_cuerpo_label(r["doki"], r["cuerpo"])
+                      if r["cuerpo"] else "— normal")
+            menus.append(("Cuerpo completo", actual, "cuerpo", [
+                ("— normal", pl_choose_cuerpo(""), r["cuerpo"] == ""),
+            ] + [
+                (pl_cuerpo_label(r["doki"], c), pl_choose_cuerpo(c),
+                 c == r["cuerpo"]) for c in r["cuerpos"]
+            ]))
+        if not r["cuerpo"]:
+            menus.append(("Outfit", pl_outfit_label(r["outfit"]), "outfit", [
+                (pl_outfit_label(o), pl_choose_outfit(o), o == r["outfit"])
+                for o in r["outfits"]
+            ]))
+            menus.append(("Pose", str(r["pose"]) if r["pose"] else "—", "pose", [
+                (str(p), pl_choose_pose(p), p == r["pose"]) for p in r["poses"]
+            ]))
+            menus.append(("Cara", pl_cara_label(r["cara"]), "cara", [
+                (pl_cara_label(c), pl_choose("cara", c), c == r["cara"])
+                for c in r["caras"]
+            ]))
+        # Familia (letra) y posición (slot). El transform final es familia+slot.
+        menus.append(("Variante", pl_state["variante"], "variante", [
+            (label, pl_choose_variante(label), label == pl_state["variante"])
+            for label, _pref in _PL_FAMILIAS
+        ]))
+        menus.append(("Posición", pl_state["trans"], "trans", [
+            (pl_trans_de(pl_state["variante"], s), pl_choose("trans", pl_trans_de(pl_state["variante"], s)),
+             pl_trans_de(pl_state["variante"], s) == pl_state["trans"]) for s in _PL_SLOTS
+        ]))
+        menus.append(("Estado", pl_state.get("estado", "Normal"), "estado", [
+            (label, pl_choose("estado", label), label == pl_state.get("estado", "Normal"))
+            for label, _trans in _PL_ESTADOS
+        ]))
+        menus.append(("Fondo", r["fondo"] or "—", "fondo", [
+            (f, pl_choose("fondo", f), f == r["fondo"]) for f in pl_fondos()
+        ]))
+        # Capa de la línea show (detrás/delante).
+        menus.append(("Zorder", str(pl_state["zorder"]), "zorder", [
+            (str(z), pl_choose("zorder", z), z == pl_state["zorder"])
+            for z in _PL_ZORDERS
+        ]))
+        return menus
+
+    # ======================================================================
+    # Ventanas flotantes: las posiciones, el arrastre y el estado "fijada"
+    # los maneja el hub (game/plugins/ui_styles.rpy). Cada plugin usa su
+    # prefijo para no chocar en `persistent`. Es dev-only.
+    # ======================================================================
+
+    PL_PREFIJO = "pl"
+    # Las ventanas arrancan bajo la barra de herramientas (arriba, ~40 px).
+    _PL_VENTANAS = {"controls": (24, 64), "code": (790, 64)}
+
+    # ======================================================================
+    # Utilidades.
+    # ======================================================================
+
+    def pl_limpiar_cache():
+        """Limpia todas las cachés de lectura (definiciones de sprites/carpetas)."""
+        for c in _PL_CACHES:
+            c.clear()
+
+    def pl_avisar_deteccion():
+        """Toast al abrir: cuántos personajes hay y cuáles son nuevos."""
+        global _PL_AVISADO
+        if _PL_AVISADO:
+            return
+        _PL_AVISADO = True
+        tags = pl_personajes()
+        vistos = persistent.pl_personajes_visto or []
+        nuevos = [t for t in tags if t not in vistos]
+        msg = "%d personaje%s" % (len(tags), "" if len(tags) == 1 else "s")
+        if nuevos:
+            msg += " · nuevo: " + ", ".join(nuevos)
+        persistent.pl_personajes_visto = list(tags)
+        tool_toast(msg)
+
+    # ======================================================================
+    # Definiciones para personajes custom (carpetas sin `image`).
+    #
+    # PoseLab previsualiza una carpeta custom, pero el juego no puede hacer
+    # `show <tag> ...` si no existe la `image`. Estas funciones generan las
+    # definiciones con el patrón de los sprites por defecto y las escriben en
+    # `definitions/sprites.rpy` (sección marcada, reemplazable).
+    # ======================================================================
+
+    _PL_DEFINIDOS = set()       # tags resueltos en esta sesión
+    _PL_PROMPT_VISTO = False    # el prompt se ofrece una vez por sesión
+    _PL_HUERFANAS_VISTO = False  # el aviso de huérfanas, una vez por sesión
+    _PL_AVISADO = False         # el toast de detección, una vez por sesión
+
+    def pl_custom_sin_defs():
+        """Tags custom (carpeta o 2 capas) sin definiciones ni resueltos."""
+        res = []
+        for t in _pl_carpetas():
+            if t in _PL_DEFINIDOS or pl_tiene_defs(t):
+                continue
+            if _pl_indice_archivos(t):
+                res.append(t)
+        for t in _pl_carpetas_body_expr():
+            if t in _PL_DEFINIDOS or pl_tiene_defs(t):
+                continue
+            if _pl_indice_body_expr(t):
+                res.append(t)
+        for t in _pl_carpetas_outfit():
+            if t in _PL_DEFINIDOS or pl_tiene_defs(t):
+                continue
+            if _pl_indice_outfit(t) or pl_cuerpos(t):
+                res.append(t)
+        return sorted(res)
+
+    def pl_definiciones_texto(tag):
+        """Líneas `image ...` para el personaje custom (sin escribir nada)."""
+        lineas = []
+        carpeta = _pl_carpetas().get(tag)
+
+        if carpeta:
+            # 3 capas: mitades izquierda/derecha + cara.
+            for _k, v in sorted(_pl_indice_archivos(tag).items()):
+                lineas.append(
+                    'image %s %s = Composite((960, 960), (0, 0), "%s/%s.png", '
+                    '(0, 0), "%s/%s.png", (0, 0), "%s/%s.png")'
+                    % (pl_tag(tag), v["nombre"], carpeta, v["izq"],
+                       carpeta, v["der"], carpeta, v["cara"]))
+            # Sprites completos sueltos (p. ej. 3a, 3b).
+            for nombre in _pl_archivos_carpeta(tag):
+                if (_PL_BODY_RE.fullmatch(nombre)
+                        and not _PL_IZQ_RE.fullmatch(nombre)
+                        and not _PL_DER_RE.fullmatch(nombre)):
+                    lineas.append('image %s %s = "%s/%s.png"'
+                                  % (pl_tag(tag), nombre, carpeta, nombre))
+            return lineas
+
+        # 2 capas: cuerpo + expresión.
+        if tag in _pl_carpetas_body_expr():
+            for _k, v in sorted(_pl_indice_body_expr(tag).items()):
+                lineas.append(
+                    'image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s")'
+                    % (pl_tag(tag), v["nombre"], v["body"], v["expr"]))
+
+        # Outfit pack: mitades + caras de la doki base.
+        oc = _pl_carpetas_outfit().get(tag)
+        if oc:
+            for _k, v in sorted(_pl_indice_outfit(tag).items()):
+                if v.get("full"):
+                    lineas.append(
+                        'image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s")'
+                        % (pl_tag(tag), v["nombre"], v["full"], v["cara"]))
+                else:
+                    lineas.append(
+                        'image %s %s = Composite((960, 960), (0, 0), "%s", (0, 0), "%s", (0, 0), "%s")'
+                        % (pl_tag(tag), v["nombre"], v["izq"], v["der"], v["cara"]))
+        return lineas
+
+    # --- Personajes (define/default) --------------------------------------
+
+    def pl_nombre_personaje(tag):
+        """Nombre visible del personaje derivado del tag: 'akira' -> 'Akira'."""
+        return tag.replace("_", " ").title()
+
+    def _pl_tags_personajes_auto():
+        """Tags con `define` dentro del bloque PoseLab de definitions.rpy."""
+        try:
+            with open(_pl_os.path.join(config.gamedir, _PL_DEFS_REL),
+                      "r", encoding="utf-8", newline="") as fh:
+                texto = fh.read()
+        except Exception:
+            return set()
+        if _PL_MARCA_PER_INI not in texto:
+            return set()
+        a = texto.index(_PL_MARCA_PER_INI)
+        b = texto.find(_PL_MARCA_PER_FIN, a)
+        bloque = texto[a:len(texto) if b == -1 else b]
+        return set(_pl_re.findall(
+            r"^\s*define\s+(\w+)\s*=\s*DynamicCharacter\(", bloque, _pl_re.M))
+
+    def pl_personaje_texto(tag):
+        """Líneas `define`/`default` del personaje custom, o [] si no aplica.
+
+        Los outfit packs (`yuri_sleepy`) no generan personaje: cambia la ropa,
+        la doki es la misma. Y si el tag ya es un personaje ajeno no se repite
+        el `define` (Ren'Py falla con dos definiciones del mismo nombre)."""
+        if tag in _pl_carpetas_outfit():
+            return []
+        if hasattr(store, tag) and tag not in _pl_tags_personajes_auto():
+            return []
+        return [
+            "define %s = DynamicCharacter('%s_name', image='%s', "
+            "what_prefix='\"', what_suffix='\"', ctc=\"ctc\", "
+            "ctc_position=\"fixed\")" % (tag, tag, tag),
+            "default %s_name = \"%s\"" % (tag, pl_nombre_personaje(tag)),
+        ]
+
+    def _pl_personajes_tags():
+        """Tags de bloques PoseLab que deben tener personaje."""
+        return sorted(t for t in _pl_tags_auto()
+                      if t not in _pl_carpetas_outfit())
+
+    def _pl_bloque(lineas, ini, fin):
+        if not lineas:
+            return ""
+        return "\n".join([ini] + lineas + [fin]) + "\n"
+
+    def _pl_poner_bloque(texto, ini, fin, lineas, ancla_re):
+        """Reemplaza el bloque marcado, o lo inserta tras la última ancla."""
+        bloque = _pl_bloque(lineas, ini, fin)
+
+        if ini in texto:
+            a = texto.index(ini)
+            b = texto.find(fin, a)
+            b = len(texto) if b == -1 else b + len(fin)
+            resto = texto[b:]
+            if resto.startswith("\n"):
+                resto = resto[1:]
+            return texto[:a] + bloque + resto
+
+        if not bloque:
+            return texto
+
+        lineas_txt = texto.split("\n")
+        dentro = False
+        ancla = None
+        for i, l in enumerate(lineas_txt):
+            s = l.strip()
+            if s == ini:
+                dentro = True
+            elif s == fin:
+                dentro = False
+            elif not dentro and ancla_re.match(l):
+                ancla = i
+
+        nuevas = bloque.rstrip("\n").split("\n")
+        if ancla is None:
+            if not texto.endswith("\n"):
+                lineas_txt.append("")
+            lineas_txt.extend([""] + nuevas)
+            return "\n".join(lineas_txt)
+
+        lineas_txt[ancla + 1:ancla + 1] = nuevas
+        return "\n".join(lineas_txt)
+
+    def _pl_editar_personajes(texto, tags):
+        """Arma los dos bloques (define y default) para `tags`."""
+        per, nom = [], []
+        for tag in tags:
+            lineas = pl_personaje_texto(tag)
+            if not lineas:
+                continue
+            per.append(lineas[0])
+            nom.append(lineas[1])
+        texto = _pl_poner_bloque(texto, _PL_MARCA_PER_INI, _PL_MARCA_PER_FIN,
+                                 per, _PL_DEF_RE)
+        return _pl_poner_bloque(texto, _PL_MARCA_NOM_INI, _PL_MARCA_NOM_FIN,
+                                nom, _PL_NOM_RE)
+
+    def _pl_editar_definiciones(fn):
+        """Edita definitions/definitions.rpy (backup + escritura atómica)."""
+        ruta = _pl_os.path.join(config.gamedir, _PL_DEFS_REL)
+        try:
+            with open(ruta, "r", encoding="utf-8", newline="") as fh:
+                texto = fh.read().replace("\r\n", "\n").replace("\r", "\n")
+            with open(ruta + ".poselab.bak", "w", encoding="utf-8",
+                      newline="\n") as fh:
+                fh.write(texto)
+        except Exception as e:
+            print("pose_lab: no se pudo respaldar definitions.rpy: %s" % e)
+            return None
+        nuevo = fn(texto)
+        if nuevo is None:
+            return None
+        try:
+            _ins_escribir(ruta, nuevo)
+        except Exception as e:
+            print("pose_lab: no se pudo escribir definitions.rpy: %s" % e)
+            return None
+        return nuevo
+
+    def pl_escribir_personajes(tags):
+        """Escribe/reemplaza los bloques de personajes y nombres."""
+        if _pl_editar_definiciones(
+                lambda texto: _pl_editar_personajes(texto, tags)) is None:
+            return 0
+        return sum(1 for t in tags if pl_personaje_texto(t))
+
+    def _pl_aplicar_personajes(tags):
+        """Crea los personajes ya, sin reiniciar (store + nombre)."""
+        n = 0
+        for tag in tags:
+            if tag in _pl_carpetas_outfit() or hasattr(store, tag):
+                continue
+            try:
+                setattr(store, tag, DynamicCharacter(
+                    "%s_name" % tag, image=tag, what_prefix='"',
+                    what_suffix='"', ctc="ctc", ctc_position="fixed"))
+                if not hasattr(store, "%s_name" % tag):
+                    setattr(store, "%s_name" % tag, pl_nombre_personaje(tag))
+                n += 1
+            except Exception as e:
+                print("pose_lab: no se pudo crear el personaje %s: %s" % (tag, e))
+        return n
+
+    def pl_personajes_sin_define():
+        """Tags de bloques PoseLab a los que les falta el personaje."""
+        res = []
+        for tag in _pl_personajes_tags():
+            if hasattr(store, tag) or tag in _pl_tags_personajes_auto():
+                continue
+            res.append(tag)
+        return sorted(res)
+
+    def _pl_editar_sprites(fn):
+        """Aplica `fn(texto)` a definitions/sprites.rpy (backup + escritura atómica).
+
+        Devuelve el texto nuevo, o None si no se pudo. Al escribir se avisa al
+        watcher con `add_auto(force=True)` (el idiom de renpy/scriptedit.py):
+        si no, Ren'Py ve el .rpy cambiado y a los ~1,5 s recarga el guion,
+        guardando y recargando la partida en curso."""
+        ruta = _pl_os.path.join(config.gamedir, "definitions", "sprites.rpy")
+        if not _pl_os.path.isfile(ruta):
+            return None
+
+        try:
+            with open(ruta, "r", encoding="utf-8", newline="") as fh:
+                texto = fh.read().replace("\r\n", "\n").replace("\r", "\n")
+            # El backup es obligatorio: si falla, no se toca el archivo.
+            with open(ruta + ".poselab.bak", "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(texto)
+        except Exception as e:
+            print("pose_lab: no se pudo respaldar sprites.rpy: %s" % e)
+            return None
+
+        nuevo = fn(texto)
+        try:
+            with renpy.loader.auto_lock:
+                tmp = ruta + ".poselab.tmp"
+                with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
+                    fh.write(nuevo)
+                _pl_os.replace(tmp, ruta)
+                renpy.loader.add_auto(ruta, force=True)
+        except Exception as e:
+            print("pose_lab: no se pudo escribir sprites.rpy: %s" % e)
+            return None
+        return nuevo
+
+    def pl_escribir_definiciones(tags):
+        """Escribe/reemplaza la sección de cada tag en definitions/sprites.rpy."""
+        textos = {}
+        for tag in tags:
+            lineas = pl_definiciones_texto(tag)
+            if lineas:
+                textos[tag] = lineas
+        if not textos:
+            return 0
+
+        def aplicar(texto):
+            for tag, lineas in textos.items():
+                ini = "# === PoseLab: %s (auto) ===" % tag
+                fin = "# === fin PoseLab: %s ===" % tag
+                bloque = "\n".join([ini] + lineas + [fin]) + "\n"
+                if ini in texto:
+                    a = texto.index(ini)
+                    if fin in texto:
+                        b = texto.index(fin) + len(fin)
+                    else:
+                        # Bloque huérfano (sin marcador de fin): se reemplaza
+                        # hasta el próximo bloque PoseLab o el final.
+                        sig = texto.find("# === ", a + len(ini))
+                        b = sig if sig != -1 else len(texto)
+                    if texto[b:b + 1] == "\n":
+                        b += 1
+                    texto = texto[:a] + bloque + texto[b:]
+                else:
+                    if not texto.endswith("\n"):
+                        texto += "\n"
+                    texto += "\n" + bloque
+            return texto
+
+        if _pl_editar_sprites(aplicar) is None:
+            return 0
+        _PL_DEFINIDOS.update(textos)
+        return sum(len(l) for l in textos.values())
+
+    def _pl_cargar_definiciones(tags):
+        """Registra las definiciones ya, sin reiniciar: corre su `init`."""
+        lineas = []
+        for tag in tags:
+            lineas.extend(pl_definiciones_texto(tag))
+        if not lineas:
+            return 0
+        codigo = "init:\n" + "".join("    %s\n" % l for l in lineas)
+        try:
+            renpy.load_string(codigo, filename="<poselab>")
+        except Exception as e:
+            print("pose_lab: no se pudieron aplicar las definiciones en caliente: %s" % e)
+            return 0
+        return len(lineas)
+
+    def pl_crear_definiciones(tags):
+        """Acción "Crear": escribe imágenes y personajes, y los aplica al toque."""
+        n = 0
+        if tags:
+            n = pl_escribir_definiciones(tags)
+            if not n:
+                tool_toast("No se pudo escribir definitions/sprites.rpy.")
+                return
+
+        pl_limpiar_cache()  # que _pl_tags_auto() vea los bloques recién escritos
+        todos = _pl_personajes_tags()
+        m = pl_escribir_personajes(todos)
+
+        if not n and not m:
+            tool_toast("No había nada que crear.")
+            return
+
+        if tags:
+            _pl_cargar_definiciones(tags)
+        _pl_aplicar_personajes(todos)
+        pl_limpiar_cache()
+        tool_toast("%d definición%s y %d personaje%s."
+                 % (n, "" if n == 1 else "es", m, "" if m == 1 else "s"))
+
+    def pl_defs_auto_huerfanas():
+        """Tags con bloque de PoseLab cuyas definiciones perdieron sus PNGs."""
+        auto = _pl_tags_auto()
+        return sorted(t for t in _pl_defs_huerfanas() if t in auto)
+
+    def pl_diag_defs():
+        """Diagnóstico del hub: definiciones manuales que apuntan a PNGs borrados."""
+        auto = _pl_tags_auto()
+        return [
+            {"id": tag, "ruta": "", "fatal": False,
+             "motivo": "sus definiciones apuntan a archivos que ya no existen (%s)"
+                       % rutas[0]}
+            for tag, rutas in sorted(_pl_defs_huerfanas().items())
+            if tag not in auto
+        ]
+
+    def pl_quitar_defs_huerfanas(tags):
+        """Borra los bloques PoseLab de esos tags (con backup)."""
+        if not tags:
+            return
+
+        def aplicar(texto):
+            for tag in tags:
+                ini = "# === PoseLab: %s (auto) ===" % tag
+                fin = "# === fin PoseLab: %s ===" % tag
+                while ini in texto:
+                    a = texto.index(ini)
+                    fin_pos = texto.find(fin, a)
+                    if fin_pos != -1:
+                        b = fin_pos + len(fin)
+                    else:
+                        sig = texto.find("# === ", a + len(ini))
+                        b = sig if sig != -1 else len(texto)
+                    while b < len(texto) and texto[b] in "\r\n":
+                        b += 1
+                    # También el salto que separaba el bloque de lo anterior.
+                    ini_b = a
+                    while ini_b > 0 and texto[ini_b - 1] in "\r\n":
+                        ini_b -= 1
+                    sep = "\n" if ini_b > 0 else ""
+                    texto = texto[:ini_b] + sep + texto[b:]
+            return texto.rstrip("\n") + "\n"
+
+        if _pl_editar_sprites(aplicar) is None:
+            tool_toast("No se pudo escribir definitions/sprites.rpy.")
+            return
+        pl_limpiar_cache()
+        pl_escribir_personajes(_pl_personajes_tags())
+        pl_limpiar_cache()
+        tool_toast("Definiciones borradas: %s" % ", ".join(tags))
+
+    def pl_ofrecer_definiciones():
+        """Muestra el prompt de definiciones/personajes (una vez por sesión)."""
+        global _PL_PROMPT_VISTO
+        if _PL_PROMPT_VISTO:
+            return
+        pendientes = pl_custom_sin_defs()
+        personajes = pl_personajes_sin_define()
+        if not pendientes and not personajes:
+            return
+        renpy.show_screen("pl_definir", tags=pendientes, personajes=personajes)
+        _PL_PROMPT_VISTO = True
+
+    def pl_ofrecer_huerfanas():
+        """Muestra el aviso de definiciones huérfanas (una vez por sesión)."""
+        global _PL_HUERFANAS_VISTO
+        if _PL_HUERFANAS_VISTO:
+            return
+        tags = pl_defs_auto_huerfanas()
+        if not tags:
+            return
+        renpy.show_screen("pl_huerfanas", tags=tags)
+        _PL_HUERFANAS_VISTO = True
+
+    def pl_reescanear():
+        """Vuelve a listar los archivos y a leer definiciones/carpetas.
+
+        Sin esto, la lista de archivos es la del arranque: una carpeta nueva no
+        aparece hasta reiniciar el juego."""
+        global _PL_PROMPT_VISTO, _PL_HUERFANAS_VISTO
+        tool_refrescar()
+        pl_limpiar_cache()
+        _PL_PROMPT_VISTO = False
+        _PL_HUERFANAS_VISTO = False
+        pl_resuelto()  # re-resuelve la selección con las listas nuevas
+        tags = pl_personajes()
+        tool_toast("Reescaneado: %d personaje%s"
+                 % (len(tags), "" if len(tags) == 1 else "s"))
+        if pl_custom_sin_defs():
+            pl_ofrecer_definiciones()
+        else:
+            pl_ofrecer_huerfanas()
+
+
+# Las posiciones por defecto se registran después de que el hub defina sus
+# helpers (init 10 corre después de los bloques `init` normales).
+init 10 python:
+
+    tool_ventanas_defecto(_PL_VENTANAS, PL_PREFIJO)
+
+    # El hub "Reescanear" limpia también las cachés de PoseLab, y su
+    # Diagnóstico muestra las definiciones manuales que apuntan a PNGs
+    # borrados. Ver `tool_refrescar` en game/plugins/complements_data.rpy.
+    TOOL_REFRESCO_FNS.append(pl_limpiar_cache)
+    TOOL_DIAG_FNS.append(pl_diag_defs)
+

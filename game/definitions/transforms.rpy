@@ -38,6 +38,19 @@ transform t_focus(x=640, z=0.80):
         parallel:
             easein .15 yoffset 0
 
+# Tinte del hablante (activo) y de los personajes que no hablan (atenuado).
+# Solo cambian el color: se combinan con la posicion/variante elegida, por
+# ejemplo `show sayori 1a at f32, t_activo zorder 2`.
+transform t_activo:
+    parallel:
+        easein 0.25
+        matrixcolor TintMatrix("#ffffff")
+
+transform t_atenuar:
+    parallel:
+        easein 0.25
+        matrixcolor TintMatrix("#777777")
+
 transform hop(x=640, z=0.80):
     xcenter x yoffset 0 yanchor 1.0 ypos 1.03 zoom z*1.00 alpha 1.00 subpixel True
     easein .1 yoffset -20
