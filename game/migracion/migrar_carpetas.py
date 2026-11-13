@@ -17,8 +17,6 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import migrar as base
 
-IGNORAR_RAIZ = (".git", ".github", ".vscode", "dist", "ZIPs", "tools",
-                "migracion_backup")
 IGNORAR_DIRS = set(base.IGNORAR_DIRS) | {"migracion_backup"}
 RUTA_REPORTE = os.path.join("game", "migracion", "reporte.json")
 RUTA_LOG = os.path.join("game", "migracion", "migracion.log")
@@ -53,18 +51,9 @@ def _rel(raiz, ruta):
 
 def _ignorar(rel):
     rel = base._norm(rel)
-    partes = rel.split("/")
-    if partes[0] in IGNORAR_RAIZ:
+    if base._ignorar(rel):
         return True
-    if rel.startswith("game/migracion/"):
-        return True
-    if partes[-1] in base.IGNORAR_FILES:
-        return True
-    if partes[-1] in (".migracion_destino", ".migracion_boot_ok"):
-        return True
-    if rel.endswith(base.IGNORAR_EXT):
-        return True
-    return any(d in IGNORAR_DIRS for d in partes)
+    return any(d in IGNORAR_DIRS for d in rel.split("/"))
 
 
 def _sha(ruta):
@@ -136,8 +125,12 @@ def _archivos_origen(source, man):
     propios = []
     ignorados = set(base.ARCHIVOS_SISTEMA)
     files = man.get("files", {}) if man else {}
+    raiz_abs = os.path.abspath(source)
     for dirpath, dirnames, filenames in os.walk(source):
-        dirnames[:] = [d for d in dirnames if d not in IGNORAR_DIRS]
+        en_raiz = os.path.abspath(dirpath) == raiz_abs
+        dirnames[:] = [d for d in dirnames
+                       if d not in IGNORAR_DIRS
+                       and not (en_raiz and d in base.IGNORAR_RAIZ)]
         for nombre in filenames:
             ruta = os.path.join(dirpath, nombre)
             rel = _rel(source, ruta)

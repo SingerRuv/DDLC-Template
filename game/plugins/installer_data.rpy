@@ -12,7 +12,8 @@
 ##   - La instalación es atómica: se descomprime en _tmp, se valida y recién
 ##     ahí se mueve a destino. Si algo falla no queda nada a medias.
 ##
-## Actualizar aparta la versión anterior a _incoming/_backups/.
+## Actualizar aparta la versión anterior a plugin_backups/ (raíz del proyecto,
+## fuera de game/: si quedara adentro, Ren'Py cargaría sus .rpy al reiniciar).
 ## El ZIP usado se archiva en _incoming/instalados/.
 ##
 ## Un plugin nuevo no se puede cargar en caliente (Ren'Py compila los .rpy al
@@ -31,8 +32,10 @@ init python:
 
     _PI_INCOMING = "plugins/_incoming"
     _PI_INSTALADOS = "plugins/_incoming/instalados"
-    _PI_BACKUPS = "plugins/_incoming/_backups"
     _PI_TMP = "plugins/_incoming/_tmp"
+    # Backups fuera de game/: si quedan dentro, Ren'Py carga sus .rpy al
+    # reiniciar y un plugin viejo puede duplicar labels/define.
+    _PI_BACKUPS_DIR = "plugin_backups"
 
     # ponytail: topes fijos, holgados para un plugin. Si algún día un plugin
     # legítimo los pasa, se suben acá.
@@ -61,6 +64,11 @@ init python:
 
     def _pi_asegurar(rel):
         ruta = _pi_ruta(rel)
+        _pi_os.makedirs(ruta, exist_ok=True)
+        return ruta
+
+    def _pi_asegurar_backups():
+        ruta = _pi_os.path.join(config.basedir, _PI_BACKUPS_DIR)
         _pi_os.makedirs(ruta, exist_ok=True)
         return ruta
 
@@ -350,7 +358,7 @@ init python:
         backup = None
         if _pi_os.path.isdir(destino):
             try:
-                bdir = _pi_asegurar(_PI_BACKUPS)
+                bdir = _pi_asegurar_backups()
                 marca = _pi_time.strftime("%Y%m%d-%H%M%S", _pi_time.localtime())
                 backup = _pi_os.path.join(bdir, "%s-%s" % (meta["dir"], marca))
                 n = 2
@@ -461,3 +469,23 @@ init python:
         if config.developer:
             renpy.session["_pi_reinicio"] = True
             renpy.utter_restart()
+
+    def _pi_mover_backups_viejos():
+        # ponytail: antes de 2.0.2 los backups vivían en _incoming/_backups (dentro
+        # de game/); sus .rpy se cargaban al reiniciar. Se mueven una vez a la
+        # raíz. Si algún move falla no se borra nada.
+        viejo = _pi_ruta("plugins/_incoming/_backups")
+        if not _pi_os.path.isdir(viejo):
+            return
+        nuevo = _pi_asegurar_backups()
+        fallo = False
+        for nombre in _pi_os.listdir(viejo):
+            try:
+                _pi_shutil.move(_pi_os.path.join(viejo, nombre),
+                                _pi_os.path.join(nuevo, nombre))
+            except Exception:
+                fallo = True
+        if not fallo:
+            _pi_shutil.rmtree(viejo, ignore_errors=True)
+
+    _pi_mover_backups_viejos()

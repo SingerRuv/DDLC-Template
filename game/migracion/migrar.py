@@ -33,9 +33,16 @@ import zipfile
 # ---- Reglas de que NO se toca nunca -------------------------------------------------
 
 # Extensiones que jamas se migran ni respaldan (bytecode, assets de DDLC, etc.).
-IGNORAR_EXT = (".rpa", ".rpyc", ".rpyb", ".pyc")
+IGNORAR_EXT = (".rpa", ".rpyc", ".rpyb", ".pyc", ".log", ".tmp")
 # Carpetas que se ignoran al escanear el proyecto.
 IGNORAR_DIRS = ("saves", "cache", "__pycache__", "backup")
+# Carpetas de PRIMER NIVEL que no son del mod (mismo criterio que
+# migrar_carpetas.py). En niveles mas profundos no aplican: `game/plugins/` si
+# se migra.
+IGNORAR_RAIZ = (".git", ".github", ".vscode", ".idea", ".vs", "dist", "ZIPs",
+                "tools", "migracion_backup", "plugin_backups")
+# Basura de editor/sistema.
+IGNORAR_BASURA = ("Thumbs.db", ".DS_Store")
 # Archivos sueltos que se ignoran siempre.
 IGNORAR_FILES = ("log.txt", "errors.txt", "traceback.txt")
 # Archivos propios del sistema de migracion (no son parte del template).
@@ -73,7 +80,17 @@ def _ignorar(rel):
     """True si la ruta (relativa, con /) no debe migrarse ni respaldarse."""
     rel = _norm(rel)
     partes = rel.split("/")
-    if partes[-1] in IGNORAR_FILES:
+    # Carpetas ajenas al mod: solo en el primer nivel.
+    if partes[0] in IGNORAR_RAIZ:
+        return True
+    # Sistema de migracion y temporales/backups del instalador de plugins.
+    if rel.startswith("game/migracion/"):
+        return True
+    if rel.startswith("game/plugins/_incoming/_"):
+        return True
+    if partes[-1] in IGNORAR_FILES or partes[-1] in IGNORAR_BASURA:
+        return True
+    if partes[-1] in (".migracion_destino", ".migracion_boot_ok"):
         return True
     if rel.endswith(IGNORAR_EXT):
         return True
@@ -94,9 +111,13 @@ def _sha256(path):
 def _listar(raiz, sub):
     """Devuelve las rutas relativas (posix) de los archivos bajo raiz/sub."""
     base = os.path.join(raiz, sub) if sub else raiz
+    raiz_abs = os.path.abspath(raiz)
     resultado = []
     for dirpath, dirnames, filenames in os.walk(base):
-        dirnames[:] = [d for d in dirnames if d not in IGNORAR_DIRS]
+        en_raiz = os.path.abspath(dirpath) == raiz_abs
+        dirnames[:] = [d for d in dirnames
+                       if d not in IGNORAR_DIRS
+                       and not (en_raiz and d in IGNORAR_RAIZ)]
         for nombre in filenames:
             abs_ = os.path.join(dirpath, nombre)
             rel = _norm(os.path.relpath(abs_, raiz))
@@ -265,8 +286,9 @@ def planificar(project, man_old, man_new):
         if rel not in nuevos:
             borrados.append(rel)
 
-    # 4) Archivos que agrego el modder (incluye colisiones con el template nuevo).
-    for rel in _listar(project, "game"):
+    # 4) Archivos que agrego el modder (incluye colisiones con el template nuevo
+    #    y todo lo que este fuera de game/, p. ej. characters/ o docs/ propios).
+    for rel in _listar(project, ""):
         if rel in viejos or rel in ARCHIVOS_SISTEMA or rel.endswith(IGNORAR_EXT):
             continue
         if rel in nuevos:
@@ -747,6 +769,73 @@ def selftest():
     assert os.path.isfile(os.path.join(p2, "game", "tools", "plugins", "mi_plugin", "tool.json")), "rollback plugin"
     assert os.path.isfile(os.path.join(p2, "game", "tl", "spanish", "tools", "x.rpy")), "rollback tl"
     assert not os.path.exists(os.path.join(p2, "game", "plugins")), "rollback deja limpio plugins"
+
+    # --- Raiz del proyecto: propios, colisiones y basura que no se toca ---
+    p3 = os.path.join(tmp, "proj3")
+    escribir(p3, "game/script.rpy", "script")
+    escribir(p3, "README.md", "readme v1")
+    escribir(p3, "docs/00-empezar.md", "doc v1")
+    man3_old = manifest_de(p3, "2.0.1")
+
+    # El modder edita, agrega cosas fuera de game/ y deja basura.
+    escribir(p3, "README.md", "readme v2 + MI NOTA")          # colision
+    escribir(p3, "docs/00-empezar.md", "doc v1 + MI NOTA")    # editado
+    escribir(p3, "characters/monika.chr", "chr")              # propio (raiz)
+    escribir(p3, "mi_sistema/notas.md", "notas")              # propio (raiz)
+    escribir(p3, "game/plugins/_incoming/miplugin.zip", "ZIP")  # propio
+    escribir(p3, "game/plugins/_incoming/_tmp/x.txt", "tmp")    # ignorado
+    escribir(p3, "game/plugins/_incoming/_backups/viejo/a.rpy", "x")  # ignorado
+    escribir(p3, "migracion_backup/viejo/x.rpy", "x")         # ignorado
+    escribir(p3, "plugin_backups/viejo/x.rpy", "x")           # ignorado
+    escribir(p3, ".vscode/settings.json", "{}")               # ignorado
+    escribir(p3, "Thumbs.db", "x")                            # ignorado
+    escribir(p3, "err.log", "x")                              # ignorado
+
+    st3 = os.path.join(tmp, "nuevo3")
+    escribir(st3, "game/script.rpy", "script")
+    escribir(st3, "README.md", "readme v2")
+    escribir(st3, "docs/00-empezar.md", "doc v1")
+    escribir(st3, "docs/01-historia.md", "doc new")
+    man3_new = manifest_de(st3, "2.0.2")
+
+    plan3 = planificar(p3, man3_old, man3_new)
+    for rel in ("characters/monika.chr", "mi_sistema/notas.md",
+                "game/plugins/_incoming/miplugin.zip"):
+        assert rel in plan3["agregados"], "deberia respaldarse %s" % rel
+    for rel in ("game/plugins/_incoming/_tmp/x.txt",
+                "game/plugins/_incoming/_backups/viejo/a.rpy",
+                "migracion_backup/viejo/x.rpy", "plugin_backups/viejo/x.rpy",
+                ".vscode/settings.json", "Thumbs.db", "err.log"):
+        assert rel not in plan3["agregados"], "no deberia migrarse %s" % rel
+    assert "README.md" in plan3["conservar"], "colision en la raiz se conserva"
+    assert "README.md" in plan3["conflictos"], "colision en la raiz avisa"
+    assert "docs/00-empezar.md" in plan3["conservar"], "doc editado se conserva"
+    assert "docs/00-empezar.md" not in plan3["conflictos"], "doc sin cambio no avisa"
+    assert "docs/01-historia.md" in plan3["nuevos"], "doc nuevo del template"
+
+    backup3, _ = respaldar(p3, plan3, "2.0.1", "test")
+    for rel in ("characters/monika.chr", "mi_sistema/notas.md",
+                "README.md", "game/plugins/_incoming/miplugin.zip"):
+        assert os.path.isfile(os.path.join(backup3, rel.replace("/", os.sep))), \
+            "backup de %s" % rel
+
+    # --- Migracion entre carpetas: tambien ignora la raiz ajena ---
+    import migrar_carpetas as mc
+    p4 = os.path.join(tmp, "proj4")
+    escribir(p4, "game/script.rpy", "script")
+    escribir(p4, "characters/monika.chr", "chr")
+    escribir(p4, "mi_sistema/notas.md", "notas")
+    escribir(p4, "migracion_backup/viejo/x.rpy", "x")
+    escribir(p4, "plugin_backups/viejo/x.rpy", "x")
+    escribir(p4, "tools/local.py", "x")
+    escribir(p4, "Thumbs.db", "x")
+    escribir(p4, "error.log", "x")
+    propios = [rel for rel, _ in mc._archivos_origen(p4, None)]
+    assert "characters/monika.chr" in propios, "propio en la raiz"
+    assert "mi_sistema/notas.md" in propios, "carpeta propia en la raiz"
+    for rel in ("migracion_backup/viejo/x.rpy", "plugin_backups/viejo/x.rpy",
+                "tools/local.py", "Thumbs.db", "error.log"):
+        assert rel not in propios, "no deberia copiarse %s" % rel
 
     # --- ZIP con ruta no permitida se rechaza ---
     malo = os.path.join(tmp, "malo.zip")

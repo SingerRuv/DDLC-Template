@@ -52,10 +52,11 @@ Reglas a tener presentes al tocar el instalador:
   symlinks, extensiones y topes antes de extraer.
 - Extrae en `_incoming/_tmp/` y recién ahí mueve a destino: si falla no queda
   nada a medias ni se pierde la versión anterior.
-- Actualizar mueve la versión previa a `_incoming/_backups/`; el ZIP usado va a
-  `_incoming/instalados/`.
+- Actualizar mueve la versión previa a `plugin_backups/` (raíz del proyecto,
+  fuera de `game/`); el ZIP usado va a `_incoming/instalados/`.
 - Desinstalar borra la carpeta (con confirmación).
-- `_incoming/` está en `.gitignore`: no se commitea ni se distribuye.
+- `_incoming/` y `plugin_backups/` están en `.gitignore`: no se commitean ni se
+  distribuyen.
 
 ## Refrescar sin reiniciar
 

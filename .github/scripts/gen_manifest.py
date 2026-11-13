@@ -19,12 +19,13 @@ import sys
 import tempfile
 
 # Mismas reglas de exclusión que game/migracion/migrar.py.
-IGNORAR_EXT = (".rpa", ".rpyc", ".rpyb", ".pyc")
+IGNORAR_EXT = (".rpa", ".rpyc", ".rpyb", ".pyc", ".log", ".tmp")
 IGNORAR_DIRS = ("saves", "cache", "__pycache__", "backup")
 IGNORAR_FILES = ("log.txt", "errors.txt", "traceback.txt",
                  "manifest.json", "reporte.json", ".job.json",
                  ".template.zip", "manual.zip")
-IGNORAR_RAIZ = (".git", ".github", ".vscode", "dist", "ZIPs", "tools")
+IGNORAR_RAIZ = (".git", ".github", ".vscode", ".idea", ".vs", "dist", "ZIPs",
+                "tools", "migracion_backup", "plugin_backups")
 
 REPO_DEF = "SingerRuv/DDLC-Template"
 RUTA_MANIFEST = os.path.join("game", "migracion", "manifest.json")

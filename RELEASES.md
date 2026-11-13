@@ -5,6 +5,21 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 2.0.2 — 2026-11-13
+
+### Corregido
+- **Migración más completa:** además de `game/`, ahora también mira la raíz del
+  proyecto. Tus archivos y carpetas propios (`characters/`, etc.) se detectan,
+  se respaldan y no se pisan; las carpetas del repositorio y la basura del
+  sistema se ignoran.
+- **Backups de plugins fuera del juego:** al actualizar un plugin, la versión
+  anterior queda en `plugin_backups/`, en la raíz. Antes se guardaba dentro de
+  `game/` y Ren'Py podía cargar sus `.rpy` al reiniciar, duplicando `label` o
+  `define` y rompiendo el arranque. Si ya tenías un backup viejo, se mueve solo
+  la primera vez.
+
+---
+
 ## 2.0.1 — 2026-11-12
 
 ### Corregido

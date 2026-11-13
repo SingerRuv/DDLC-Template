@@ -6,6 +6,22 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-13
+
+### Corregido
+- La migración desde GitHub también revisa la **raíz del proyecto**: los
+  archivos propios fuera de `game/` (por ejemplo `characters/` o carpetas
+  propias) se detectan, se respaldan y no se pisan. Las carpetas ajenas al mod
+  (`.git/`, `.github/`, `.vscode/`, `.idea/`, `.vs/`, `dist/`, `ZIPs/`,
+  `tools/`, `migracion_backup/`, `plugin_backups/`) y la basura de sistema
+  (`Thumbs.db`, `.DS_Store`, `*.log`, `*.tmp`) se ignoran.
+- El instalador de plugins guarda los backups en `plugin_backups/`, en la raíz
+  del proyecto (fuera de `game/`). Antes quedaban en
+  `game/plugins/_incoming/_backups/` y Ren'Py cargaba sus `.rpy` al reiniciar,
+  duplicando `label`/`define`.
+- Al arrancar, un backup viejo de `_incoming/_backups/` se mueve solo a la
+  raíz.
+
 ## [2.0.1] - 2026-11-12
 
 ### Corregido
@@ -378,7 +394,8 @@ con el look del DDLC Mod Template y sistemas listos para usar.
 - Requiere **Ren'Py 8.5.x**.
 - Desarrollo y herramientas dev viven en la rama `dev`.
 
-[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/2.0.1...HEAD
+[Unreleased]: https://github.com/SingerRuv/DDLC-Template/compare/2.0.2...HEAD
+[2.0.2]: https://github.com/SingerRuv/DDLC-Template/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/SingerRuv/DDLC-Template/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.6.0...2.0.0
 [1.6.0]: https://github.com/SingerRuv/DDLC-Template/compare/1.5.3...1.6.0

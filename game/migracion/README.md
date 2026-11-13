@@ -31,6 +31,7 @@ que éste se cierre.
 
 - `game/mod_assets/**` — tus imágenes, fondos, CGs y audio.
 - Todo lo que **agregaste** (p. ej. `game/script.rpy` con tu historia, capítulos).
+  También lo que esté **fuera de `game/`** (`characters/`, tus propias carpetas).
 - Los `gui/**` que pisaste.
 
 Lo demás sigue esta regla, archivo por archivo:
@@ -44,7 +45,12 @@ Lo demás sigue esta regla, archivo por archivo:
 | Archivo del template que **vos borraste** | Se respeta: no se vuelve a crear |
 | Archivo que el template ya no trae | Se deja el tuyo (aviso) |
 
-Nunca se tocan: `*.rpa`, `game/saves/`, `*.rpyc`, `game/cache/`, logs.
+Nunca se tocan: `*.rpa`, `game/saves/`, `*.rpyc`, `game/cache/`, logs, la
+basura de sistema (`Thumbs.db`, `.DS_Store`, `*.log`, `*.tmp`) ni las carpetas
+ajenas del primer nivel (`.git/`, `.github/`, `.vscode/`, `.idea/`, `.vs/`,
+`dist/`, `ZIPs/`, `tools/`, `migracion_backup/`, `plugin_backups/`). De
+`game/plugins/_incoming/` solo se ignora lo interno (`_tmp/`, `_backups/`):
+los ZIPs de `instalados/` son tuyos y se respaldan.
 
 ## Cambio de estructura en v2.0.0
 

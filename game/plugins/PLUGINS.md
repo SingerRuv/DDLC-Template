@@ -228,14 +228,14 @@ instalar archivos en `game/definitions/` ni en `game/mod_assets/`. Si tu plugin
 necesita algo ahí, no es autocontenido: movelo adentro de su carpeta (el módulo
 `.py` y los assets relativos funcionan igual).
 
-- **Actualizar** aparta la versión anterior en
-  `game/plugins/_incoming/_backups/`.
+- **Actualizar** aparta la versión anterior en `plugin_backups/`, en la raíz del
+  proyecto (fuera de `game/`, así Ren'Py no carga sus `.rpy`).
 - **Desinstalar** (desde el mismo instalador) borra la carpeta: no hay vuelta
   atrás.
 - El ZIP usado se archiva en `game/plugins/_incoming/instalados/`.
 
-`_incoming/` está en `.gitignore`: los ZIPs y los backups no se commitean ni
-entran al release. Y como Ren'Py compila los `.rpy` al arrancar, un plugin
+`_incoming/` y `plugin_backups/` están en `.gitignore`: los ZIPs y los backups
+no se commitean ni entran al release. Y como Ren'Py compila los `.rpy` al arrancar, un plugin
 recién instalado aparece en el hub después de reiniciar (el instalador ofrece
 **Reiniciar ahora**, que salta el splash de arranque).
 

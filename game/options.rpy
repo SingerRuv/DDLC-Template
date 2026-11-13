@@ -9,7 +9,7 @@ define config.name = "Ryu Mod Template"
 define gui.show_name = True
 
 # Esto controla el numero de version de tu juego.
-define config.version = "2.0.1"
+define config.version = "2.0.2"
 
 # Esto controla el nombre del build al empaquetar tu juego
 # en el Launcher de Ren'Py.
