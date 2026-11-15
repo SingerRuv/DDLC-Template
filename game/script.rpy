@@ -78,6 +78,8 @@ label start:
     # en Bronya): no hace falta hacer `call endgame` al final.
 
 
+
+
 # Este label es donde el juego 'termina'. Muestra la pantalla de fin y vuelve.
 label endgame(pause_length=4.0):
     $ quick_menu = False
