@@ -18,6 +18,8 @@ import subprocess
 import sys
 import tempfile
 
+# Copia espejo de tools/gen_manifest.py: si cambiás una regla,
+# cambiala también en el otro archivo.
 # Mismas reglas de exclusión que game/migracion/migrar.py.
 IGNORAR_EXT = (".rpa", ".rpyc", ".rpyb", ".pyc", ".log", ".tmp")
 IGNORAR_DIRS = ("saves", "cache", "__pycache__", "backup")

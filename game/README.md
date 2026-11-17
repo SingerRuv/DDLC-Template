@@ -10,6 +10,7 @@ Mapa de la carpeta. Para el flujo de trabajo, ver [`docs/`](../docs/README.md).
 | `definitions/` | Definiciones: imágenes, sprites, música, efectos, transforms, menús, splash, créditos y variables persistentes (ver `definitions/README.md`) |
 | `mod_assets/` | **Tus** assets: imágenes, CGs y audio (ver `mod_assets/README.md`) |
 | `plugins/` | Hub de Plugins (dev-only) y herramientas: PoseLab, Shaders Lab, Diálogo (ver `plugins/README.md` y `plugins/PLUGINS.md`) |
+| `history/` | Tus `.rpy` de la historia, un archivo por capítulo (ver `history/README.md`) |
 | `migracion/` | Sistema de migración de assets entre versiones del template (ver `migracion/README.md`) |
 | `tl/` | Traducciones; viene con español (ver `tl/README.md`) |
 | `python-packages/` | Librerías de Python de terceros (hoy solo `pypresence` 4.2.1, MIT). Ren'Py agrega la carpeta al `sys.path` sola |

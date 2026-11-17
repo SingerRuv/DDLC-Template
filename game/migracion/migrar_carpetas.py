@@ -151,9 +151,7 @@ def _copiar_saves(source, dest, backup):
     destino = os.path.join(dest, "game", "saves")
     if not os.path.isdir(origen):
         return 0, False
-    tiene_destino = os.path.isdir(destino) and any(
-        os.scandir(destino)) if os.path.isdir(destino) else False
-    if not tiene_destino:
+    if not (os.path.isdir(destino) and os.listdir(destino)):
         shutil.copytree(origen, destino, dirs_exist_ok=True)
         return 1, True
     # No pisar las saves del destino: guardar las del origen aparte.

@@ -132,27 +132,9 @@ def _fmt_size(n):
 # Carpetas en Android
 # ============================================================================
 
-def _get_android_data_directory():
-    """Carpeta de datos de la app en Android (vía jnius), o None."""
-    if not renpy.android:
-        return None
-    import jnius  # type: ignore
-    activity = jnius.autoclass("org.renpy.android.PythonSDLActivity")
-    current_activity = jnius.cast("android.app.Activity", activity.mActivity)
-    return current_activity.getFilesDir().getAbsolutePath()
-
-
 def get_android_game_dir():
     """Carpeta 'game' escribible donde van los .rpa extraídos."""
-    if renpy.android:
-        return renpy.config.gamedir
-    data_dir = _get_android_data_directory()
-    if data_dir is None:
-        return renpy.config.gamedir
-    game_dir = os.path.join(data_dir, "game")
-    if not os.path.exists(game_dir):
-        os.makedirs(game_dir, 0o777)
-    return game_dir
+    return renpy.config.gamedir
 
 
 def _marker_path():

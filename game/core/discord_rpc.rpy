@@ -173,9 +173,10 @@ init -1 python in discord_rpc:
             return bool(store.persistent.enable_discord and store.discord_client_id)
 
         def _abrir(self, client_id, actividad):
-            """(hilo) Conecta y publica la primera actividad."""
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+            """(hilo) Conecta y publica la primera actividad.
+
+            Usa el event loop que `_correr` ya instaló en este hilo: crear uno
+            nuevo en cada reconexión filtraba un loop por intento."""
             cliente = None
             try:
                 cliente = pypresence.Presence(client_id)

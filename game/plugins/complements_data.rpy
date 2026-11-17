@@ -337,7 +337,8 @@ init python:
 
 init 999 python:
     # Carga los modulos .py de los plugins y llama setup() una vez por cada uno.
-    for _t in pl_plugins()[0]:
+    # Dev-only: en un build publicado el hub no existe, asi que este codigo no corre.
+    for _t in (pl_plugins()[0] if config.developer else []):
         if _t.get("modulo") and _t["id"] not in _PL_PLUGIN_SETUP:
             _mod = _pl_cargar_modulo(_t)
             if _mod is not None:

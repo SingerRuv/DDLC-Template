@@ -4,8 +4,13 @@
 
 | Archivo | Qué hace |
 |---|---|
+| `0checks_ren.py` | Chequeos de arranque (`init -100`): `.rpa` de DDLC y proyecto dentro de OneDrive |
 | `0imports_ren.py` | Imports de bootstrap (`python early`): `math` y `subprocess` |
-| `__init__.py` | Vacío: marca la carpeta como paquete de Python para que funcionen los imports del estilo `from game.core.py...`. No lo borres |
+| `template_checks_ren.py` | Verifica que Ren'Py sea 8 o superior |
+| `renpy_patches_ren.py` | Parches de Ren'Py para DDLC (`wmic` → PowerShell, ATL) |
+| `console_ren.py` | Clase `Console` de la terminal de Monika |
+| `personajes_ren.py` | `characters/`: borrar y restaurar `.chr` |
+| `__init__.py` | Vacío: marca la carpeta como paquete de Python. No lo borres |
 
 ## Cómo escribir código acá
 
@@ -19,10 +24,6 @@
 
 ## Qué NO hay acá
 
-En el template original esta carpeta también tenía `renpy_patches_ren.py`,
-`template_checks_ren.py` y `0cleanup_ren.py`: parches de Ren'Py, checks de arranque
-(versión mínima, RPAs faltantes, anti-cloud) y limpieza inicial. No se copiaron
-porque son lógica específica de DDLC.
-
-Si tu juego necesita algo parecido, creá tu propio `*_ren.py` con `python early`
-siguiendo el patrón de `0imports_ren.py`.
+El *lock* de instancia única de Bronya no se copió: no hace falta para este
+template. Si tu juego necesita algo así, creá tu propio `*_ren.py` con
+`python early` siguiendo el patrón de `0imports_ren.py`.

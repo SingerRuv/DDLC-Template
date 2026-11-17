@@ -234,4 +234,4 @@ style migracion_titulo is text:
 
 style migracion_texto is text:
     size 24
-    color "#eaeaea"
+    color "#3b1f2b"

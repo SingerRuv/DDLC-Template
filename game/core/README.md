@@ -22,8 +22,7 @@
 - `renpy_patches_ren.py` - parches de Ren'Py para DDLC (`wmic` → PowerShell, ATL).
 - `console_ren.py` - clase `Console` de la terminal de Monika.
 - `personajes_ren.py` - `characters/`: borrar y restaurar `.chr`.
-- `__init__.py` - marca la carpeta como paquete de Python (así funciona
-  `from game.core.py... import ...`). No es "de prueba": no lo borres.
+- `__init__.py` - vacío: marca la carpeta como paquete de Python. No lo borres.
 - Los `*_ren.py` son módulos que además Ren'Py ejecuta como script (por la
   cabecera `"""renpy ... """`). Ver `py/README.md`.
 

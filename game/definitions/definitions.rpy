@@ -47,8 +47,8 @@ define s = DynamicCharacter('s_name', image='sayori', what_prefix='"', what_suff
 define m = DynamicCharacter('m_name', image='monika', what_prefix='"', what_suffix='"', ctc="ctc", ctc_position="fixed")
 define n = DynamicCharacter('n_name', image='natsuki', what_prefix='"', what_suffix='"', ctc="ctc", ctc_position="fixed")
 define y = DynamicCharacter('y_name', image='yuri', what_prefix='"', what_suffix='"', ctc="ctc", ctc_position="fixed")
-# En mc falta agregar su imagen
-define mc = DynamicCharacter('player', what_prefix='"', what_suffix='"', ctc="ctc", ctc_position="fixed" )
+# El protagonista no se muestra (como en DDLC): solo habla.
+define mc = DynamicCharacter('player', what_prefix='"', what_suffix='"', ctc="ctc", ctc_position="fixed")
 
 # Esta variable determina si se le permite al jugador omitir pausas.
 define _dismiss_pause = config.developer
@@ -71,7 +71,6 @@ default s_name = "Sayori"
 default m_name = "Monika"
 default n_name = "Natsuki"
 default y_name = "Yuri"
-default mc_name = "[player]"
 
 # Capítulo actual de la historia (lo usa el guion para organizar el flujo).
 default chapter = 0

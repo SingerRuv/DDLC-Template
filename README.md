@@ -49,8 +49,9 @@ images.rpa
 ```
 
 Con eso, Ren'Py resolverá las rutas `images/…`, `bgm/…`, `sfx/…` y **`gui/…`**
-(interfaz, menú, botones y fuentes). Sin ellos, el juego arranca pero **no se
-verán sprites, fondos, interfaz ni sonará la música**.
+(interfaz, menú, botones y fuentes). Sin ellos, el juego **se detiene al
+arrancar** con un mensaje que dice cuál falta (chequeo en
+`game/core/py/0checks_ren.py`).
 
 ### Android
 
@@ -98,6 +99,7 @@ game/
 ├── definitions/          ← sprites, transforms, audio, efectos, menús, splash
 ├── core/                 ← el motor del template (no tocar)
 ├── plugins/              ← hub de Plugins (dev): PoseLab, Shaders Lab, Diálogo
+├── history/              ← tus .rpy de la historia (un archivo por capítulo)
 ├── migracion/            ← sistema de migración de assets entre versiones
 ├── mod_assets/           ← tus assets propios (imágenes, CGs, audio)
 ├── tl/                   ← traducciones (viene con español)

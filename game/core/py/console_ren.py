@@ -27,7 +27,8 @@ class Console(object):
     def __call__(self, input_text, output_text, cps=None, delay=None):
         """Muestra `input_text` y después `output_text`, y los guarda."""
         if len(self.console_history) + 1 > self.max_log_history:
-            self.console_history.pop(min(self.console_history.keys()))
+            if self.console_history:
+                self.console_history.pop(next(iter(self.console_history)))
 
         if renpy.get_screen("console_screen"):
             renpy.hide_screen("console_screen")

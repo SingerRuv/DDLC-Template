@@ -27,8 +27,9 @@ Con eso se resuelven las rutas `images/…`, `bgm/…`, `sfx/…` y `gui/…` (i
 fuentes, botones). Los `.rpa` están en `.gitignore`: no se versionan ni viajan en
 el ZIP del template.
 
-Si te faltan, el juego arranca igual, pero no vas a ver sprites, fondos,
-interfaz ni escuchar música.
+Si te faltan, el juego **se detiene al arrancar** con un mensaje que dice cuál
+falta. Es a propósito: sin la interfaz y las fuentes de DDLC no se puede jugar
+(el chequeo está en `game/core/py/0checks_ren.py`).
 
 ### Android
 
@@ -51,11 +52,13 @@ pantalla de fin) sin que tengas que llamarlo.
 ## 4. Dónde va tu historia
 
 Ren'Py carga **todos** los `.rpy` que estén debajo de `game/`, sin registrarlos en
-ningún lado. Tenés dos formas:
+ningún lado. Tenés varias formas:
 
 - **Rápida:** escribí directo en `game/script.rpy`, dentro de `label start`.
 - **Recomendada:** un archivo por capítulo en `game/` (por ejemplo
-  `game/capitulo1.rpy`) y llamalos desde `start`:
+  `game/capitulo1.rpy`) y llamalos desde `start`.
+- **Carpeta `game/history/`:** pensada para lo mismo; viene con su
+  [`README.md`](../game/history/README.md).
 
 ```renpy
 label start:

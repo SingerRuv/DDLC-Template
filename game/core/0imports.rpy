@@ -2,9 +2,8 @@
 # Este archivo importa ciertos modulos Python en tiempo de ejecucion para funciones del juego.
 # El nombre '0imports' garantiza que se cargue antes que otros scripts.
 
-# En el template original, este archivo importaba los módulos de Achievements y
-# Gallery (extras opcionales). Si no tienes esos extras, deja este archivo vacío
-# o agrega tus propios imports aquí.
+# Agregá acá tus propios imports de arranque (si no necesitás ninguno, no hace
+# falta tocar nada: el único bloque real es el del searchpath).
 
 init -2 python:
     # Añade la carpeta 'mod_assets' (dentro de game/) a la lista de búsqueda

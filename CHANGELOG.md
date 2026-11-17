@@ -6,6 +6,35 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Agregado
+- `game/history/`: carpeta pensada para los `.rpy` de la historia (un archivo
+  por capítulo). Ren'Py la carga sola; solo hay que llamar el `label` desde
+  `script.rpy`. Ver `game/history/README.md`.
+- `define mc`: personaje del protagonista. No tiene sprite (como en DDLC).
+
+### Corregido
+- **Documentación:** el README y la guía de inicio decían que el juego arrancaba
+  sin los `.rpa` de DDLC; en realidad se detiene al arrancar con un mensaje
+  claro. También se actualizó `game/core/py/README.md`, que listaba archivos
+  que ya no coincidían con la carpeta.
+- **Hub de Plugins:** el código Python de los plugins (`setup()`) ya no se
+  ejecuta en builds publicados (`config.developer = False`).
+- **Migración:** si la aplicación falla a mitad, se borran los archivos nuevos
+  que se alcanzaron a crear (antes quedaban mezclados con el template viejo).
+- **Migración entre carpetas:** ya no deja un `os.scandir()` abierto al revisar
+  las saves del destino.
+- **Discord RPC:** se reutiliza un solo event loop; antes cada reconexión
+  dejaba uno sin cerrar.
+- **Consola:** el historial desaloja la entrada más vieja (antes usaba orden
+  alfabético).
+- **UI de migración:** texto oscuro sobre el panel rosa, legible (antes gris
+  claro sobre rosa).
+- **Android:** se eliminó código muerto en `get_android_game_dir()` (mismo
+  comportamiento).
+- **Mantenimiento:** `tools/gen_manifest.py` quedó sincronizado con la copia de
+  `.github/scripts/`.
+- Se eliminó la variable sin uso `mc_name`.
+
 ## [2.0.2] - 2026-11-13
 
 ### Corregido

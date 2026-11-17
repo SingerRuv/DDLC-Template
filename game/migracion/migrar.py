@@ -390,35 +390,58 @@ def _escribir_atomico(origen_abs, dst_abs):
     """Copia a un temporal y reemplaza, para no dejar archivos a medias."""
     os.makedirs(os.path.dirname(dst_abs), exist_ok=True)
     tmp = dst_abs + ".tmp"
-    shutil.copy2(origen_abs, tmp)
-    os.replace(tmp, dst_abs)
+    try:
+        shutil.copy2(origen_abs, tmp)
+        os.replace(tmp, dst_abs)
+    except Exception:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def aplicar(project, staging, plan, man_new):
-    """Copia el template nuevo (atómico por archivo) y deja el manifest."""
+    """Copia el template nuevo (atómico por archivo) y deja el manifest.
+
+    Si algo falla a mitad, borra los archivos que había creado (los
+    sobreescritos los restaura `restaurar_previos`)."""
     escritos = 0
-    for rel in plan["copiar"]:
-        origen = os.path.join(staging, rel.replace("/", os.sep))
-        dst = os.path.join(project, rel.replace("/", os.sep))
-        if not os.path.isfile(origen):
-            continue
-        _escribir_atomico(origen, dst)
-        escritos += 1
-        # Borra el bytecode viejo: si el .rpyc sobrevive, Ren'Py puede seguir
-        # ejecutando el código anterior aunque el .rpy ya esté actualizado.
-        if rel.endswith(".rpy"):
-            base = os.path.splitext(dst)[0]
-            for sufijo in (".rpyc", ".rpyb"):
-                try:
-                    if os.path.isfile(base + sufijo):
-                        os.remove(base + sufijo)
-                except Exception:
-                    pass
-    # El manifest nuevo se instala siempre (es la fuente de verdad de la version).
-    origen_man = os.path.join(staging, RUTA_MANIFEST.replace("/", os.sep))
-    if os.path.isfile(origen_man):
-        _escribir_atomico(origen_man,
-                          os.path.join(project, RUTA_MANIFEST.replace("/", os.sep)))
+    creados = []
+    try:
+        for rel in plan["copiar"]:
+            origen = os.path.join(staging, rel.replace("/", os.sep))
+            dst = os.path.join(project, rel.replace("/", os.sep))
+            if not os.path.isfile(origen):
+                continue
+            if not os.path.isfile(dst):
+                creados.append(dst)
+            _escribir_atomico(origen, dst)
+            escritos += 1
+            # Borra el bytecode viejo: si el .rpyc sobrevive, Ren'Py puede seguir
+            # ejecutando el código anterior aunque el .rpy ya esté actualizado.
+            if rel.endswith(".rpy"):
+                base = os.path.splitext(dst)[0]
+                for sufijo in (".rpyc", ".rpyb"):
+                    try:
+                        if os.path.isfile(base + sufijo):
+                            os.remove(base + sufijo)
+                    except Exception:
+                        pass
+        # El manifest nuevo se instala siempre (es la fuente de verdad de la version).
+        origen_man = os.path.join(staging, RUTA_MANIFEST.replace("/", os.sep))
+        if os.path.isfile(origen_man):
+            dst_man = os.path.join(project, RUTA_MANIFEST.replace("/", os.sep))
+            if not os.path.isfile(dst_man):
+                creados.append(dst_man)
+            _escribir_atomico(origen_man, dst_man)
+    except Exception:
+        for dst in creados:
+            try:
+                os.remove(dst)
+            except OSError:
+                pass
+        raise
     return escritos
 
 
