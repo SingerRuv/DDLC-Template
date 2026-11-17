@@ -71,6 +71,8 @@ default s_name = "Sayori"
 default m_name = "Monika"
 default n_name = "Natsuki"
 default y_name = "Yuri"
+# Nombre del protagonista para el guion (p. ej. "[mc_name]").
+default mc_name = "[player]"
 
 # Capítulo actual de la historia (lo usa el guion para organizar el flujo).
 default chapter = 0

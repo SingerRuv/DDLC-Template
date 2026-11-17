@@ -33,7 +33,6 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   comportamiento).
 - **Mantenimiento:** `tools/gen_manifest.py` quedó sincronizado con la copia de
   `.github/scripts/`.
-- Se eliminó la variable sin uso `mc_name`.
 
 ## [2.0.2] - 2026-11-13
 
