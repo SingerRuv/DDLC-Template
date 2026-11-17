@@ -755,6 +755,21 @@ def selftest():
     with open(os.path.join(project, "game", "core", "a.rpy")) as f:
         assert f.read() == "A v2", "el rollback debe devolver el contenido previo"
 
+    # --- Aplicar fallido: los archivos creados se borran ---
+    p5 = os.path.join(tmp, "proj5")
+    st5 = os.path.join(tmp, "nuevo5")
+    escribir(st5, "game/core/a.rpy", "A")
+    escribir(st5, "game/core/b.rpy", "B")
+    os.makedirs(os.path.join(p5, "game", "core", "b.rpy"))  # destino inválido
+    plan5 = {"copiar": ["game/core/a.rpy", "game/core/b.rpy"]}
+    try:
+        aplicar(p5, st5, plan5, None)
+        raise AssertionError("debería fallar al copiar sobre una carpeta")
+    except OSError:
+        pass
+    assert not os.path.isfile(os.path.join(p5, "game", "core", "a.rpy")), \
+        "el archivo creado por la copia fallida debería borrarse"
+
     # --- v2.0.0: game/tools -> game/plugins (aplanado) y rollback ---
     p2 = os.path.join(tmp, "proj2")
     escribir(p2, "game/tools/README.md", "hub")
