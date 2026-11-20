@@ -5,6 +5,34 @@ El historial detallado está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
+## 2.1.0 — 2026-11-20
+
+### Agregado
+- **Carpeta `game/history/`:** pensada para los `.rpy` de la historia, un
+  archivo por capítulo. Ren'Py la carga sola; solo hay que llamar el `label`
+  desde `script.rpy`.
+- **`mc`:** personaje del protagonista (sin sprite, como en DDLC), con
+  `mc_name` disponible para el guion.
+
+### Corregido
+- **Documentación:** el README y la guía de inicio ahora explican que el juego
+  **se detiene al arrancar** si faltan los `.rpa` de DDLC (antes decían que
+  arrancaba igual). `game/core/py/README.md` quedó alineado con los archivos
+  reales.
+- **Hub de Plugins:** el Python de los plugins ya no se ejecuta en builds
+  publicados (`config.developer = False`).
+- **Migración:** si falla la aplicación, se borran los archivos nuevos que se
+  alcanzaron a crear; la migración entre carpetas ya no deja un `os.scandir()`
+  abierto, y la UI tiene contraste legible.
+- **Discord RPC:** se reutiliza un solo event loop (antes cada reconexión
+  dejaba uno sin cerrar).
+- **Consola:** el historial desaloja la entrada más vieja.
+- **Android:** se eliminó código muerto en `get_android_game_dir()` (mismo
+  comportamiento).
+- **Mantenimiento:** `gen_manifest.py` sincronizado y selftest del rollback.
+
+---
+
 ## 2.0.2 — 2026-11-13
 
 ### Corregido

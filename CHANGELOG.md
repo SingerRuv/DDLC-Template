@@ -6,6 +6,8 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-20
+
 ### Agregado
 - `game/history/`: carpeta pensada para los `.rpy` de la historia (un archivo
   por capítulo). Ren'Py la carga sola; solo hay que llamar el `label` desde
